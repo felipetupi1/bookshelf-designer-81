@@ -2,6 +2,7 @@
 // This component needs the Cathedral3DView which is being created
 import type React from "react"
 import { useState, useMemo, useRef } from "react"
+import { Cathedral3DView, type Cathedral3DViewRef } from "./Cathedral3DView"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
