@@ -136,18 +136,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
 
   const rows = cathedralData?.rows || []
 
-  const modulesPerRow = useMemo(() => {
-    return rows.map(row => {
-      const modules: { width: number }[] = []
-      let remaining = row.availableWidth
-      while (remaining > 0) {
-        const w = Math.min(remaining, 25)
-        modules.push({ width: w })
-        remaining -= w
-      }
-      return modules
-    })
-  }, [rows])
+  const modulesPerRow = cathedralData?.modulesPerRow || []
 
   const { totalPrice, totalArea } = useMemo(() => {
     const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
