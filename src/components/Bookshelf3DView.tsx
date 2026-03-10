@@ -266,7 +266,7 @@ function ModuleBox({
   )
 }
 
-function Bookshelf3D({
+export function Bookshelf3D({
   width,
   shelves,
   finish,
