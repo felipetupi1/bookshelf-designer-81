@@ -269,10 +269,21 @@ function PortalScene({ props, internalFinish, frameFinish }: {
     return result
   }, [shelves, wallHeight])
 
-  // Pre-compute modules for each column width (memoized)
-  const leftMods = useMemo(() => computeModules(leftGap), [leftGap])
-  const centerMods = useMemo(() => computeModules(objectWidth), [objectWidth])
-  const rightMods = useMemo(() => computeModules(rightGap), [rightGap])
+  // Pre-compute modules for each row × column with continuing sequence index
+  const columnModuleData = useMemo(() => {
+    const data: { left: { width: number }[], center: { width: number }[], right: { width: number }[] }[] = []
+    let leftIdx = 0, centerIdx = 0, rightIdx = 0
+    for (const row of rows) {
+      const lr = computeModulesForRow(leftGap, leftIdx)
+      leftIdx = lr.nextIndex
+      const cr = computeModulesForRow(objectWidth, centerIdx)
+      centerIdx = cr.nextIndex
+      const rr = computeModulesForRow(rightGap, rightIdx)
+      rightIdx = rr.nextIndex
+      data.push({ left: lr.modules, center: cr.modules, right: rr.modules })
+    }
+    return data
+  }, [rows, leftGap, objectWidth, rightGap])
 
   return (
     <group>
