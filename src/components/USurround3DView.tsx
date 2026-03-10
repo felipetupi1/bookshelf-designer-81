@@ -37,16 +37,15 @@ function CameraController({ w1, w, w2, totalHeight, maxDepth, isMobile, resetKey
   useEffect(() => { ctrlRef.current = controls }, [controls])
   useEffect(() => {
     const H = totalHeight
+    const frontZ = Math.max(w1, w2)
     const totalWidth = w + maxDepth * 2
-    const totalDepth = Math.max(w1, w2) + maxDepth
-    const spread = Math.max(totalWidth, totalDepth)
+    const spread = Math.max(totalWidth, frontZ + maxDepth)
     const pad = isMobile ? 0.8 : 1.8
     const dist = Math.max(spread, H) * pad
 
-    // Look into the U opening from front-top
-    const centerZ = -Math.max(w1, w2) / 3
-    const targetPos = new THREE.Vector3(0, H * 0.7, dist * 0.9)
-    const lookAt = new THREE.Vector3(0, H / 2, centerZ)
+    // Camera at front-top looking into the U opening
+    const targetPos = new THREE.Vector3(0, H * 0.7, frontZ + dist * 0.8)
+    const lookAt = new THREE.Vector3(0, H / 2, frontZ / 2)
 
     const start = camera.position.clone()
     const t0 = Date.now()
