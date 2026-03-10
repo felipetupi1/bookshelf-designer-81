@@ -334,21 +334,22 @@ function PortalScene({ props, internalFinish, frameFinish }: {
     return result
   }, [shelves, wallHeight])
 
-  // Pre-compute modules for each row × column with continuing sequence index
+  // Pre-compute modules for each row as ONE continuous sequence across the full wall
   const columnModuleData = useMemo(() => {
     const data: { left: { width: number }[], center: { width: number }[], right: { width: number }[] }[] = []
-    let leftIdx = 0, centerIdx = 0, rightIdx = 0
+    let seqIdx = 0
     for (const row of rows) {
-      const lr = computeModulesForRow(leftGap, leftIdx)
-      leftIdx = lr.nextIndex
-      const cr = computeModulesForRow(objectWidth, centerIdx)
-      centerIdx = cr.nextIndex
-      const rr = computeModulesForRow(rightGap, rightIdx)
-      rightIdx = rr.nextIndex
-      data.push({ left: lr.modules, center: cr.modules, right: rr.modules })
+      const shelfTopY = row.y + row.shelf.height + 0.75
+      const result = computeFullRowModules(
+        wallWidth, leftGap, objectWidth, rightGap,
+        floorToObject, objectTop, row.y, shelfTopY,
+        seqIdx
+      )
+      seqIdx = result.nextIndex
+      data.push({ left: result.left, center: result.center, right: result.right })
     }
     return data
-  }, [rows, leftGap, objectWidth, rightGap])
+  }, [rows, wallWidth, leftGap, objectWidth, rightGap, floorToObject, objectTop])
 
   // Check if top-of-object height is enough for center shelves above
   const topSpace = wallHeight - objectTop
