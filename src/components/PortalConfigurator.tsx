@@ -470,11 +470,13 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
                   <Slider value={[objectHeight]} onValueChange={([v]) => setObjectHeight(v)} min={1} max={maxH2} step={1} className="w-full" />
                   <div className="flex justify-between text-xs text-muted-foreground mt-1"><span>1"</span><span className="font-medium text-foreground">{objectHeight}"</span><span>{maxH2}"</span></div>
                 </div>
+                {showFloorToObject && (
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">H1 — Height from Floor</Label>
+                  <Label className="text-xs text-muted-foreground mb-1 block">H1 — Height from Floor to Bottom of {objectType === "tv" ? "TV" : objectType === "window" ? "Window" : "Object"}</Label>
                   <Slider value={[floorToObject]} onValueChange={([v]) => setFloorToObject(v)} min={0} max={maxH1} step={1} className="w-full" />
                   <div className="flex justify-between text-xs text-muted-foreground mt-1"><span>0"</span><span className="font-medium text-foreground">{floorToObject}"</span><span>{maxH1}"</span></div>
                 </div>
+                )}
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">W1 — Right Gap</Label>
                   <Slider value={[rightGap]} onValueChange={([v]) => setRightGap(v)} min={0} max={maxW1} step={1} className="w-full" />
