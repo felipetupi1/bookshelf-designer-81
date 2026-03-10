@@ -169,10 +169,27 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   const [objectType, setObjectType] = useState<ObjectPreset>("tv")
   const [selectedPresetSize, setSelectedPresetSize] = useState<string | null>(null)
 
-  const [leftShelves, setLeftShelves] = useState<ShelfConfig[]>(() => defaultShelvesForHeight(96))
-  const [rightShelves, setRightShelves] = useState<ShelfConfig[]>(() => defaultShelvesForHeight(96))
-  const [topShelves, setTopShelves] = useState<ShelfConfig[]>(() => defaultShelvesForHeight(42))
-  const [bottomShelves, setBottomShelves] = useState<ShelfConfig[]>(() => defaultShelvesForHeight(24))
+  const [globalShelves, setGlobalShelves] = useState<ShelfConfig[]>(() => defaultShelvesForHeight(96))
+
+  // Distribute global shelves to each zone based on available height
+  const distributeShelves = (zoneHeight: number): ShelfConfig[] => {
+    if (zoneHeight <= 0) return []
+    const result: ShelfConfig[] = []
+    let usedHeight = 0.75 // initial board thickness
+    for (const shelf of globalShelves) {
+      const shelfTotal = shelf.height + 0.75 // shelf height + board
+      if (usedHeight + shelfTotal <= zoneHeight) {
+        result.push({ ...shelf })
+        usedHeight += shelfTotal
+      }
+    }
+    return result
+  }
+
+  const leftShelves = useMemo(() => distributeShelves(hasLeft ? wallHeight : 0), [globalShelves, hasLeft, wallHeight])
+  const rightShelves = useMemo(() => distributeShelves(hasRight ? wallHeight : 0), [globalShelves, hasRight, wallHeight])
+  const topShelves = useMemo(() => distributeShelves(hasTop ? topSectionHeight : 0), [globalShelves, hasTop, topSectionHeight])
+  const bottomShelves = useMemo(() => distributeShelves(hasBottom ? floorToObject : 0), [globalShelves, hasBottom, floorToObject])
 
   const [selectedFinish, setSelectedFinish] = useState("Oak/Oak")
   const [isAddingToCart, setIsAddingToCart] = useState(false)
