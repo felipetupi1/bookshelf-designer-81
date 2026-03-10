@@ -335,6 +335,31 @@ function PortalScene({ props, internalFinish, frameFinish }: {
         )
       })}
 
+      {/* ── Board above the object ── */}
+      {(() => {
+        // Find the shelf depth at the object top level
+        let boardDepth = maxDepth
+        let y = 0
+        for (const shelf of shelves) {
+          const shelfTop = y + shelf.height + 0.75
+          if (floorToObject + objectHeight >= y && floorToObject + objectHeight <= shelfTop) {
+            boardDepth = shelf.depth
+            break
+          }
+          y = shelfTop
+        }
+        const zOff = -(maxDepth - boardDepth)
+        return (
+          <Board
+            position={[centerColX, floorToObject + objectHeight, -boardDepth / 2]}
+            width={objectWidth}
+            depth={boardDepth}
+            finish={internalFinish}
+            zOffset={zOff}
+          />
+        )
+      })()}
+
       {/* ── OBJECT PLACEHOLDER (grey box) ── */}
       <mesh position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2]}>
         <boxGeometry args={[objectWidth, objectHeight, 1]} />
