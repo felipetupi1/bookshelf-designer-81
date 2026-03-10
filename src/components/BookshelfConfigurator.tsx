@@ -326,17 +326,15 @@ export function BookshelfConfigurator() {
   const addShelf = () => {
     if (shelves.length < 8) {
       const topDepth = (shelves[shelves.length - 1]?.depth || 13) as 7 | 10 | 13
+      const topDepth2 = (shelves2[shelves2.length - 1]?.depth || 13) as 7 | 10 | 13
       setShelves([...shelves, { height: 14, depth: topDepth }])
-      if (mainType === "corner") {
-        const topDepth2 = (shelves2[shelves2.length - 1]?.depth || 13) as 7 | 10 | 13
-        setShelves2([...shelves2, { height: 14, depth: topDepth2 }])
-      }
+      setShelves2([...shelves2, { height: 14, depth: topDepth2 }])
     }
   }
   const removeShelf = () => {
     if (shelves.length > 1) {
       setShelves(shelves.slice(0, -1))
-      if (mainType === "corner") setShelves2(shelves2.slice(0, -1))
+      setShelves2(shelves2.slice(0, -1))
     }
   }
 
@@ -345,7 +343,7 @@ export function BookshelfConfigurator() {
     newShelves[index] = { ...newShelves[index], [field]: value }
     const finalShelves = field === "depth" ? enforceDepthConstraints(newShelves, index) : newShelves
     setShelves(finalShelves)
-    if (mainType === "corner" && field === "height") {
+    if (field === "height") {
       const newShelves2 = [...shelves2]
       newShelves2[index] = { ...newShelves2[index], height: value as 12 | 14 }
       setShelves2(newShelves2)
@@ -635,13 +633,17 @@ export function BookshelfConfigurator() {
                 </div>
 
                 {mainType === "corner" ? (
-                  <>
-                    {/* Main Side (Width 1) */}
-                    <div className="space-y-2">
-                      <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Main Side (Width 1)</span>
-                      {[...shelves].reverse().map((shelf, revIndex) => {
-                        const index = shelves.length - 1 - revIndex
-                        return (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 px-3 py-1">
+                      <span className="w-14"></span>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-16 text-center">Height</span>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-16 text-center">Depth W1</span>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-16 text-center">Depth W2</span>
+                    </div>
+                    {[...shelves].reverse().map((shelf, revIndex) => {
+                      const index = shelves.length - 1 - revIndex
+                      const shelf2 = shelves2[index]
+                      return (
                         <div key={index}>
                           <div className="flex items-center gap-2 bg-secondary/50 rounded-lg px-3 py-2">
                             <span className="text-xs font-medium text-muted-foreground w-14">Shelf {index + 1}</span>
@@ -651,55 +653,26 @@ export function BookshelfConfigurator() {
                                 {[12, 14].map((h) => (<SelectItem key={h} value={h.toString()}>{h}"</SelectItem>))}
                               </SelectContent>
                             </Select>
-                            <span className="text-[10px] text-muted-foreground uppercase">H</span>
                             <Select value={shelf.depth.toString()} onValueChange={(v) => updateShelf(index, "depth", Number.parseInt(v))}>
                               <SelectTrigger className="w-16 h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 {getAvailableDepths(shelves, index).map((d) => (<SelectItem key={d} value={d.toString()}>{d}"</SelectItem>))}
                               </SelectContent>
                             </Select>
-                            <span className="text-[10px] text-muted-foreground uppercase">D</span>
-                          </div>
-                          {index > 0 && shelf.depth < shelves[index - 1].depth && (
-                            <div className="text-[10px] text-muted-foreground italic pl-3 mt-1">↑ Transition board will be added here</div>
-                          )}
-                        </div>
-                        )
-                      })}
-                    </div>
-
-                    {/* Perpendicular Side (Width 2) */}
-                    <div className="space-y-2">
-                      <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Perpendicular Side (Width 2)</span>
-                      {[...shelves2].reverse().map((shelf, revIndex) => {
-                        const index = shelves2.length - 1 - revIndex
-                        return (
-                        <div key={index}>
-                          <div className="flex items-center gap-2 bg-secondary/50 rounded-lg px-3 py-2">
-                            <span className="text-xs font-medium text-muted-foreground w-14">Shelf {index + 1}</span>
-                            <Select value={shelf.height.toString()} onValueChange={(v) => updateShelf2(index, "height", Number.parseInt(v))}>
-                              <SelectTrigger className="w-16 h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                {[12, 14].map((h) => (<SelectItem key={h} value={h.toString()}>{h}"</SelectItem>))}
-                              </SelectContent>
-                            </Select>
-                            <span className="text-[10px] text-muted-foreground uppercase">H</span>
-                            <Select value={shelf.depth.toString()} onValueChange={(v) => updateShelf2(index, "depth", Number.parseInt(v))}>
+                            <Select value={shelf2.depth.toString()} onValueChange={(v) => updateShelf2(index, "depth", Number.parseInt(v))}>
                               <SelectTrigger className="w-16 h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 {getAvailableDepths(shelves2, index).map((d) => (<SelectItem key={d} value={d.toString()}>{d}"</SelectItem>))}
                               </SelectContent>
                             </Select>
-                            <span className="text-[10px] text-muted-foreground uppercase">D</span>
                           </div>
-                          {index > 0 && shelf.depth < shelves2[index - 1].depth && (
+                          {index > 0 && (shelf.depth < shelves[index - 1].depth || shelf2.depth < shelves2[index - 1].depth) && (
                             <div className="text-[10px] text-muted-foreground italic pl-3 mt-1">↑ Transition board will be added here</div>
                           )}
                         </div>
-                        )
-                      })}
-                    </div>
-                  </>
+                      )
+                    })}
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     {[...shelves].reverse().map((shelf, revIndex) => {
