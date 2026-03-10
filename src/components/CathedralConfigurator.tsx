@@ -128,6 +128,20 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   const [selectedFinish, setSelectedFinish] = useState("Oak/Oak")
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
+  const cathedral3DRef = useRef<Cathedral3DViewRef>(null)
+
+  const modulesPerRow = useMemo(() => {
+    return rows.map(row => {
+      const modules: { width: number }[] = []
+      let remaining = row.availableWidth
+      while (remaining > 0) {
+        const w = Math.min(remaining, 25)
+        modules.push({ width: w })
+        remaining -= w
+      }
+      return modules
+    })
+  }, [rows])
 
   const cathedralData = useMemo(() => {
     try { return calculateCathedral(W, H, H1, shelves, direction, selectedFinish) } catch { return null }
