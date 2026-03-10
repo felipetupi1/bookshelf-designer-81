@@ -67,10 +67,12 @@ function USurroundScene({ props, intF, frameF }: { props: USurround3DViewProps; 
   const { w1, w, w2, shelvesLeft, shelvesFront, shelvesRight, modulesLeft, modulesFront, modulesRight } = props
   const backZ = Math.max(w1, w2)
 
-  // Left arm: +90° Y rotation maps local z → world -x, open face (local z=0) at group_x.
-  //   Inner (open) face anchored at x = -w/2, grows outward (back face at x = -w/2 - depth).
-  // Right arm: -90° Y rotation maps local z → world +x, open face (local z=0) at group_x.
-  //   Inner (open) face anchored at x = +w/2, grows outward (back face at x = +w/2 + depth).
+  // All arms connect at z=-backZ (the back wall).
+  // Side arms are anchored so their BACK end is at z=-backZ, front end at z=-backZ+w1 (or w2).
+  // This ensures they ALWAYS touch the back arm regardless of w1/w2 differences.
+  //
+  // After +90° Y rotation, Bookshelf3D width (local x) → world z, depth (local z) → world x.
+  // Inner (open) face at group_x, outer (back) face at group_x - depth (left) or + depth (right).
 
   return (
     <group>
@@ -82,16 +84,16 @@ function USurroundScene({ props, intF, frameF }: { props: USurround3DViewProps; 
         />
       </group>
 
-      {/* Left arm — inner face fixed at x = -w/2, grows outward to the left */}
-      <group position={[-w / 2, 0, -w1 / 2]} rotation={[0, Math.PI / 2, 0]}>
+      {/* Left arm — inner face fixed at x=-w/2, back end anchored at z=-backZ */}
+      <group position={[-w / 2, 0, -backZ + w1 / 2]} rotation={[0, Math.PI / 2, 0]}>
         <Bookshelf3D
           style="bookshelf" width={w1} shelves={shelvesLeft} finish={intF} frameFinish={frameF}
           modules={modulesLeft}
         />
       </group>
 
-      {/* Right arm — inner face fixed at x = +w/2, grows outward to the right */}
-      <group position={[w / 2, 0, -w2 / 2]} rotation={[0, -Math.PI / 2, 0]}>
+      {/* Right arm — inner face fixed at x=+w/2, back end anchored at z=-backZ */}
+      <group position={[w / 2, 0, -backZ + w2 / 2]} rotation={[0, -Math.PI / 2, 0]}>
         <Bookshelf3D
           style="bookshelf" width={w2} shelves={shelvesRight} finish={intF} frameFinish={frameF}
           modules={modulesRight}
