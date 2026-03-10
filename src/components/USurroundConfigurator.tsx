@@ -154,31 +154,28 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
     { height: 14, depth: 13 }, { height: 14, depth: 13 },
   ]
 
-  const [shelvesLeft, setShelvesLeft] = useState<ShelfConfig[]>(defaultShelves)
-  const [shelvesFront, setShelvesFront] = useState<ShelfConfig[]>(defaultShelves)
-  const [shelvesRight, setShelvesRight] = useState<ShelfConfig[]>(defaultShelves)
+  const [shelves, setShelves] = useState<ShelfConfig[]>(defaultShelves)
+  const shelvesLeft = shelves
+  const shelvesFront = shelves
+  const shelvesRight = shelves
 
-  const totalHeight = calculateTotalHeight(shelvesFront)
+  const totalHeight = calculateTotalHeight(shelves)
 
-  const makeUpdater = (setter: React.Dispatch<React.SetStateAction<ShelfConfig[]>>) => ({
-    add: () => setter(prev => {
+  const shelfOps = {
+    add: () => setShelves(prev => {
       if (prev.length >= 8) return prev
       const topDepth = (prev[prev.length - 1]?.depth || 13) as 7 | 10 | 13
       return [...prev, { height: 14, depth: topDepth }]
     }),
-    remove: () => setter(prev => prev.length > 1 ? prev.slice(0, -1) : prev),
+    remove: () => setShelves(prev => prev.length > 1 ? prev.slice(0, -1) : prev),
     update: (index: number, field: "height" | "depth", value: number) => {
-      setter(prev => {
+      setShelves(prev => {
         const next = [...prev]
         next[index] = { ...next[index], [field]: value }
         return field === "depth" ? enforceDepthConstraints(next, index) : next
       })
     },
-  })
-
-  const leftOps = makeUpdater(setShelvesLeft)
-  const frontOps = makeUpdater(setShelvesFront)
-  const rightOps = makeUpdater(setShelvesRight)
+  }
 
   const { usurroundResult, totalPrice, totalArea, modulesLeft, modulesFront, modulesRight } = useMemo(() => {
     try {
@@ -221,7 +218,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
 
   function handleReset() {
     setW1(50); setW(70); setW2(50)
-    setShelvesLeft(defaultShelves()); setShelvesFront(defaultShelves()); setShelvesRight(defaultShelves())
+    setShelves(defaultShelves())
     setSelectedFinish("Oak/Oak")
   }
 
@@ -325,11 +322,9 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
               </div>
             </ConfigSection>
 
-            <ConfigSection step={3} title="Shelves" subtitle={`L: ${shelvesLeft.length} · F: ${shelvesFront.length} · R: ${shelvesRight.length}`} defaultOpen={true}>
+            <ConfigSection step={3} title="Shelves" subtitle={`${shelves.length} shelves`} defaultOpen={true}>
               <div className="space-y-6">
-                <SectionShelfConfig label="Left Arm (W1)" shelves={shelvesLeft} onAdd={leftOps.add} onRemove={leftOps.remove} onUpdate={leftOps.update} />
-                <SectionShelfConfig label="Front Section (W)" shelves={shelvesFront} onAdd={frontOps.add} onRemove={frontOps.remove} onUpdate={frontOps.update} />
-                <SectionShelfConfig label="Right Arm (W2)" shelves={shelvesRight} onAdd={rightOps.add} onRemove={rightOps.remove} onUpdate={rightOps.update} />
+                <SectionShelfConfig label="All Arms" shelves={shelves} onAdd={shelfOps.add} onRemove={shelfOps.remove} onUpdate={shelfOps.update} />
               </div>
             </ConfigSection>
 
