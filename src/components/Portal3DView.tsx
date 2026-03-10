@@ -381,42 +381,22 @@ function PortalScene({ props, internalFinish, frameFinish }: {
         const topBoardY = moduleY + shelf.height
         const zOffset = -(maxDepth - shelf.depth)
 
-        // Does this row overlap the object vertically?
-        const shelfTop = shelfBottomY + shelf.height
+        // Does this row overlap the object vertically? (only affects module rendering, NOT boards)
+        const shelfTop = shelfBottomY + shelf.height + 0.75
         const overlapsObject = shelfBottomY < objectTop && shelfTop > floorToObject
         const centerVisible = hasCenter && !overlapsObject
 
         return (
           <group key={ri}>
-            {/* Horizontal shelf boards spanning full wallWidth (except skip bottom for ri=0 since outer frame has it) */}
+            {/* Horizontal shelf boards ALWAYS span full wallWidth — never split */}
             {ri > 0 && (
-              <>
-                {/* Board at bottom of this row spans full wall, but skip object zone if overlapping */}
-                {overlapsObject ? (
-                  <>
-                    {hasLeft && <Board position={[leftColX, shelfBottomY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
-                    {hasRight && <Board position={[rightColX, shelfBottomY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
-                  </>
-                ) : (
-                  <Board position={[wallCenterX, shelfBottomY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                )}
-              </>
+              <Board position={[wallCenterX, shelfBottomY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
             )}
-            {/* Top board of this row */}
-            {overlapsObject ? (
-              <>
-                {hasLeft && <Board position={[leftColX, topBoardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
-                {hasRight && <Board position={[rightColX, topBoardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
-              </>
-            ) : (
-              <Board position={[wallCenterX, topBoardY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-            )}
+            <Board position={[wallCenterX, topBoardY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
 
-            {/* Modules in left column */}
+            {/* Modules — only skip center zone when overlapping object */}
             {hasLeft && <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" />}
-            {/* Modules in center column (only if not overlapping object) */}
             {centerVisible && <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} align="center" />}
-            {/* Modules in right column */}
             {hasRight && <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" />}
           </group>
         )
