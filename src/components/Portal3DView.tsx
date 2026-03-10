@@ -227,19 +227,17 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
       for (const w of widths) {
         const modL = x
         const modR = x + w
-        // Determine zone
-        if (modR <= objL) {
-          // Left zone
-          if (hasLeft) mods.push({ positions: [{ x: modL, w }], zone: "left" })
-        } else if (modL >= objR) {
-          // Right zone
-          if (hasRight) mods.push({ positions: [{ x: modL, w }], zone: "right" })
-        } else {
-          // Object zone — skip if row overlaps object
-          if (!rowOverlapsObj && objectWidth >= MIN_COL) {
-            mods.push({ positions: [{ x: modL, w }], zone: "center" })
+        if (rowOverlapsObj) {
+          // Row overlaps object: only render in left/right zones if they're wide enough
+          if (modR <= objL) {
+            if (hasLeft) mods.push({ positions: [{ x: modL, w }], zone: "left" })
+          } else if (modL >= objR) {
+            if (hasRight) mods.push({ positions: [{ x: modL, w }], zone: "right" })
           }
-          // else: skip entirely
+          // center zone: skip entirely
+        } else {
+          // Row does NOT overlap object: render all modules across full width
+          mods.push({ positions: [{ x: modL, w }], zone: "full" })
         }
         x += w + gap
       }
