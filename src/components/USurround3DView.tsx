@@ -65,17 +65,12 @@ function CameraController({ w1, w, w2, totalHeight, maxDepth, isMobile, resetKey
 
 function USurroundScene({ props, intF, frameF }: { props: USurround3DViewProps; intF: string; frameF: string }) {
   const { w1, w, w2, shelvesLeft, shelvesFront, shelvesRight, modulesLeft, modulesFront, modulesRight } = props
-  const maxDepthLeft = Math.max(...shelvesLeft.map(s => s.depth))
-  const maxDepthRight = Math.max(...shelvesRight.map(s => s.depth))
   const backZ = Math.max(w1, w2)
 
-  // Side arms extend from z=0 (front) to z=-w1/-w2 (back)
-  // Front/back arm at z=-backZ connecting the back ends
-  //
-  // +90° Y: local(x,y,z)→world(z,y,-x). Width spans Z, depth goes -X.
-  //   Left arm: z from 0 to -w1, center z=-w1/2. Outer at x=-w/2, groupX-d=-w/2 → groupX=-w/2+d
-  // -90° Y: local(x,y,z)→world(-z,y,x). Width spans -Z, depth goes +X.
-  //   Right arm: z from 0 to -w2, center z=-w2/2. Outer at x=+w/2, groupX+d=w/2 → groupX=w/2-d
+  // Left arm: +90° Y rotation maps local z → world -x, open face (local z=0) at group_x.
+  //   Inner (open) face anchored at x = -w/2, grows outward (back face at x = -w/2 - depth).
+  // Right arm: -90° Y rotation maps local z → world +x, open face (local z=0) at group_x.
+  //   Inner (open) face anchored at x = +w/2, grows outward (back face at x = +w/2 + depth).
 
   return (
     <group>
@@ -87,16 +82,16 @@ function USurroundScene({ props, intF, frameF }: { props: USurround3DViewProps; 
         />
       </group>
 
-      {/* Left arm — rotated +90° Y, opening faces +X (inward), z from 0 to -w1 */}
-      <group position={[-w / 2 + maxDepthLeft, 0, -w1 / 2]} rotation={[0, Math.PI / 2, 0]}>
+      {/* Left arm — inner face fixed at x = -w/2, grows outward to the left */}
+      <group position={[-w / 2, 0, -w1 / 2]} rotation={[0, Math.PI / 2, 0]}>
         <Bookshelf3D
           style="bookshelf" width={w1} shelves={shelvesLeft} finish={intF} frameFinish={frameF}
           modules={modulesLeft}
         />
       </group>
 
-      {/* Right arm — rotated -90° Y, opening faces -X (inward), z from 0 to -w2 */}
-      <group position={[w / 2 - maxDepthRight, 0, -w2 / 2]} rotation={[0, -Math.PI / 2, 0]}>
+      {/* Right arm — inner face fixed at x = +w/2, grows outward to the right */}
+      <group position={[w / 2, 0, -w2 / 2]} rotation={[0, -Math.PI / 2, 0]}>
         <Bookshelf3D
           style="bookshelf" width={w2} shelves={shelvesRight} finish={intF} frameFinish={frameF}
           modules={modulesRight}
