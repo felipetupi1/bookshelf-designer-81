@@ -326,15 +326,16 @@ export function BookshelfConfigurator() {
   const addShelf = () => {
     if (shelves.length < 8) {
       const topDepth = (shelves[shelves.length - 1]?.depth || 13) as 7 | 10 | 13
-      const topDepth2 = (shelves2[shelves2.length - 1]?.depth || 13) as 7 | 10 | 13
-      setShelves([...shelves, { height: 14, depth: topDepth }])
-      setShelves2([...shelves2, { height: 14, depth: topDepth2 }])
+      const newShelf: ShelfConfig = { height: 14, depth: topDepth }
+      setShelves([...shelves, newShelf])
+      setShelves2([...shelves, newShelf].map(s => ({ ...s })))
     }
   }
   const removeShelf = () => {
     if (shelves.length > 1) {
-      setShelves(shelves.slice(0, -1))
-      setShelves2(shelves2.slice(0, -1))
+      const newShelves = shelves.slice(0, -1)
+      setShelves(newShelves)
+      setShelves2(newShelves.map(s => ({ ...s })))
     }
   }
 
@@ -343,24 +344,10 @@ export function BookshelfConfigurator() {
     newShelves[index] = { ...newShelves[index], [field]: value }
     const finalShelves = field === "depth" ? enforceDepthConstraints(newShelves, index) : newShelves
     setShelves(finalShelves)
-    if (field === "height") {
-      const newShelves2 = [...shelves2]
-      newShelves2[index] = { ...newShelves2[index], height: value as 12 | 14 }
-      setShelves2(newShelves2)
-    }
+    setShelves2(finalShelves.map(s => ({ ...s })))
   }
 
-  const updateShelf2 = (index: number, field: "height" | "depth", value: number) => {
-    const newShelves2 = [...shelves2]
-    newShelves2[index] = { ...newShelves2[index], [field]: value }
-    const finalShelves2 = field === "depth" ? enforceDepthConstraints(newShelves2, index) : newShelves2
-    setShelves2(finalShelves2)
-    if (field === "height") {
-      const newShelves = [...shelves]
-      newShelves[index] = { ...newShelves[index], height: value as 12 | 14 }
-      setShelves(newShelves)
-    }
-  }
+  const updateShelf2 = updateShelf
 
   async function handleAddToCart() {
     if (!result) return
