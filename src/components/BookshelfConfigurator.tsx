@@ -619,49 +619,7 @@ export function BookshelfConfigurator() {
                   </div>
                 </div>
 
-                {mainType === "corner" ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 px-3 py-1">
-                      <span className="w-14"></span>
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-16 text-center">Height</span>
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-16 text-center">Depth W1</span>
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider w-16 text-center">Depth W2</span>
-                    </div>
-                    {[...shelves].reverse().map((shelf, revIndex) => {
-                      const index = shelves.length - 1 - revIndex
-                      const shelf2 = shelves2[index]
-                      return (
-                        <div key={index}>
-                          <div className="flex items-center gap-2 bg-secondary/50 rounded-lg px-3 py-2">
-                            <span className="text-xs font-medium text-muted-foreground w-14">Shelf {index + 1}</span>
-                            <Select value={shelf.height.toString()} onValueChange={(v) => updateShelf(index, "height", Number.parseInt(v))}>
-                              <SelectTrigger className="w-16 h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                {[12, 14].map((h) => (<SelectItem key={h} value={h.toString()}>{h}"</SelectItem>))}
-                              </SelectContent>
-                            </Select>
-                            <Select value={shelf.depth.toString()} onValueChange={(v) => updateShelf(index, "depth", Number.parseInt(v))}>
-                              <SelectTrigger className="w-16 h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                {getAvailableDepths(shelves, index).map((d) => (<SelectItem key={d} value={d.toString()}>{d}"</SelectItem>))}
-                              </SelectContent>
-                            </Select>
-                            <Select value={shelf2.depth.toString()} onValueChange={(v) => updateShelf2(index, "depth", Number.parseInt(v))}>
-                              <SelectTrigger className="w-16 h-8 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                {getAvailableDepths(shelves2, index).map((d) => (<SelectItem key={d} value={d.toString()}>{d}"</SelectItem>))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          {index > 0 && (shelf.depth < shelves[index - 1].depth || shelf2.depth < shelves2[index - 1].depth) && (
-                            <div className="text-[10px] text-muted-foreground italic pl-3 mt-1">↑ Transition board will be added here</div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
+                <div className="space-y-2">
                     {[...shelves].reverse().map((shelf, revIndex) => {
                       const index = shelves.length - 1 - revIndex
                       return (
@@ -690,7 +648,6 @@ export function BookshelfConfigurator() {
                       )
                     })}
                   </div>
-                )}
               </div>
             </ConfigSection>
 
