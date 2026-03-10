@@ -66,42 +66,35 @@ function CameraController({ w1, w, w2, totalHeight, maxDepth, isMobile, resetKey
 
 function USurroundScene({ props, intF, frameF }: { props: USurround3DViewProps; intF: string; frameF: string }) {
   const { w1, w, w2, shelvesLeft, shelvesFront, shelvesRight, modulesLeft, modulesFront, modulesRight } = props
-  const maxDepthLeft = Math.max(...shelvesLeft.map(s => s.depth))
   const maxDepthFront = Math.max(...shelvesFront.map(s => s.depth))
+  const maxDepthLeft = Math.max(...shelvesLeft.map(s => s.depth))
   const maxDepthRight = Math.max(...shelvesRight.map(s => s.depth))
 
-  // Layout: Left arm along X, Front arm along Z (rotated 90°), Right arm along X on the other side
-  // Left arm: centered at its own position, facing forward (+Z)
-  // Front arm: rotated 90° facing left, connecting left arm end to right arm start  
-  // Right arm: on the other side, facing forward (+Z)
-
-  // Left arm position: its right edge connects to front arm's left edge
-  const leftArmX = -w1 / 2 - maxDepthFront / 2
-  // Right arm position: its left edge connects to front arm's right edge
-  const rightArmX = w2 / 2 + maxDepthFront / 2
-  // Front arm: rotated 90°, positioned along Z
-  const frontArmZ = -w / 2
+  // U shape layout:
+  // Front arm: at z=0, centered on x, width=w, faces +Z
+  // Left arm: at x = -w/2, rotated +90° around Y, width=w1, extends back (-Z)
+  // Right arm: at x = +w/2, rotated -90° around Y, width=w2, extends back (-Z)
 
   return (
     <group>
-      {/* Left arm — faces forward */}
-      <group position={[leftArmX, 0, 0]}>
-        <Bookshelf3D
-          style="bookshelf" width={w1} shelves={shelvesLeft} finish={intF} frameFinish={frameF}
-          modules={modulesLeft}
-        />
-      </group>
-
-      {/* Front arm — rotated 90° to connect the two side arms */}
-      <group position={[maxDepthFront / 2, 0, frontArmZ]} rotation={[0, Math.PI / 2, 0]}>
+      {/* Front arm — no rotation, width=w, at z=0 */}
+      <group position={[0, 0, 0]}>
         <Bookshelf3D
           style="bookshelf" width={w} shelves={shelvesFront} finish={intF} frameFinish={frameF}
           modules={modulesFront}
         />
       </group>
 
-      {/* Right arm — faces forward */}
-      <group position={[rightArmX, 0, 0]}>
+      {/* Left arm — rotated 90° around Y, positioned at left corner */}
+      <group position={[-w / 2 - maxDepthLeft / 2, 0, -w1 / 2]} rotation={[0, Math.PI / 2, 0]}>
+        <Bookshelf3D
+          style="bookshelf" width={w1} shelves={shelvesLeft} finish={intF} frameFinish={frameF}
+          modules={modulesLeft}
+        />
+      </group>
+
+      {/* Right arm — rotated -90° around Y, positioned at right corner */}
+      <group position={[w / 2 + maxDepthRight / 2, 0, -w2 / 2]} rotation={[0, -Math.PI / 2, 0]}>
         <Bookshelf3D
           style="bookshelf" width={w2} shelves={shelvesRight} finish={intF} frameFinish={frameF}
           modules={modulesRight}
