@@ -259,7 +259,7 @@ function CameraController({ wallWidth, wallHeight, maxDepth, isMobile, resetKey 
 }
 
 // ─── RENDER MODULES IN A COLUMN ───
-function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix, align = "center" }: {
+function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix, align = "center", suppressEdge }: {
   modules: { width: number }[]
   colCenterX: number
   colWidth: number
@@ -270,6 +270,7 @@ function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth
   frameFinish: string
   keyPrefix: string
   align?: "left" | "right" | "center"
+  suppressEdge?: "left" | "right" | null
 }) {
   const zOffset = -(maxDepth - shelf.depth)
   const totalModW = modules.reduce((s, m) => s + m.width, 0)
@@ -292,6 +293,10 @@ function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth
   return (
     <>
       {modules.map((mod, mi) => {
+        const isFirst = mi === 0
+        const isLast = mi === modules.length - 1
+        const hideLeft = suppressEdge === "left" && isFirst
+        const hideRight = suppressEdge === "right" && isLast
         const el = (
           <ModuleBox
             key={`${keyPrefix}-${mi}`}
@@ -302,6 +307,8 @@ function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth
             internalFinish={internalFinish}
             frameFinish={frameFinish}
             zOffset={zOffset}
+            hideLeftSide={hideLeft}
+            hideRightSide={hideRight}
           />
         )
         mx += mod.width + gap
