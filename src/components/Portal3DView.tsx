@@ -209,7 +209,7 @@ function CameraController({ wallWidth, wallHeight, maxDepth, isMobile, resetKey 
 }
 
 // ─── RENDER MODULES IN A COLUMN ───
-function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix }: {
+function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix, align = "center" }: {
   modules: { width: number }[]
   colCenterX: number
   colWidth: number
@@ -219,12 +219,26 @@ function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth
   internalFinish: string
   frameFinish: string
   keyPrefix: string
+  align?: "left" | "right" | "center"
 }) {
   const zOffset = -(maxDepth - shelf.depth)
   const totalModW = modules.reduce((s, m) => s + m.width, 0)
-  const gap = modules.length > 1 ? (colWidth - totalModW) / (modules.length - 1) : 0
-  let mx = colCenterX - colWidth / 2
+  const remainingSpace = colWidth - totalModW
+  const gap = modules.length > 1 ? remainingSpace / (modules.length - 1) : 0
 
+  // Calculate starting x based on alignment
+  const colLeft = colCenterX - colWidth / 2
+  const colRight = colCenterX + colWidth / 2
+  let startX: number
+  if (modules.length === 1) {
+    if (align === "left") startX = colLeft
+    else if (align === "right") startX = colRight - modules[0].width
+    else startX = colCenterX - modules[0].width / 2
+  } else {
+    startX = colLeft
+  }
+
+  let mx = startX
   return (
     <>
       {modules.map((mod, mi) => {
