@@ -294,10 +294,11 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
             {/* Top board of this row */}
             {renderShelfBoard(topBoardY)}
 
-            {/* Modules */}
+            {/* Modules — only skip center zone modules when row overlaps object */}
             {rowModules[ri]?.map((mod: any, mi: number) => {
               const { x: modX, w: modW } = mod.positions[0]
-              if (rowOverlapsObj && mod.zone !== "left" && mod.zone !== "right") return null
+              // Only skip modules in the object/center zone when the row actually overlaps the object vertically
+              if (rowOverlapsObj && mod.zone === "center") return null
               return (
                 <ModuleBox
                   key={`m${ri}-${mi}`}
