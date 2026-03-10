@@ -7,7 +7,6 @@ export interface Portal3DViewRef {
   captureImage: () => Promise<string>
 }
 
-// Props interface — kept compatible with what PortalConfigurator passes
 interface Portal3DViewProps {
   wallWidth: number
   wallHeight: number
@@ -18,7 +17,6 @@ interface Portal3DViewProps {
   leftGap: number
   topHeight: number
   shelves: { height: number; depth: number }[]
-  // These are accepted but IGNORED — modules are self-computed from MODULE_WIDTHS
   leftModules?: Array<Array<{ width: number }>>
   rightModules?: Array<Array<{ width: number }>>
   topModules?: Array<Array<{ width: number }>>
@@ -28,180 +26,108 @@ interface Portal3DViewProps {
   hideTooltip?: boolean
 }
 
-// ─── MODULE WIDTH SEQUENCE ───
+// ─── CONSTANTS ───
 const MODULE_WIDTHS = [7.25, 9.5, 11.75, 14, 16.25, 18.5, 20.75, 23]
 const MAX_GAP = 23
-const MIN_COLUMN_WIDTH = 25
-
-/** Compute modules for the FULL wall width as one continuous sequence, then split into left/center/right */
-function computeFullRowModules(
-  wallWidth: number, leftGap: number, objectWidth: number, rightGap: number,
-  floorToObject: number, objectTop: number, shelfBottomY: number, shelfTopY: number,
-  startModuleIndex: number
-): {
-  left: { width: number }[]; center: { width: number }[]; right: { width: number }[];
-  nextIndex: number
-} {
-  if (wallWidth < MIN_COLUMN_WIDTH) return { left: [], center: [], right: [], nextIndex: startModuleIndex }
-
-  // Step 1: Fill the full wallWidth with modules from smallest first
-  const moduleWidths: number[] = []
-  let idx = startModuleIndex
-  // Start with first two
-  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length]); idx++
-  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length]); idx++
-
-  let currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
-  let freeSpace = wallWidth - currentWidth
-  let maxAllowed = MAX_GAP * (moduleWidths.length - 1)
-  while (freeSpace > maxAllowed) {
-    moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length]); idx++
-    currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
-    freeSpace = wallWidth - currentWidth
-    maxAllowed = MAX_GAP * (moduleWidths.length - 1)
-  }
-  // Remove if exceeds
-  while (moduleWidths.length > 1 && moduleWidths.reduce((s, w) => s + w, 0) > wallWidth) {
-    moduleWidths.pop(); idx--
-  }
-  if (moduleWidths.length === 1 && moduleWidths[0] > wallWidth) {
-    return { left: [], center: [], right: [], nextIndex: startModuleIndex }
-  }
-
-  // Step 2: Calculate positions across wallWidth (left edge = 0)
-  const totalModW = moduleWidths.reduce((s, w) => s + w, 0)
-  const remainingSpace = wallWidth - totalModW
-  const gap = moduleWidths.length > 1 ? remainingSpace / (moduleWidths.length - 1) : 0
-
-  // Step 3: Determine object zone boundaries (relative to wall left = 0)
-  const objectLeftEdge = leftGap
-  const objectRightEdge = leftGap + objectWidth
-  const overlapsObject = shelfBottomY < objectTop && shelfTopY > floorToObject
-
-  // Step 4: Assign each module to left, center (skipped if overlapping), or right
-  const left: { width: number }[] = []
-  const center: { width: number }[] = []
-  const right: { width: number }[] = []
-  let x = 0
-  for (const w of moduleWidths) {
-    const modLeft = x
-    const modRight = x + w
-    const modCenter = (modLeft + modRight) / 2
-
-    if (modRight <= objectLeftEdge) {
-      // Fully in left zone
-      if (leftGap >= MIN_COLUMN_WIDTH) left.push({ width: w })
-    } else if (modLeft >= objectRightEdge) {
-      // Fully in right zone
-      if (rightGap >= MIN_COLUMN_WIDTH) right.push({ width: w })
-    } else {
-      // In object zone — render only if not overlapping object vertically
-      if (!overlapsObject && objectWidth >= MIN_COLUMN_WIDTH) {
-        center.push({ width: w })
-      }
-      // If overlapping, skip (but sequence continues)
-    }
-    x += w + gap
-  }
-
-  return { left, center, right, nextIndex: idx % MODULE_WIDTHS.length }
-}
+const MIN_COL = 25
+const BOARD_T = 0.75
+const SAFETY = 2
 
 // ─── MATERIAL HELPERS ───
-const getWoodColor = (finish: string): string => {
-  const colorMap: Record<string, string> = {
-    White: "#F5F5F5", Maple: "#E8D4B8", Black: "#1A1A1A", Oak: "#D4A574", Walnut: "#5D432C",
-  }
-  return colorMap[finish] || colorMap.Oak
+const WOOD_COLORS: Record<string, string> = {
+  White: "#F5F5F5", Maple: "#E8D4B8", Black: "#1A1A1A", Oak: "#D4A574", Walnut: "#5D432C",
 }
-
-const getTextureUrl = (finish: string): string | null => {
-  const textureMap: Record<string, string> = {
-    Maple: "/images/finishes/maple.jpg", Oak: "/images/finishes/oak.jpg", Walnut: "/images/finishes/walnut.jpg",
-  }
-  return textureMap[finish] || null
+const TEXTURE_URLS: Record<string, string> = {
+  Maple: "/images/finishes/maple.jpg", Oak: "/images/finishes/oak.jpg", Walnut: "/images/finishes/walnut.jpg",
 }
 
 function WoodMaterial({ finish, isFrame = false }: { finish: string; isFrame?: boolean }) {
-  const textureUrl = getTextureUrl(finish)
-  const texture = useLoader(THREE.TextureLoader, textureUrl || "/images/finishes/oak.jpg")
-  const clonedTexture = useMemo(() => {
+  const url = TEXTURE_URLS[finish] || null
+  const texture = useLoader(THREE.TextureLoader, url || "/images/finishes/oak.jpg")
+  const tex = useMemo(() => {
     const t = texture.clone()
-    t.wrapS = THREE.RepeatWrapping
-    t.wrapT = THREE.RepeatWrapping
+    t.wrapS = t.wrapT = THREE.RepeatWrapping
     t.repeat.set(1, 1)
     t.needsUpdate = true
     return t
   }, [texture])
-
-  if (!textureUrl) {
-    return <meshStandardMaterial color={getWoodColor(finish)} roughness={isFrame ? 0.7 : 0.8} metalness={0.0} side={THREE.DoubleSide} envMapIntensity={0.3} />
-  }
-  return <meshStandardMaterial map={clonedTexture} roughness={isFrame ? 0.6 : 0.7} metalness={0.0} side={THREE.DoubleSide} envMapIntensity={0.3} />
+  if (!url) return <meshStandardMaterial color={WOOD_COLORS[finish] || WOOD_COLORS.Oak} roughness={isFrame ? 0.7 : 0.8} metalness={0} side={THREE.DoubleSide} envMapIntensity={0.3} />
+  return <meshStandardMaterial map={tex} roughness={isFrame ? 0.6 : 0.7} metalness={0} side={THREE.DoubleSide} envMapIntensity={0.3} />
 }
 
 // ─── 3D PRIMITIVES ───
-function Board({ position, width, depth, finish, zOffset = 0 }: {
-  position: [number, number, number]; width: number; depth: number; finish: string; zOffset?: number
-}) {
-  const thickness = 0.75
-  const geometry = useMemo(() => new THREE.BoxGeometry(width, thickness, depth), [width, depth])
+function Board({ pos, w, d, finish, zOff = 0 }: { pos: [number, number, number]; w: number; d: number; finish: string; zOff?: number }) {
+  const geo = useMemo(() => new THREE.BoxGeometry(Math.max(w, 0.01), BOARD_T, d), [w, d])
+  if (w <= 0) return null
   return (
-    <mesh position={[position[0], position[1] + thickness / 2, position[2] + zOffset]} castShadow receiveShadow geometry={geometry}>
+    <mesh position={[pos[0], pos[1] + BOARD_T / 2, pos[2] + zOff]} castShadow receiveShadow geometry={geo}>
       <WoodMaterial finish={finish} />
     </mesh>
   )
 }
 
-function Baguete({ position, height, finish, zOffset = 0 }: {
-  position: [number, number, number]; height: number; finish: string; zOffset?: number
-}) {
+function SidePanel({ x, h, d, finish }: { x: number; h: number; d: number; finish: string }) {
   return (
-    <mesh position={[position[0], position[1], position[2] + zOffset]} castShadow receiveShadow>
-      <boxGeometry args={[0.75, height, 0.5]} />
+    <mesh position={[x, h / 2, -d / 2]} castShadow receiveShadow>
+      <boxGeometry args={[BOARD_T, h, d]} />
       <WoodMaterial finish={finish} isFrame />
     </mesh>
   )
 }
 
-function ModuleBox({ position, width, height, depth, internalFinish, frameFinish, zOffset = 0, hideLeftSide = false, hideRightSide = false }: {
-  position: [number, number, number]; width: number; height: number; depth: number
-  internalFinish: string; frameFinish: string; zOffset?: number
-  hideLeftSide?: boolean; hideRightSide?: boolean
-}) {
-  const sideThickness = 0.75
-  const backThickness = 0.75
-  const bagueteHeight = height + 0.625
-  const bagueteOffset = -0.3125
-  const sideZ = -depth / 2
-  const backZ = -depth - backThickness / 2
-
+function Baguete({ position, height, finish, zOff = 0 }: { position: [number, number, number]; height: number; finish: string; zOff?: number }) {
   return (
-    <group position={position}>
-      {!hideLeftSide && (
-        <mesh position={[-width / 2 + sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
-          <boxGeometry args={[sideThickness, height, depth]} />
-          <WoodMaterial finish={internalFinish} />
-        </mesh>
-      )}
-      {!hideRightSide && (
-        <mesh position={[width / 2 - sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
-          <boxGeometry args={[sideThickness, height, depth]} />
-          <WoodMaterial finish={internalFinish} />
-        </mesh>
-      )}
-      <mesh position={[0, height / 2 + bagueteOffset, backZ + zOffset]} castShadow receiveShadow>
-        <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
-        <WoodMaterial finish={internalFinish} />
+    <mesh position={[position[0], position[1], position[2] + zOff]} castShadow receiveShadow>
+      <boxGeometry args={[BOARD_T, height, 0.5]} />
+      <WoodMaterial finish={finish} isFrame />
+    </mesh>
+  )
+}
+
+function ModuleBox({ pos, w, h, d, intF, frameF, zOff = 0 }: {
+  pos: [number, number, number]; w: number; h: number; d: number; intF: string; frameF: string; zOff?: number
+}) {
+  const bH = h + 0.625
+  const bOff = -0.3125
+  return (
+    <group position={pos}>
+      {/* left side */}
+      <mesh position={[-w / 2 + BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
+        <boxGeometry args={[BOARD_T, h, d]} />
+        <WoodMaterial finish={intF} />
       </mesh>
-      {!hideLeftSide && (
-        <Baguete position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
-      )}
-      {!hideRightSide && (
-        <Baguete position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
-      )}
+      {/* right side */}
+      <mesh position={[w / 2 - BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
+        <boxGeometry args={[BOARD_T, h, d]} />
+        <WoodMaterial finish={intF} />
+      </mesh>
+      {/* back */}
+      <mesh position={[0, h / 2 + bOff, -d - BOARD_T / 2 + zOff]} castShadow receiveShadow>
+        <boxGeometry args={[w - BOARD_T * 2, bH, BOARD_T]} />
+        <WoodMaterial finish={intF} />
+      </mesh>
+      {/* baguetes */}
+      <Baguete position={[-w / 2 + BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={frameF} zOff={zOff} />
+      <Baguete position={[w / 2 - BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={frameF} zOff={zOff} />
     </group>
   )
+}
+
+// ─── MODULE CALCULATION ───
+function calcModulesForWidth(totalW: number, startIdx: number): { widths: number[]; nextIdx: number } {
+  if (totalW < MODULE_WIDTHS[0]) return { widths: [], nextIdx: startIdx }
+  const ws: number[] = []
+  let idx = startIdx
+  ws.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length]); idx++
+  ws.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length]); idx++
+  let sum = ws.reduce((a, b) => a + b, 0)
+  while (totalW - sum > MAX_GAP * (ws.length - 1)) {
+    ws.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length]); idx++
+    sum = ws.reduce((a, b) => a + b, 0)
+  }
+  while (ws.length > 1 && ws.reduce((a, b) => a + b, 0) > totalW) { ws.pop(); idx-- }
+  if (ws.length === 1 && ws[0] > totalW) return { widths: [], nextIdx: startIdx }
+  return { widths: ws, nextIdx: idx % MODULE_WIDTHS.length }
 }
 
 // ─── CANVAS HELPERS ───
@@ -219,244 +145,186 @@ function CameraController({ wallWidth, wallHeight, maxDepth, isMobile, resetKey 
   wallWidth: number; wallHeight: number; maxDepth: number; isMobile?: boolean; resetKey: number
 }) {
   const { camera, controls } = useThree()
-  const controlsRef = useRef(controls)
-  useEffect(() => { controlsRef.current = controls }, [controls])
-
+  const ctrlRef = useRef(controls)
+  useEffect(() => { ctrlRef.current = controls }, [controls])
   useEffect(() => {
-    const fov = 60
-    const fovRadians = (fov * Math.PI) / 180
-    const aspectRatio = window.innerWidth / window.innerHeight
-    const distW = wallWidth / 2 / Math.tan(fovRadians / 2) / aspectRatio
-    const distH = wallHeight / 2 / Math.tan(fovRadians / 2)
-    const distD = maxDepth * 2.5
-    const padding = isMobile ? 0.8 : 1.8
-    const optimalDist = Math.max(distW, distH, distD) * padding
+    const fov = 60, fovR = (fov * Math.PI) / 180, ar = window.innerWidth / window.innerHeight
+    const dW = wallWidth / 2 / Math.tan(fovR / 2) / ar
+    const dH = wallHeight / 2 / Math.tan(fovR / 2)
+    const pad = isMobile ? 0.8 : 1.8
+    const dist = Math.max(dW, dH, maxDepth * 2.5) * pad
     const yOff = isMobile ? -0.8 : 0
-
-    const targetPos = new THREE.Vector3(0, wallHeight * 0.5 + yOff, optimalDist)
-    const lookAt = new THREE.Vector3(0, wallHeight / 2 + yOff, 0)
-    const startPos = camera.position.clone()
-    const duration = 600
-    const startTime = Date.now()
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      camera.position.lerpVectors(startPos, targetPos, eased)
-      if (controlsRef.current && "target" in controlsRef.current) {
-        const oc = controlsRef.current as any
-        oc.target.set(lookAt.x, lookAt.y, lookAt.z)
-        oc.update()
+    const tgt = new THREE.Vector3(0, wallHeight * 0.5 + yOff, dist)
+    const look = new THREE.Vector3(0, wallHeight / 2 + yOff, 0)
+    const start = camera.position.clone()
+    const t0 = Date.now()
+    const anim = () => {
+      const p = Math.min((Date.now() - t0) / 600, 1)
+      const e = 1 - Math.pow(1 - p, 3)
+      camera.position.lerpVectors(start, tgt, e)
+      if (ctrlRef.current && "target" in ctrlRef.current) {
+        const c = ctrlRef.current as any; c.target.copy(look); c.update()
       }
-      if (progress < 1) requestAnimationFrame(animate)
+      if (p < 1) requestAnimationFrame(anim)
     }
-    animate()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetKey, camera, isMobile])
-
+    anim()
+  }, [resetKey, camera, isMobile]) // eslint-disable-line react-hooks/exhaustive-deps
   return null
 }
 
-// ─── RENDER MODULES IN A COLUMN ───
-function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix, align = "center", suppressEdge }: {
-  modules: { width: number }[]
-  colCenterX: number
-  colWidth: number
-  moduleY: number
-  shelf: { height: number; depth: number }
-  maxDepth: number
-  internalFinish: string
-  frameFinish: string
-  keyPrefix: string
-  align?: "left" | "right" | "center"
-  suppressEdge?: "left" | "right" | null
-}) {
-  const zOffset = -(maxDepth - shelf.depth)
-  const totalModW = modules.reduce((s, m) => s + m.width, 0)
-  const remainingSpace = colWidth - totalModW
-  const gap = modules.length > 1 ? remainingSpace / (modules.length - 1) : 0
-
-  // Calculate starting x based on alignment
-  const colLeft = colCenterX - colWidth / 2
-  const colRight = colCenterX + colWidth / 2
-  let startX: number
-  if (modules.length === 1) {
-    if (align === "left") startX = colLeft
-    else if (align === "right") startX = colRight - modules[0].width
-    else startX = colCenterX - modules[0].width / 2
-  } else {
-    startX = colLeft
-  }
-
-  let mx = startX
-  return (
-    <>
-      {modules.map((mod, mi) => {
-        const isFirst = mi === 0
-        const isLast = mi === modules.length - 1
-        const hideLeft = suppressEdge === "left" && isFirst
-        const hideRight = suppressEdge === "right" && isLast
-        const el = (
-          <ModuleBox
-            key={`${keyPrefix}-${mi}`}
-            position={[mx + mod.width / 2, moduleY, 0]}
-            width={mod.width}
-            height={shelf.height}
-            depth={shelf.depth}
-            internalFinish={internalFinish}
-            frameFinish={frameFinish}
-            zOffset={zOffset}
-            hideLeftSide={hideLeft}
-            hideRightSide={hideRight}
-          />
-        )
-        mx += mod.width + gap
-        return el
-      })}
-    </>
-  )
-}
-
 // ─── MAIN SCENE ───
-function PortalScene({ props, internalFinish, frameFinish }: {
-  props: Portal3DViewProps; internalFinish: string; frameFinish: string
-}) {
+function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: string; frameF: string }) {
   const { wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, leftGap, rightGap, shelves } = props
-
-  const objectTop = floorToObject + objectHeight
   const maxDepth = shelves.length > 0 ? Math.max(...shelves.map(s => s.depth)) : 7
-  const defaultDepth = shelves.length > 0 ? shelves[0].depth : maxDepth
+  const defDepth = shelves.length > 0 ? shelves[0].depth : maxDepth
 
-  // Wall centered at x=0
-  const wallLeft = -wallWidth / 2
-  const wallCenterX = 0
-  const centerColX = wallLeft + leftGap + objectWidth / 2
-  const leftColX = wallLeft + leftGap / 2
-  const rightColX = wallLeft + leftGap + objectWidth + rightGap / 2
+  // Scene coords: wall centered at x=0
+  const wL = -wallWidth / 2
 
-  const hasLeft = leftGap >= MIN_COLUMN_WIDTH
-  const hasRight = rightGap >= MIN_COLUMN_WIDTH
-  const hasCenter = objectWidth >= MIN_COLUMN_WIDTH
+  // Object zone in wall-relative coords (0..wallWidth)
+  const objL = leftGap
+  const objR = leftGap + objectWidth
+  const objBot = floorToObject
+  const objTop = floorToObject + objectHeight
+  // Object zone with safety margin
+  const safeBot = objBot - SAFETY
+  const safeTop = objTop + SAFETY
 
-  // Step 1: Calculate Y positions for every shelf row
+  const hasLeft = leftGap >= MIN_COL
+  const hasRight = rightGap >= MIN_COL
+
+  // ─── Compute shelf row Y positions ───
   const rows = useMemo(() => {
-    const result: { y: number; shelf: { height: number; depth: number } }[] = []
+    const r: { y: number; shelf: { height: number; depth: number } }[] = []
     let y = 0
-    for (const shelf of shelves) {
-      const nextY = y + shelf.height + 0.75
-      if (nextY > wallHeight + 0.01) break
-      result.push({ y, shelf })
-      y = nextY
+    for (const s of shelves) {
+      const next = y + s.height + BOARD_T
+      if (next > wallHeight + 0.01) break
+      r.push({ y, shelf: s })
+      y = next
     }
-    return result
+    return r
   }, [shelves, wallHeight])
 
-  // Pre-compute modules for each row as ONE continuous sequence across the full wall
-  const columnModuleData = useMemo(() => {
-    const data: { left: { width: number }[], center: { width: number }[], right: { width: number }[] }[] = []
+  const lastTop = rows.length > 0 ? rows[rows.length - 1].y + BOARD_T + rows[rows.length - 1].shelf.height : wallHeight
+
+  // ─── Compute modules per row ───
+  const rowModules = useMemo(() => {
+    const result: { positions: { x: number; w: number }[]; zone: "left" | "right" | "center" | "skip" }[][] = []
     let seqIdx = 0
     for (const row of rows) {
-      const shelfTopY = row.y + row.shelf.height + 0.75
-      const result = computeFullRowModules(
-        wallWidth, leftGap, objectWidth, rightGap,
-        floorToObject, objectTop, row.y, shelfTopY,
-        seqIdx
-      )
-      seqIdx = result.nextIndex
-      data.push({ left: result.left, center: result.center, right: result.right })
-    }
-    return data
-  }, [rows, wallWidth, leftGap, objectWidth, rightGap, floorToObject, objectTop])
+      const { widths, nextIdx } = calcModulesForWidth(wallWidth, seqIdx)
+      seqIdx = nextIdx
+      const totalModW = widths.reduce((a, b) => a + b, 0)
+      const gap = widths.length > 1 ? (wallWidth - totalModW) / (widths.length - 1) : 0
 
-  // Last row top Y
-  const lastRowTopY = rows.length > 0 ? rows[rows.length - 1].y + 0.75 + rows[rows.length - 1].shelf.height : wallHeight
+      const moduleY = row.y + BOARD_T
+      const rowTop = row.y + row.shelf.height + BOARD_T
+      const rowOverlapsObj = moduleY < safeTop && rowTop > safeBot
+
+      const mods: { positions: { x: number; w: number }[]; zone: string }[] = []
+      let x = 0
+      for (const w of widths) {
+        const modL = x
+        const modR = x + w
+        // Determine zone
+        if (modR <= objL) {
+          // Left zone
+          if (hasLeft) mods.push({ positions: [{ x: modL, w }], zone: "left" })
+        } else if (modL >= objR) {
+          // Right zone
+          if (hasRight) mods.push({ positions: [{ x: modL, w }], zone: "right" })
+        } else {
+          // Object zone — skip if row overlaps object
+          if (!rowOverlapsObj && objectWidth >= MIN_COL) {
+            mods.push({ positions: [{ x: modL, w }], zone: "center" })
+          }
+          // else: skip entirely
+        }
+        x += w + gap
+      }
+      result.push(mods as any)
+    }
+    return result
+  }, [rows, wallWidth, objL, objR, safeBot, safeTop, hasLeft, hasRight, objectWidth])
 
   return (
     <group>
-      {/* ── OUTER FRAME ── */}
+      {/* ══════ OUTER FRAME ══════ */}
       {/* Bottom board — full wallWidth */}
-      <Board position={[wallCenterX, 0, -defaultDepth / 2]} width={wallWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
-      {/* Top board — full wallWidth */}
-      <Board position={[wallCenterX, lastRowTopY, -defaultDepth / 2]} width={wallWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
-      {/* Left side panel — from 0 to lastRowTopY only */}
-      <mesh position={[wallLeft + 0.375, lastRowTopY / 2, -maxDepth / 2]} castShadow receiveShadow>
-        <boxGeometry args={[0.75, lastRowTopY, maxDepth]} />
-        <WoodMaterial finish={frameFinish} isFrame />
-      </mesh>
-      {/* Right side panel — from 0 to lastRowTopY only */}
-      <mesh position={[wallLeft + wallWidth - 0.375, lastRowTopY / 2, -maxDepth / 2]} castShadow receiveShadow>
-        <boxGeometry args={[0.75, lastRowTopY, maxDepth]} />
-        <WoodMaterial finish={frameFinish} isFrame />
-      </mesh>
+      <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+      {/* Top board — full wallWidth at wallHeight */}
+      <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+      {/* Left side panel — full height */}
+      <SidePanel x={wL + BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />
+      {/* Right side panel — full height */}
+      <SidePanel x={wL + wallWidth - BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />
 
-      {/* ── SHELF ROWS: horizontal boards + modules ── */}
+      {/* ══════ OBJECT ZONE BOUNDARY BOARDS ══════ */}
+      {/* Board below object (at safeBot) — spans objectWidth, connecting left/right columns */}
+      {safeBot >= BOARD_T && (
+        <Board pos={[wL + objL + objectWidth / 2, safeBot, -defDepth / 2]} w={objectWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+      )}
+      {/* Board above object (at safeTop) — spans objectWidth */}
+      <Board pos={[wL + objL + objectWidth / 2, safeTop, -defDepth / 2]} w={objectWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+
+      {/* ══════ SHELF ROWS ══════ */}
       {rows.map((row, ri) => {
-        const { y: shelfBottomY, shelf } = row
-        const moduleY = shelfBottomY + 0.75
+        const { y: rowY, shelf } = row
+        const moduleY = rowY + BOARD_T
         const topBoardY = moduleY + shelf.height
-        const zOffset = -(maxDepth - shelf.depth)
+        const zOff = -(maxDepth - shelf.depth)
 
-        const shelfTop = shelfBottomY + shelf.height + 0.75
-        const overlapsObject = shelfBottomY < objectTop && shelfTop > floorToObject
-        const centerVisible = hasCenter && !overlapsObject
+        // Does this board Y overlap the object zone?
+        const boardInObj = (by: number) => by < objTop && (by + BOARD_T) > objBot
+        const rowOverlapsObj = moduleY < safeTop && topBoardY > safeBot
 
-        // Object zone in scene coords (wallLeft-relative)
-        const objL = wallLeft + leftGap
-        const objR = wallLeft + leftGap + objectWidth
-        const leftBoardW = leftGap
-        const rightBoardW = rightGap
-        const leftBoardX = wallLeft + leftBoardW / 2
-        const rightBoardX = objR + rightBoardW / 2
-
-        // Helper to render a horizontal board, splitting around object if needed
-        const renderBoard = (boardY: number) => {
-          // Does this board's Y fall inside the object zone? (board is 0.75 thick, centered at boardY + 0.375)
-          const boardBottomY = boardY
-          const boardTopY = boardY + 0.75
-          const boardOverlapsObject = boardBottomY < objectTop && boardTopY > floorToObject
-
-          if (!boardOverlapsObject) {
-            // Full width board — no overlap
-            return <Board position={[wallCenterX, boardY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+        // Render a horizontal shelf board, splitting if it intersects the object zone
+        const renderShelfBoard = (by: number) => {
+          if (!boardInObj(by)) {
+            // Full width
+            return <Board pos={[0, by, -shelf.depth / 2]} w={wallWidth} d={shelf.depth} finish={intF} zOff={zOff} />
           }
-          // Split into left and right pieces around the object
+          // Split into left and right portions, skipping object zone
           return (
             <>
-              {leftBoardW > 0 && (
-                <Board position={[leftBoardX, boardY, -shelf.depth / 2]} width={leftBoardW} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-              )}
-              {rightBoardW > 0 && (
-                <Board position={[rightBoardX, boardY, -shelf.depth / 2]} width={rightBoardW} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-              )}
+              {hasLeft && <Board pos={[wL + leftGap / 2, by, -shelf.depth / 2]} w={leftGap} d={shelf.depth} finish={intF} zOff={zOff} />}
+              {hasRight && <Board pos={[wL + objR + rightGap / 2, by, -shelf.depth / 2]} w={rightGap} d={shelf.depth} finish={intF} zOff={zOff} />}
             </>
           )
         }
 
         return (
           <group key={ri}>
-            {ri > 0 && renderBoard(shelfBottomY)}
-            {renderBoard(topBoardY)}
+            {/* Bottom board of this row (skip row 0, already rendered as outer frame) */}
+            {ri > 0 && renderShelfBoard(rowY)}
+            {/* Top board of this row */}
+            {renderShelfBoard(topBoardY)}
 
-            {/* Modules — skip center zone when overlapping object; suppress side panels facing object */}
-            {hasLeft && <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" suppressEdge={overlapsObject ? "right" : null} />}
-            {centerVisible && <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} align="center" />}
-            {hasRight && <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" suppressEdge={overlapsObject ? "left" : null} />}
+            {/* Modules */}
+            {rowModules[ri]?.map((mod: any, mi: number) => {
+              const { x: modX, w: modW } = mod.positions[0]
+              if (rowOverlapsObj && mod.zone !== "left" && mod.zone !== "right") return null
+              return (
+                <ModuleBox
+                  key={`m${ri}-${mi}`}
+                  pos={[wL + modX + modW / 2, moduleY, 0]}
+                  w={modW} h={shelf.height} d={shelf.depth}
+                  intF={intF} frameF={frameF}
+                  zOff={zOff}
+                />
+              )
+            })}
           </group>
         )
       })}
 
-      {/* ── Board above the object at y = objectTop ── */}
-      {hasCenter && (
-        <Board position={[centerColX, objectTop, -defaultDepth / 2]} width={objectWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
-      )}
-
-      {/* ── OBJECT PLACEHOLDER (grey box) ── */}
-      <mesh position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2]}>
+      {/* ══════ OBJECT PLACEHOLDER ══════ */}
+      <mesh position={[wL + objL + objectWidth / 2, floorToObject + objectHeight / 2, -maxDepth / 2]}>
         <boxGeometry args={[objectWidth, objectHeight, 1]} />
         <meshStandardMaterial color="#333333" transparent opacity={0.15} side={THREE.DoubleSide} />
       </mesh>
-      <lineSegments position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2 + 0.6]}>
+      <lineSegments position={[wL + objL + objectWidth / 2, floorToObject + objectHeight / 2, -maxDepth / 2 + 0.6]}>
         <edgesGeometry args={[new THREE.BoxGeometry(objectWidth, objectHeight, 0.1)]} />
         <lineBasicMaterial color="#666666" />
       </lineSegments>
@@ -468,51 +336,40 @@ function PortalScene({ props, internalFinish, frameFinish }: {
 export const Portal3DView = forwardRef<Portal3DViewRef, Portal3DViewProps>(
   function Portal3DView(props, ref) {
     const { wallWidth, wallHeight, finish, isMobile, hideTooltip } = props
-    const [internalFinish, frameFinish] = finish.includes("/") ? finish.split("/") : [finish, finish]
+    const [intF, frameF] = finish.includes("/") ? finish.split("/") : [finish, finish]
     const [resetCount, setResetCount] = useState(0)
 
-    let captureFunction: (() => Promise<string>) | null = null
+    let captureFn: (() => Promise<string>) | null = null
     useImperativeHandle(ref, () => ({
-      captureImage: async () => {
-        if (captureFunction) return await captureFunction()
-        throw new Error("Canvas not ready")
-      },
+      captureImage: async () => { if (captureFn) return await captureFn(); throw new Error("Canvas not ready") },
     }))
 
     const maxDepth = props.shelves.length > 0 ? Math.max(...props.shelves.map(s => s.depth)) : 7
-    const cameraDistance = Math.max(wallWidth * 1.2, wallHeight * 1.2, maxDepth * 5)
+    const camDist = Math.max(wallWidth * 1.2, wallHeight * 1.2, maxDepth * 5)
 
     return (
       <div className={`relative w-full overflow-hidden rounded-lg border-2 border-border bg-gradient-to-b from-secondary to-muted ${isMobile ? "aspect-square" : "min-h-[500px] aspect-[4/3]"}`}>
         <Canvas
-          camera={{ position: [0, wallHeight * 0.5, cameraDistance], fov: 60 }}
+          camera={{ position: [0, wallHeight * 0.5, camDist], fov: 60 }}
           shadows
           gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0, preserveDrawingBuffer: true }}
         >
           <Suspense fallback={null}>
-            <CanvasCapture onReady={(fn) => { captureFunction = fn }} />
+            <CanvasCapture onReady={(fn) => { captureFn = fn }} />
             <CameraController wallWidth={wallWidth} wallHeight={wallHeight} maxDepth={maxDepth} isMobile={isMobile} resetKey={resetCount} />
-
             <ambientLight intensity={0.6} />
             <directionalLight position={[15, 20, 10]} intensity={1.2} castShadow shadow-mapSize-width={4096} shadow-mapSize-height={4096} shadow-bias={-0.00001} shadow-camera-left={-wallWidth} shadow-camera-right={wallWidth} shadow-camera-top={wallHeight} shadow-camera-bottom={-5} />
             <directionalLight position={[-10, 10, -8]} intensity={0.4} />
             <pointLight position={[0, wallHeight * 0.7, maxDepth * 1.5]} intensity={0.8} distance={maxDepth * 4} />
-
-            <PortalScene props={props} internalFinish={internalFinish} frameFinish={frameFinish} />
-
+            <PortalScene props={props} intF={intF} frameF={frameF} />
             <Environment preset="studio" environmentIntensity={0.5} />
             <ContactShadows position={[0, -0.1, 0]} opacity={0.3} scale={wallWidth * 1.8} blur={2.8} far={wallHeight * 1.5} resolution={1024} />
             <OrbitControls enableZoom enablePan enableRotate minDistance={20} maxDistance={300} target={[0, wallHeight / 2, 0]} enableDamping dampingFactor={0.05} rotateSpeed={0.5} zoomSpeed={0.5} />
           </Suspense>
         </Canvas>
-
-        <button onClick={() => setResetCount(c => c + 1)} className="absolute bottom-3 right-3 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-md px-2.5 py-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-sm" title="Reset camera view">
-          ⟳ Reset View
-        </button>
+        <button onClick={() => setResetCount(c => c + 1)} className="absolute bottom-3 right-3 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-md px-2.5 py-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-sm" title="Reset camera view">⟳ Reset View</button>
         {!hideTooltip && (
-          <div className="absolute bottom-4 left-4 bg-foreground/70 text-primary-foreground px-3 py-2 rounded-md text-xs">
-            Click and drag to rotate • Right-click to pan
-          </div>
+          <div className="absolute bottom-4 left-4 bg-foreground/70 text-primary-foreground px-3 py-2 rounded-md text-xs">Click and drag to rotate • Right-click to pan</div>
         )}
       </div>
     )
