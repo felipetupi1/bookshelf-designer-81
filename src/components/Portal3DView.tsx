@@ -403,6 +403,23 @@ function PortalScene({ props, internalFinish, frameFinish }: {
         )
       })}
 
+      {/* ── Board above the object at y = objectTop ── */}
+      {hasCenter && (() => {
+        // Find the shelf whose top board aligns closest to objectTop
+        const bestShelf = rows.length > 0 ? rows[0].shelf : { depth: maxDepth }
+        for (const row of rows) {
+          const topBoardY = row.y + 0.75 + row.shelf.height
+          if (Math.abs(topBoardY - objectTop) < 1.0) {
+            // Already rendered by the row loop via the spanning board logic — skip
+            return null
+          }
+        }
+        // No row aligns — render an explicit board
+        const depth = rows.length > 0 ? rows[0].shelf.depth : maxDepth
+        const zOffset = -(maxDepth - depth)
+        return <Board position={[centerColX, objectTop, -depth / 2]} width={objectWidth} depth={depth} finish={internalFinish} zOffset={zOffset} />
+      })()}
+
       {/* ── OBJECT PLACEHOLDER (grey box) ── */}
       <mesh position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2]}>
         <boxGeometry args={[objectWidth, objectHeight, 1]} />
