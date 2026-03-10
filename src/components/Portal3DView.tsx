@@ -246,13 +246,12 @@ function PortalScene({ props, internalFinish, frameFinish }: {
 
       if (nextY > wallHeight + 0.01) break // doesn't fit
 
-      const rowBottom = moduleY
-      const rowTop = topBoardY
-
-      // Row is "in bottom" if entirely below object
-      const inBottom = rowTop <= floorToObject
-      // Row is "in top" if entirely above object
-      const inTop = rowBottom >= objectTop
+      // Row is "in bottom" if entire row (including top board) fits below object
+      // Must match configurator: topBoardY + 0.75 <= floorToObject === nextY <= floorToObject
+      const inBottom = nextY <= floorToObject
+      // Row is "in top" if modules start at or above object top
+      // Must match configurator: moduleY >= objectTop
+      const inTop = moduleY >= objectTop
 
       result.push({ index: i, shelf, boardY, moduleY, topBoardY, nextY, inBottom, inTop })
       y = nextY
