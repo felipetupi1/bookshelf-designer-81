@@ -439,9 +439,6 @@ function PortalScene({ props, internalFinish, frameFinish }: {
     </group>
   )
 }
-    </group>
-  )
-}
 
 // ─── EXPORTED COMPONENT ───
 export const Portal3DView = forwardRef<Portal3DViewRef, Portal3DViewProps>(
