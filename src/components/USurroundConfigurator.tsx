@@ -154,31 +154,28 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
     { height: 14, depth: 13 }, { height: 14, depth: 13 },
   ]
 
-  const [shelvesLeft, setShelvesLeft] = useState<ShelfConfig[]>(defaultShelves)
-  const [shelvesFront, setShelvesFront] = useState<ShelfConfig[]>(defaultShelves)
-  const [shelvesRight, setShelvesRight] = useState<ShelfConfig[]>(defaultShelves)
+  const [shelves, setShelves] = useState<ShelfConfig[]>(defaultShelves)
+  const shelvesLeft = shelves
+  const shelvesFront = shelves
+  const shelvesRight = shelves
 
-  const totalHeight = calculateTotalHeight(shelvesFront)
+  const totalHeight = calculateTotalHeight(shelves)
 
-  const makeUpdater = (setter: React.Dispatch<React.SetStateAction<ShelfConfig[]>>) => ({
-    add: () => setter(prev => {
+  const shelfOps = {
+    add: () => setShelves(prev => {
       if (prev.length >= 8) return prev
       const topDepth = (prev[prev.length - 1]?.depth || 13) as 7 | 10 | 13
       return [...prev, { height: 14, depth: topDepth }]
     }),
-    remove: () => setter(prev => prev.length > 1 ? prev.slice(0, -1) : prev),
+    remove: () => setShelves(prev => prev.length > 1 ? prev.slice(0, -1) : prev),
     update: (index: number, field: "height" | "depth", value: number) => {
-      setter(prev => {
+      setShelves(prev => {
         const next = [...prev]
         next[index] = { ...next[index], [field]: value }
         return field === "depth" ? enforceDepthConstraints(next, index) : next
       })
     },
-  })
-
-  const leftOps = makeUpdater(setShelvesLeft)
-  const frontOps = makeUpdater(setShelvesFront)
-  const rightOps = makeUpdater(setShelvesRight)
+  }
 
   const { usurroundResult, totalPrice, totalArea, modulesLeft, modulesFront, modulesRight } = useMemo(() => {
     try {
