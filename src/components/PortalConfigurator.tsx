@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import { Plus, Minus, RotateCcw, ShoppingCart, ChevronDown, DoorOpen, Monitor, Flame, Music, HelpCircle } from "lucide-react"
+import { Plus, Minus, RotateCcw, ShoppingCart, ChevronDown, DoorOpen, Monitor, Flame, HelpCircle } from "lucide-react"
 import type { ShelfConfig } from "@/lib/types"
 import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { PortalSchematic } from "./PortalSchematic"
@@ -47,15 +47,6 @@ function toFraction(decimal: number): string {
   if (eighths === 8) return `${whole + 1}"`
   const fractionMap: { [key: number]: string } = { 1: "1/8", 2: "1/4", 3: "3/8", 4: "1/2", 5: "5/8", 6: "3/4", 7: "7/8" }
   return `${whole} ${fractionMap[eighths]}"`
-}
-
-function calculateTotalHeight(shelves: ShelfConfig[]): number {
-  const sumOfSides = shelves.reduce((sum, shelf) => sum + shelf.height, 0)
-  const depthGroups = new Set(shelves.map(s => s.depth))
-  const numberOfSets = depthGroups.size
-  const numberOfShelves = shelves.length
-  const additionalHeight = 0.75 * (numberOfShelves + numberOfSets)
-  return sumOfSides + additionalHeight
 }
 
 function enforceDepthConstraints(shelves: ShelfConfig[], changedIndex: number): ShelfConfig[] {
@@ -96,9 +87,6 @@ const SIZE_PRESETS: Record<string, SizePreset[]> = {
     { label: '36"×36"', w: 36, h: 36 }, { label: '42"×36"', w: 42, h: 36 }, { label: '48"×40"', w: 48, h: 40 },
     { label: '54"×40"', w: 54, h: 40 }, { label: '60"×42"', w: 60, h: 42 },
   ],
-  piano: [
-    { label: '48"×48"', w: 48, h: 48 }, { label: '52"×50"', w: 52, h: 50 }, { label: '58"×52"', w: 58, h: 52 },
-  ],
 }
 
 function ConfigSection({ step, title, subtitle, children, defaultOpen = false }: {
@@ -124,7 +112,7 @@ function ConfigSection({ step, title, subtitle, children, defaultOpen = false }:
   )
 }
 
-type ObjectPreset = "door" | "window" | "tv" | "fireplace" | "piano" | "other"
+type ObjectPreset = "door" | "window" | "tv" | "fireplace" | "other"
 
 const PRESET_ICONS: { id: ObjectPreset; label: string; icon: React.ElementType }[] = [
   { id: "door", label: "Door", icon: DoorOpen },
@@ -135,13 +123,11 @@ const PRESET_ICONS: { id: ObjectPreset; label: string; icon: React.ElementType }
   )},
   { id: "tv", label: "TV", icon: Monitor },
   { id: "fireplace", label: "Fireplace", icon: Flame },
-  { id: "piano", label: "Piano", icon: Music },
   { id: "other", label: "Other", icon: HelpCircle },
 ]
 
-function defaultShelvesForHeight(zoneHeight: number): ShelfConfig[] {
-  if (zoneHeight <= 0) return []
-  const count = Math.max(1, Math.min(8, Math.floor(zoneHeight / 15)))
+function defaultShelvesForHeight(wallHeight: number): ShelfConfig[] {
+  const count = Math.max(1, Math.min(8, Math.floor(wallHeight / 15)))
   return Array(count).fill(null).map(() => ({ height: 14 as const, depth: 10 as const }))
 }
 
@@ -158,38 +144,58 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   const [rightGap, setRightGap] = useState(30)
 
   const leftGap = wallWidth - objectWidth - rightGap
-
   const topSectionHeight = wallHeight - floorToObject - objectHeight
+  const objectTop = floorToObject + objectHeight
 
   const hasLeft = leftGap >= MIN_MODULE_WIDTH
   const hasRight = rightGap > 0 && rightGap >= MIN_MODULE_WIDTH
-  const hasTop = topSectionHeight > 12
-  const hasBottom = floorToObject > 0
+  const hasCenter = objectWidth >= MIN_MODULE_WIDTH
 
   const [objectType, setObjectType] = useState<ObjectPreset>("tv")
   const [selectedPresetSize, setSelectedPresetSize] = useState<string | null>(null)
 
   const [globalShelves, setGlobalShelves] = useState<ShelfConfig[]>(() => defaultShelvesForHeight(96))
 
-  // Distribute global shelves to each zone based on available height
-  const distributeShelves = (zoneHeight: number): ShelfConfig[] => {
-    if (zoneHeight <= 0) return []
-    const result: ShelfConfig[] = []
-    let usedHeight = 0.75 // initial board thickness
-    for (const shelf of globalShelves) {
-      const shelfTotal = shelf.height + 0.75 // shelf height + board
-      if (usedHeight + shelfTotal <= zoneHeight) {
-        result.push({ ...shelf })
-        usedHeight += shelfTotal
-      }
+  // Compute absolute row positions from global shelves
+  const rowPositions = useMemo(() => {
+    const rows: { index: number; boardY: number; moduleY: number; topBoardY: number; nextY: number }[] = []
+    let y = 0
+    for (let i = 0; i < globalShelves.length; i++) {
+      const shelf = globalShelves[i]
+      const boardY = y
+      const moduleY = y + 0.75
+      const topBoardY = moduleY + shelf.height
+      const nextY = topBoardY + 0.75
+      if (nextY > wallHeight + 0.01) break
+      rows.push({ index: i, boardY, moduleY, topBoardY, nextY })
+      y = nextY
     }
-    return result
-  }
+    return rows
+  }, [globalShelves, wallHeight])
 
-  const leftShelves = useMemo(() => distributeShelves(hasLeft ? wallHeight : 0), [globalShelves, hasLeft, wallHeight])
-  const rightShelves = useMemo(() => distributeShelves(hasRight ? wallHeight : 0), [globalShelves, hasRight, wallHeight])
-  const topShelves = useMemo(() => distributeShelves(hasTop ? topSectionHeight : 0), [globalShelves, hasTop, topSectionHeight])
-  const bottomShelves = useMemo(() => distributeShelves(hasBottom ? floorToObject : 0), [globalShelves, hasBottom, floorToObject])
+  // Determine which rows go to which zone
+  const { sideRowIndices, bottomRowIndices, topRowIndices } = useMemo(() => {
+    const sideRowIndices: number[] = []
+    const bottomRowIndices: number[] = []
+    const topRowIndices: number[] = []
+    rowPositions.forEach((row) => {
+      sideRowIndices.push(row.index)
+      // Bottom: row fully below object
+      if (row.topBoardY + 0.75 <= floorToObject) {
+        bottomRowIndices.push(row.index)
+      }
+      // Top: row fully above object
+      if (row.moduleY >= objectTop) {
+        topRowIndices.push(row.index)
+      }
+    })
+    return { sideRowIndices, bottomRowIndices, topRowIndices }
+  }, [rowPositions, floorToObject, objectTop])
+
+  // Extract shelf configs for each zone (for calculateBookshelf)
+  const sideShelves = sideRowIndices.map(i => globalShelves[i])
+  const bottomShelves = bottomRowIndices.map(i => globalShelves[i])
+  const topShelvesFiltered = topRowIndices.map(i => globalShelves[i])
 
   const [selectedFinish, setSelectedFinish] = useState("Oak/Oak")
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -206,7 +212,6 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
       case "window": setFloorToObject(36); setRightGap(Math.round((wallWidth - objectWidth) / 2)); break
       case "tv": setFloorToObject(24); setRightGap(Math.round((wallWidth - objectWidth) / 2)); break
       case "fireplace": setFloorToObject(0); setRightGap(Math.round((wallWidth - objectWidth) / 2)); break
-      case "piano": setFloorToObject(0); setRightGap(0); break
       default: break
     }
   }
@@ -237,42 +242,45 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     if (rightGap > maxW1) setRightGap(Math.max(0, maxW1))
   }, [wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, rightGap])
 
+  // Calculate modules for each zone
   const leftResult = useMemo(() => {
     if (!hasLeft || leftGap < 25) return null
-    try { return calculateBookshelf({ type: "bookshelf", totalWidth: leftGap, shelves: leftShelves, finish: selectedFinish }) } catch { return null }
-  }, [hasLeft, leftGap, leftShelves, selectedFinish])
+    try { return calculateBookshelf({ type: "bookshelf", totalWidth: leftGap, shelves: sideShelves, finish: selectedFinish }) } catch { return null }
+  }, [hasLeft, leftGap, sideShelves, selectedFinish])
 
   const rightResult = useMemo(() => {
     if (!hasRight || rightGap < 25) return null
-    try { return calculateBookshelf({ type: "bookshelf", totalWidth: rightGap, shelves: rightShelves, finish: selectedFinish }) } catch { return null }
-  }, [hasRight, rightGap, rightShelves, selectedFinish])
-
-  const topResult = useMemo(() => {
-    if (!hasTop || objectWidth < 25) return null
-    try { return calculateBookshelf({ type: "bookshelf", totalWidth: objectWidth, shelves: topShelves, finish: selectedFinish }) } catch { return null }
-  }, [hasTop, objectWidth, topShelves, selectedFinish])
+    try { return calculateBookshelf({ type: "bookshelf", totalWidth: rightGap, shelves: sideShelves, finish: selectedFinish }) } catch { return null }
+  }, [hasRight, rightGap, sideShelves, selectedFinish])
 
   const bottomResult = useMemo(() => {
-    if (!hasBottom || objectWidth < 25) return null
+    if (!hasCenter || bottomShelves.length === 0 || objectWidth < 25) return null
     try { return calculateBookshelf({ type: "bookshelf", totalWidth: objectWidth, shelves: bottomShelves, finish: selectedFinish }) } catch { return null }
-  }, [hasBottom, objectWidth, bottomShelves, selectedFinish])
+  }, [hasCenter, objectWidth, bottomShelves, selectedFinish])
+
+  const topResult = useMemo(() => {
+    if (!hasCenter || topShelvesFiltered.length === 0 || objectWidth < 25) return null
+    try { return calculateBookshelf({ type: "bookshelf", totalWidth: objectWidth, shelves: topShelvesFiltered, finish: selectedFinish }) } catch { return null }
+  }, [hasCenter, objectWidth, topShelvesFiltered, selectedFinish])
 
   const { totalPrice, totalArea } = useMemo(() => {
     const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
     let area = 0
     if (hasLeft) area += leftGap * wallHeight
     if (hasRight) area += rightGap * wallHeight
-    if (hasTop) area += objectWidth * topSectionHeight
-    if (hasBottom) area += objectWidth * floorToObject
+    if (hasCenter && bottomShelves.length > 0) area += objectWidth * floorToObject
+    if (hasCenter && topShelvesFiltered.length > 0) area += objectWidth * topSectionHeight
     area = area / 144
     const price = area * (finishOption?.price || 0)
     return { totalPrice: price, totalArea: area }
-  }, [hasLeft, hasRight, hasTop, hasBottom, leftGap, rightGap, objectWidth, wallHeight, topSectionHeight, floorToObject, selectedFinish])
+  }, [hasLeft, hasRight, hasCenter, leftGap, rightGap, objectWidth, wallHeight, topSectionHeight, floorToObject, selectedFinish, bottomShelves.length, topShelvesFiltered.length])
 
+  // Build per-row module arrays for left/right (indexed by global row index)
+  // and per-zone module arrays for bottom/top
   const leftModules = leftResult?.shelves.map(s => s.modules)
   const rightModules = rightResult?.shelves.map(s => s.modules)
-  const topModules = topResult?.shelves.map(s => s.modules)
   const bottomModules = bottomResult?.shelves.map(s => s.modules)
+  const topModules = topResult?.shelves.map(s => s.modules)
 
   const globalOps = {
     add: () => { if (globalShelves.length < 8) setGlobalShelves([...globalShelves, { height: 14, depth: (globalShelves[globalShelves.length - 1]?.depth || 10) as 7 | 10 | 13 }]) },
@@ -295,10 +303,9 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
       config: {
         totalArea: totalArea.toFixed(2), pricePerSqFt: finishOption?.price.toFixed(2),
         wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, rightGap, leftGap,
-        topHeight: hasTop ? topSectionHeight : 0, finish: finishOption?.label || selectedFinish,
+        topHeight: topSectionHeight, finish: finishOption?.label || selectedFinish,
         bookshelfType: "portal",
-        leftShelves: hasLeft ? leftShelves : [], rightShelves: hasRight ? rightShelves : [],
-        topShelves: hasTop ? topShelves : [], bottomShelves: hasBottom ? bottomShelves : [],
+        shelves: globalShelves,
       },
       imageDataUrl,
     }
@@ -324,11 +331,12 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   const maxH1 = Math.max(0, wallHeight - objectHeight - 12)
   const maxW1 = Math.max(0, wallWidth - objectWidth)
 
+  const fittingRows = rowPositions.length
   const zoneFitSummary = [
-    hasLeft ? `Left: ${leftShelves.length}` : null,
-    hasRight ? `Right: ${rightShelves.length}` : null,
-    hasTop ? `Top: ${topShelves.length}` : null,
-    hasBottom ? `Bottom: ${bottomShelves.length}` : null,
+    hasLeft ? `Left: ${fittingRows} rows` : null,
+    hasRight ? `Right: ${fittingRows} rows` : null,
+    hasCenter && bottomRowIndices.length > 0 ? `Below: ${bottomRowIndices.length} rows` : null,
+    hasCenter && topRowIndices.length > 0 ? `Above: ${topRowIndices.length} rows` : null,
   ].filter(Boolean).join(" · ")
 
   return (
@@ -376,10 +384,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
               objectWidth={objectWidth} objectHeight={objectHeight}
               floorToObject={floorToObject} rightGap={rightGap}
               leftGap={leftGap} topHeight={topSectionHeight}
-              leftShelves={hasLeft ? leftShelves : []}
-              rightShelves={hasRight ? rightShelves : []}
-              topShelves={hasTop ? topShelves : []}
-              bottomShelves={hasBottom ? bottomShelves : []}
+              shelves={sideShelves}
               leftModules={leftModules} rightModules={rightModules}
               topModules={topModules} bottomModules={bottomModules}
               finish={selectedFinish} isMobile={false} hideTooltip
@@ -419,7 +424,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
 
             <ConfigSection step={3} title="Object Type" subtitle={objectType} defaultOpen={true}>
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-5 gap-2">
                   {PRESET_ICONS.map(preset => {
                     const Icon = preset.icon
                     return (
@@ -487,9 +492,6 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
                 {!hasRight && rightGap > 0 && rightGap < MIN_MODULE_WIDTH && (
                   <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 text-xs text-amber-700 dark:text-amber-300">Right column too narrow (min {MIN_MODULE_WIDTH}").</div>
                 )}
-                {!hasTop && (wallHeight - objectHeight - floorToObject) > 0 && (
-                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 text-xs text-amber-700 dark:text-amber-300">Not enough space above object — minimum 12" required.</div>
-                )}
               </div>
             </ConfigSection>
 
@@ -497,7 +499,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
               <PortalSchematic wallWidth={wallWidth} wallHeight={wallHeight} objectWidth={objectWidth} objectHeight={objectHeight} floorToObject={floorToObject} rightGap={rightGap} leftGap={leftGap} topHeight={topSectionHeight} />
             </ConfigSection>
 
-            <ConfigSection step={6} title="Shelves" subtitle={`${globalShelves.length} shelves`} defaultOpen={true}>
+            <ConfigSection step={6} title="Shelves" subtitle={`${globalShelves.length} shelves · ${fittingRows} fit`} defaultOpen={true}>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Configuration</span>
@@ -509,8 +511,10 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
                 </div>
                 {[...globalShelves].reverse().map((shelf, revIndex) => {
                   const index = globalShelves.length - 1 - revIndex
+                  const rowPos = rowPositions.find(r => r.index === index)
+                  const fits = !!rowPos
                   return (
-                    <div key={index}>
+                    <div key={index} className={!fits ? "opacity-40" : ""}>
                       <div className="flex items-center gap-2 bg-secondary/50 rounded-lg px-3 py-2">
                         <span className="text-xs font-medium text-muted-foreground w-12">Shelf {index + 1}</span>
                         <Select value={shelf.height.toString()} onValueChange={(v) => globalOps.update(index, "height", Number.parseInt(v))}>
@@ -523,6 +527,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
                           <SelectContent>{getAvailableDepths(globalShelves, index).map(d => <SelectItem key={d} value={d.toString()}>{d}"</SelectItem>)}</SelectContent>
                         </Select>
                         <span className="text-[10px] text-muted-foreground uppercase">D</span>
+                        {!fits && <span className="text-[10px] text-destructive ml-auto">Won't fit</span>}
                       </div>
                       {index > 0 && shelf.depth < globalShelves[index - 1].depth && (
                         <div className="text-[10px] text-muted-foreground italic pl-3 mt-1">↑ Transition board will be added here</div>
@@ -531,8 +536,9 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
                   )
                 })}
                 <div className="bg-muted/50 border border-border rounded-lg px-3 py-2.5 space-y-1">
-                  <p className="text-[10px] font-semibold text-foreground">Auto-distributed to zones:</p>
+                  <p className="text-[10px] font-semibold text-foreground">Aligned rows across wall:</p>
                   <p className="text-[10px] text-muted-foreground">{zoneFitSummary || "No zones available"}</p>
+                  <p className="text-[10px] text-muted-foreground italic">Shelves are horizontally aligned — the object creates a gap in the center column.</p>
                 </div>
               </div>
             </ConfigSection>
