@@ -30,32 +30,30 @@ interface Portal3DViewProps {
 
 // ─── MODULE WIDTH SEQUENCE ───
 const MODULE_WIDTHS = [7.25, 9.5, 11.75, 14, 16.25, 18.5, 20.75, 23]
+const MAX_GAP = 23
 
-/** Fill a column width with modules from MODULE_WIDTHS, cycling through the sequence */
-function computeModules(columnWidth: number): { width: number }[] {
-  if (columnWidth < MODULE_WIDTHS[0]) return []
-  const modules: { width: number }[] = []
-  let remaining = columnWidth
-  let idx = 0
-  while (remaining >= MODULE_WIDTHS[0]) {
-    // Pick the largest module that fits
-    let picked = MODULE_WIDTHS[0]
-    for (let i = MODULE_WIDTHS.length - 1; i >= 0; i--) {
-      if (MODULE_WIDTHS[i] <= remaining) {
-        picked = MODULE_WIDTHS[i]
-        break
-      }
-    }
-    // But follow the sequence: use idx % MODULE_WIDTHS.length if it fits
-    const seqWidth = MODULE_WIDTHS[idx % MODULE_WIDTHS.length]
-    if (seqWidth <= remaining) {
-      picked = seqWidth
-    }
-    modules.push({ width: picked })
-    remaining -= picked
+/** Same logic as bookshelf-calculator.ts calculateShelfModules */
+function computeModulesForRow(columnWidth: number, startModuleIndex: number): { modules: { width: number }[], nextIndex: number } {
+  if (columnWidth < MODULE_WIDTHS[0]) return { modules: [], nextIndex: startModuleIndex }
+  const moduleWidths: number[] = []
+  let idx = startModuleIndex
+  // Start with first two modules from sequence
+  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
+  idx++
+  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
+  idx++
+  // Keep adding until free space fits between modules
+  let currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
+  let freeSpace = columnWidth - currentWidth
+  let maxAllowed = MAX_GAP * (moduleWidths.length - 1)
+  while (freeSpace > maxAllowed) {
+    moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
     idx++
+    currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
+    freeSpace = columnWidth - currentWidth
+    maxAllowed = MAX_GAP * (moduleWidths.length - 1)
   }
-  return modules
+  return { modules: moduleWidths.map(w => ({ width: w })), nextIndex: idx % MODULE_WIDTHS.length }
 }
 
 // ─── MATERIAL HELPERS ───
