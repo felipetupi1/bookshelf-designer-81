@@ -33,37 +33,78 @@ const MODULE_WIDTHS = [7.25, 9.5, 11.75, 14, 16.25, 18.5, 20.75, 23]
 const MAX_GAP = 23
 const MIN_COLUMN_WIDTH = 25
 
-/** Portal-specific: fill with smallest possible modules */
-function computeModulesForRow(columnWidth: number, startModuleIndex: number): { modules: { width: number }[], nextIndex: number } {
-  if (columnWidth < MIN_COLUMN_WIDTH) return { modules: [], nextIndex: startModuleIndex }
+/** Compute modules for the FULL wall width as one continuous sequence, then split into left/center/right */
+function computeFullRowModules(
+  wallWidth: number, leftGap: number, objectWidth: number, rightGap: number,
+  floorToObject: number, objectTop: number, shelfBottomY: number, shelfTopY: number,
+  startModuleIndex: number
+): {
+  left: { width: number }[]; center: { width: number }[]; right: { width: number }[];
+  nextIndex: number
+} {
+  if (wallWidth < MIN_COLUMN_WIDTH) return { left: [], center: [], right: [], nextIndex: startModuleIndex }
+
+  // Step 1: Fill the full wallWidth with modules from smallest first
   const moduleWidths: number[] = []
   let idx = startModuleIndex
-  // Start with first two modules from sequence
-  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
-  idx++
-  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
-  idx++
-  // Keep adding smallest modules until free space fits between modules
+  // Start with first two
+  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length]); idx++
+  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length]); idx++
+
   let currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
-  let freeSpace = columnWidth - currentWidth
+  let freeSpace = wallWidth - currentWidth
   let maxAllowed = MAX_GAP * (moduleWidths.length - 1)
   while (freeSpace > maxAllowed) {
-    moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
-    idx++
+    moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length]); idx++
     currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
-    freeSpace = columnWidth - currentWidth
+    freeSpace = wallWidth - currentWidth
     maxAllowed = MAX_GAP * (moduleWidths.length - 1)
   }
-  // Remove modules from the end if total exceeds column width
-  while (moduleWidths.length > 1 && moduleWidths.reduce((s, w) => s + w, 0) > columnWidth) {
-    moduleWidths.pop()
-    idx--
+  // Remove if exceeds
+  while (moduleWidths.length > 1 && moduleWidths.reduce((s, w) => s + w, 0) > wallWidth) {
+    moduleWidths.pop(); idx--
   }
-  // Single module that's too wide
-  if (moduleWidths.length === 1 && moduleWidths[0] > columnWidth) {
-    return { modules: [], nextIndex: startModuleIndex }
+  if (moduleWidths.length === 1 && moduleWidths[0] > wallWidth) {
+    return { left: [], center: [], right: [], nextIndex: startModuleIndex }
   }
-  return { modules: moduleWidths.map(w => ({ width: w })), nextIndex: idx % MODULE_WIDTHS.length }
+
+  // Step 2: Calculate positions across wallWidth (left edge = 0)
+  const totalModW = moduleWidths.reduce((s, w) => s + w, 0)
+  const remainingSpace = wallWidth - totalModW
+  const gap = moduleWidths.length > 1 ? remainingSpace / (moduleWidths.length - 1) : 0
+
+  // Step 3: Determine object zone boundaries (relative to wall left = 0)
+  const objectLeftEdge = leftGap
+  const objectRightEdge = leftGap + objectWidth
+  const overlapsObject = shelfBottomY < objectTop && shelfTopY > floorToObject
+
+  // Step 4: Assign each module to left, center (skipped if overlapping), or right
+  const left: { width: number }[] = []
+  const center: { width: number }[] = []
+  const right: { width: number }[] = []
+  let x = 0
+  for (const w of moduleWidths) {
+    const modLeft = x
+    const modRight = x + w
+    const modCenter = (modLeft + modRight) / 2
+
+    if (modRight <= objectLeftEdge) {
+      // Fully in left zone
+      if (leftGap >= MIN_COLUMN_WIDTH) left.push({ width: w })
+    } else if (modLeft >= objectRightEdge) {
+      // Fully in right zone
+      if (rightGap >= MIN_COLUMN_WIDTH) right.push({ width: w })
+    } else {
+      // In object zone — render only if not overlapping object vertically
+      if (!overlapsObject && objectWidth >= MIN_COLUMN_WIDTH) {
+        center.push({ width: w })
+      }
+      // If overlapping, skip (but sequence continues)
+    }
+    x += w + gap
+  }
+
+  return { left, center, right, nextIndex: idx % MODULE_WIDTHS.length }
 }
 
 // ─── MATERIAL HELPERS ───
@@ -293,21 +334,22 @@ function PortalScene({ props, internalFinish, frameFinish }: {
     return result
   }, [shelves, wallHeight])
 
-  // Pre-compute modules for each row × column with continuing sequence index
+  // Pre-compute modules for each row as ONE continuous sequence across the full wall
   const columnModuleData = useMemo(() => {
     const data: { left: { width: number }[], center: { width: number }[], right: { width: number }[] }[] = []
-    let leftIdx = 0, centerIdx = 0, rightIdx = 0
+    let seqIdx = 0
     for (const row of rows) {
-      const lr = computeModulesForRow(leftGap, leftIdx)
-      leftIdx = lr.nextIndex
-      const cr = computeModulesForRow(objectWidth, centerIdx)
-      centerIdx = cr.nextIndex
-      const rr = computeModulesForRow(rightGap, rightIdx)
-      rightIdx = rr.nextIndex
-      data.push({ left: lr.modules, center: cr.modules, right: rr.modules })
+      const shelfTopY = row.y + row.shelf.height + 0.75
+      const result = computeFullRowModules(
+        wallWidth, leftGap, objectWidth, rightGap,
+        floorToObject, objectTop, row.y, shelfTopY,
+        seqIdx
+      )
+      seqIdx = result.nextIndex
+      data.push({ left: result.left, center: result.center, right: result.right })
     }
     return data
-  }, [rows, leftGap, objectWidth, rightGap])
+  }, [rows, wallWidth, leftGap, objectWidth, rightGap, floorToObject, objectTop])
 
   // Check if top-of-object height is enough for center shelves above
   const topSpace = wallHeight - objectTop
@@ -360,6 +402,23 @@ function PortalScene({ props, internalFinish, frameFinish }: {
           </group>
         )
       })}
+
+      {/* ── Board above the object at y = objectTop ── */}
+      {hasCenter && (() => {
+        // Find the shelf whose top board aligns closest to objectTop
+        const bestShelf = rows.length > 0 ? rows[0].shelf : { depth: maxDepth }
+        for (const row of rows) {
+          const topBoardY = row.y + 0.75 + row.shelf.height
+          if (Math.abs(topBoardY - objectTop) < 1.0) {
+            // Already rendered by the row loop via the spanning board logic — skip
+            return null
+          }
+        }
+        // No row aligns — render an explicit board
+        const depth = rows.length > 0 ? rows[0].shelf.depth : maxDepth
+        const zOffset = -(maxDepth - depth)
+        return <Board position={[centerColX, objectTop, -depth / 2]} width={objectWidth} depth={depth} finish={internalFinish} zOffset={zOffset} />
+      })()}
 
       {/* ── OBJECT PLACEHOLDER (grey box) ── */}
       <mesh position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2]}>
