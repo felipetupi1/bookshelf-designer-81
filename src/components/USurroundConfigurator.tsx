@@ -218,7 +218,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
 
   function handleReset() {
     setW1(50); setW(70); setW2(50)
-    setShelvesLeft(defaultShelves()); setShelvesFront(defaultShelves()); setShelvesRight(defaultShelves())
+    setShelves(defaultShelves())
     setSelectedFinish("Oak/Oak")
   }
 
