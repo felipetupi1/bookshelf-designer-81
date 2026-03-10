@@ -31,10 +31,11 @@ interface Portal3DViewProps {
 // ─── MODULE WIDTH SEQUENCE ───
 const MODULE_WIDTHS = [7.25, 9.5, 11.75, 14, 16.25, 18.5, 20.75, 23]
 const MAX_GAP = 23
+const MIN_COLUMN_WIDTH = 25
 
-/** Same logic as bookshelf-calculator.ts calculateShelfModules */
+/** Portal-specific: fill with smallest possible modules */
 function computeModulesForRow(columnWidth: number, startModuleIndex: number): { modules: { width: number }[], nextIndex: number } {
-  if (columnWidth < MODULE_WIDTHS[0]) return { modules: [], nextIndex: startModuleIndex }
+  if (columnWidth < MIN_COLUMN_WIDTH) return { modules: [], nextIndex: startModuleIndex }
   const moduleWidths: number[] = []
   let idx = startModuleIndex
   // Start with first two modules from sequence
@@ -42,7 +43,7 @@ function computeModulesForRow(columnWidth: number, startModuleIndex: number): { 
   idx++
   moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
   idx++
-  // Keep adding until free space fits between modules
+  // Keep adding smallest modules until free space fits between modules
   let currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
   let freeSpace = columnWidth - currentWidth
   let maxAllowed = MAX_GAP * (moduleWidths.length - 1)
