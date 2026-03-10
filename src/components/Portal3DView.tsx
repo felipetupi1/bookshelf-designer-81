@@ -310,11 +310,13 @@ function PortalScene({ props, internalFinish, frameFinish }: {
 
   const objectTop = floorToObject + objectHeight
   const maxDepth = shelves.length > 0 ? Math.max(...shelves.map(s => s.depth)) : 7
+  const defaultDepth = shelves.length > 0 ? shelves[0].depth : maxDepth
 
   // Wall centered at x=0
   const wallLeft = -wallWidth / 2
-  const leftColX = wallLeft + leftGap / 2
+  const wallCenterX = 0
   const centerColX = wallLeft + leftGap + objectWidth / 2
+  const leftColX = wallLeft + leftGap / 2
   const rightColX = wallLeft + leftGap + objectWidth + rightGap / 2
 
   const hasLeft = leftGap >= MIN_COLUMN_WIDTH
@@ -351,64 +353,79 @@ function PortalScene({ props, internalFinish, frameFinish }: {
     return data
   }, [rows, wallWidth, leftGap, objectWidth, rightGap, floorToObject, objectTop])
 
-  // Check if top-of-object height is enough for center shelves above
-  const topSpace = wallHeight - objectTop
+  // Last row top Y
+  const lastRowTopY = rows.length > 0 ? rows[rows.length - 1].y + 0.75 + rows[rows.length - 1].shelf.height : wallHeight
 
   return (
     <group>
+      {/* ── OUTER FRAME: one continuous unit ── */}
+      {/* Bottom board — full wallWidth */}
+      <Board position={[wallCenterX, 0, -defaultDepth / 2]} width={wallWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
+      {/* Top board — full wallWidth */}
+      <Board position={[wallCenterX, lastRowTopY, -defaultDepth / 2]} width={wallWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
+      {/* Left side panel — full wallHeight */}
+      <mesh position={[wallLeft + 0.375, wallHeight / 2, -maxDepth / 2]} castShadow receiveShadow>
+        <boxGeometry args={[0.75, wallHeight, maxDepth]} />
+        <WoodMaterial finish={frameFinish} isFrame />
+      </mesh>
+      {/* Right side panel — full wallHeight */}
+      <mesh position={[wallLeft + wallWidth - 0.375, wallHeight / 2, -maxDepth / 2]} castShadow receiveShadow>
+        <boxGeometry args={[0.75, wallHeight, maxDepth]} />
+        <WoodMaterial finish={frameFinish} isFrame />
+      </mesh>
+
+      {/* ── SHELF ROWS: horizontal boards + modules ── */}
       {rows.map((row, ri) => {
         const { y: shelfBottomY, shelf } = row
-        const boardY = shelfBottomY
         const moduleY = shelfBottomY + 0.75
         const topBoardY = moduleY + shelf.height
         const zOffset = -(maxDepth - shelf.depth)
 
-        // Does this row overlap the object? (for center column)
+        // Does this row overlap the object vertically?
         const shelfTop = shelfBottomY + shelf.height
         const overlapsObject = shelfBottomY < objectTop && shelfTop > floorToObject
-        // Center visible only if no overlap AND objectWidth >= MIN_COLUMN_WIDTH
         const centerVisible = hasCenter && !overlapsObject
-
-        // Check if the top board of this row aligns with objectTop (for spanning board)
-        const topBoardIsObjectTop = Math.abs(topBoardY - objectTop) < 1.0
 
         return (
           <group key={ri}>
-            {hasLeft && (
-              <group>
-                {ri === 0 && <Board position={[leftColX, boardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
-                <Board position={[leftColX, topBoardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" />
-              </group>
+            {/* Horizontal shelf boards spanning full wallWidth (except skip bottom for ri=0 since outer frame has it) */}
+            {ri > 0 && (
+              <>
+                {/* Board at bottom of this row spans full wall, but skip object zone if overlapping */}
+                {overlapsObject ? (
+                  <>
+                    {hasLeft && <Board position={[leftColX, shelfBottomY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
+                    {hasRight && <Board position={[rightColX, shelfBottomY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
+                  </>
+                ) : (
+                  <Board position={[wallCenterX, shelfBottomY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+                )}
+              </>
             )}
-            {centerVisible && (
-              <group>
-                {ri === 0 && <Board position={[centerColX, boardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
-                <Board position={[centerColX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} align="center" />
-              </group>
+            {/* Top board of this row */}
+            {overlapsObject ? (
+              <>
+                {hasLeft && <Board position={[leftColX, topBoardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
+                {hasRight && <Board position={[rightColX, topBoardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
+              </>
+            ) : (
+              <Board position={[wallCenterX, topBoardY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
             )}
-            {/* Board spanning center at object top height — even if center modules are hidden */}
-            {!centerVisible && hasCenter && topBoardIsObjectTop && (
-              <Board position={[centerColX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-            )}
-            {hasRight && (
-              <group>
-                {ri === 0 && <Board position={[rightColX, boardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
-                <Board position={[rightColX, topBoardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" />
-              </group>
-            )}
+
+            {/* Modules in left column */}
+            {hasLeft && <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" />}
+            {/* Modules in center column (only if not overlapping object) */}
+            {centerVisible && <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} align="center" />}
+            {/* Modules in right column */}
+            {hasRight && <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" />}
           </group>
         )
       })}
 
-      {/* ── Board above the object at y = objectTop — always rendered ── */}
-      {hasCenter && (() => {
-        const depth = rows.length > 0 ? rows[0].shelf.depth : maxDepth
-        const zOffset = -(maxDepth - depth)
-        return <Board position={[centerColX, objectTop, -depth / 2]} width={objectWidth} depth={depth} finish={internalFinish} zOffset={zOffset} />
-      })()}
+      {/* ── Board above the object at y = objectTop + 0.75 ── */}
+      {hasCenter && (
+        <Board position={[centerColX, objectTop + 0.75, -defaultDepth / 2]} width={objectWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
+      )}
 
       {/* ── OBJECT PLACEHOLDER (grey box) ── */}
       <mesh position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2]}>
