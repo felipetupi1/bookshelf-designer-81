@@ -130,6 +130,12 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const cathedral3DRef = useRef<Cathedral3DViewRef>(null)
 
+  const cathedralData = useMemo(() => {
+    try { return calculateCathedral(W, H, H1, shelves, direction, selectedFinish) } catch { return null }
+  }, [W, H, H1, shelves, direction, selectedFinish])
+
+  const rows = cathedralData?.rows || []
+
   const modulesPerRow = useMemo(() => {
     return rows.map(row => {
       const modules: { width: number }[] = []
@@ -142,12 +148,6 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
       return modules
     })
   }, [rows])
-
-  const cathedralData = useMemo(() => {
-    try { return calculateCathedral(W, H, H1, shelves, direction, selectedFinish) } catch { return null }
-  }, [W, H, H1, shelves, direction, selectedFinish])
-
-  const rows = cathedralData?.rows || []
 
   const { totalPrice, totalArea } = useMemo(() => {
     const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
