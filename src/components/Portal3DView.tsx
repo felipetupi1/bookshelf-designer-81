@@ -276,9 +276,9 @@ function PortalScene({ props, internalFinish, frameFinish }: {
   const centerColX = wallLeft + leftGap + objectWidth / 2
   const rightColX = wallLeft + leftGap + objectWidth + rightGap / 2
 
-  const hasLeft = leftGap >= MODULE_WIDTHS[0]
-  const hasRight = rightGap >= MODULE_WIDTHS[0]
-  const hasCenter = objectWidth >= MODULE_WIDTHS[0]
+  const hasLeft = leftGap >= MIN_COLUMN_WIDTH
+  const hasRight = rightGap >= MIN_COLUMN_WIDTH
+  const hasCenter = objectWidth >= MIN_COLUMN_WIDTH
 
   // Step 1: Calculate Y positions for every shelf row
   const rows = useMemo(() => {
