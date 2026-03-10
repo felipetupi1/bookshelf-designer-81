@@ -313,55 +313,23 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     setWallWidth(100); setWallHeight(96); setObjectWidth(40); setObjectHeight(30)
     setFloorToObject(24); setRightGap(30); setObjectType("tv"); setSelectedPresetSize(null)
     setGlobalShelves(defaultShelvesForHeight(96))
+    setSelectedFinish("Maple/Maple")
+  }
 
   const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
-
-  function ZoneShelfConfig({ label, shelves, ops }: {
-    label: string; shelves: ShelfConfig[]
-    ops: { add: () => void; remove: () => void; update: (i: number, f: "height" | "depth", v: number) => void }
-  }) {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-foreground uppercase tracking-wider">{label}</span>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-7 w-7 rounded-full" onClick={ops.remove} disabled={shelves.length <= 1}><Minus className="h-3 w-3" /></Button>
-            <span className="text-sm font-semibold w-5 text-center text-foreground">{shelves.length}</span>
-            <Button variant="outline" size="icon" className="h-7 w-7 rounded-full" onClick={ops.add} disabled={shelves.length >= 8}><Plus className="h-3 w-3" /></Button>
-          </div>
-        </div>
-        {[...shelves].reverse().map((shelf, revIndex) => {
-          const index = shelves.length - 1 - revIndex
-          return (
-          <div key={index}>
-            <div className="flex items-center gap-2 bg-secondary/50 rounded-lg px-3 py-2">
-              <span className="text-xs font-medium text-muted-foreground w-12">Shelf {index + 1}</span>
-              <Select value={shelf.height.toString()} onValueChange={(v) => ops.update(index, "height", Number.parseInt(v))}>
-                <SelectTrigger className="w-14 h-7 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                <SelectContent>{[12, 14].map(h => <SelectItem key={h} value={h.toString()}>{h}"</SelectItem>)}</SelectContent>
-              </Select>
-              <span className="text-[10px] text-muted-foreground uppercase">H</span>
-              <Select value={shelf.depth.toString()} onValueChange={(v) => ops.update(index, "depth", Number.parseInt(v))}>
-                <SelectTrigger className="w-14 h-7 text-xs rounded-lg"><SelectValue /></SelectTrigger>
-                <SelectContent>{getAvailableDepths(shelves, index).map(d => <SelectItem key={d} value={d.toString()}>{d}"</SelectItem>)}</SelectContent>
-              </Select>
-              <span className="text-[10px] text-muted-foreground uppercase">D</span>
-            </div>
-            {index > 0 && shelf.depth < shelves[index - 1].depth && (
-              <div className="text-[10px] text-muted-foreground italic pl-3 mt-1">↑ Transition board will be added here</div>
-            )}
-          </div>
-          )
-        })}
-      </div>
-    )
-  }
 
   const currentPresets = SIZE_PRESETS[objectType]
   const maxL2 = wallWidth - MIN_MODULE_WIDTH
   const maxH2 = Math.max(1, wallHeight - floorToObject - 12)
   const maxH1 = Math.max(0, wallHeight - objectHeight - 12)
   const maxW1 = Math.max(0, wallWidth - objectWidth)
+
+  const zoneFitSummary = [
+    hasLeft ? `Left: ${leftShelves.length}` : null,
+    hasRight ? `Right: ${rightShelves.length}` : null,
+    hasTop ? `Top: ${topShelves.length}` : null,
+    hasBottom ? `Bottom: ${bottomShelves.length}` : null,
+  ].filter(Boolean).join(" · ")
 
   return (
     <div className="w-full min-h-screen configurator-root">
@@ -529,13 +497,43 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
               <PortalSchematic wallWidth={wallWidth} wallHeight={wallHeight} objectWidth={objectWidth} objectHeight={objectHeight} floorToObject={floorToObject} rightGap={rightGap} leftGap={leftGap} topHeight={topSectionHeight} />
             </ConfigSection>
 
-            <ConfigSection step={6} title="Shelves" subtitle="Per zone" defaultOpen={true}>
-              <div className="space-y-5">
-                {hasLeft && <ZoneShelfConfig label={`Left Column (${leftGap}" × ${wallHeight}")`} shelves={leftShelves} ops={leftOps} />}
-                {hasRight && <ZoneShelfConfig label={`Right Column (${rightGap}" × ${wallHeight}")`} shelves={rightShelves} ops={rightOps} />}
-                {hasTop && <ZoneShelfConfig label={`Top Section (${objectWidth}" × ${topSectionHeight}")`} shelves={topShelves} ops={topOps} />}
-                {hasBottom && <ZoneShelfConfig label={`Bottom Section (${objectWidth}" × ${floorToObject}")`} shelves={bottomShelves} ops={bottomOps} />}
-                {!hasLeft && !hasRight && !hasTop && !hasBottom && <p className="text-sm text-muted-foreground">No shelf zones available with current dimensions.</p>}
+            <ConfigSection step={6} title="Shelves" subtitle={`${globalShelves.length} shelves`} defaultOpen={true}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Shelf Configuration</span>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" className="h-7 w-7 rounded-full" onClick={globalOps.remove} disabled={globalShelves.length <= 1}><Minus className="h-3 w-3" /></Button>
+                    <span className="text-sm font-semibold w-5 text-center text-foreground">{globalShelves.length}</span>
+                    <Button variant="outline" size="icon" className="h-7 w-7 rounded-full" onClick={globalOps.add} disabled={globalShelves.length >= 8}><Plus className="h-3 w-3" /></Button>
+                  </div>
+                </div>
+                {[...globalShelves].reverse().map((shelf, revIndex) => {
+                  const index = globalShelves.length - 1 - revIndex
+                  return (
+                    <div key={index}>
+                      <div className="flex items-center gap-2 bg-secondary/50 rounded-lg px-3 py-2">
+                        <span className="text-xs font-medium text-muted-foreground w-12">Shelf {index + 1}</span>
+                        <Select value={shelf.height.toString()} onValueChange={(v) => globalOps.update(index, "height", Number.parseInt(v))}>
+                          <SelectTrigger className="w-14 h-7 text-xs rounded-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent>{[12, 14].map(h => <SelectItem key={h} value={h.toString()}>{h}"</SelectItem>)}</SelectContent>
+                        </Select>
+                        <span className="text-[10px] text-muted-foreground uppercase">H</span>
+                        <Select value={shelf.depth.toString()} onValueChange={(v) => globalOps.update(index, "depth", Number.parseInt(v))}>
+                          <SelectTrigger className="w-14 h-7 text-xs rounded-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent>{getAvailableDepths(globalShelves, index).map(d => <SelectItem key={d} value={d.toString()}>{d}"</SelectItem>)}</SelectContent>
+                        </Select>
+                        <span className="text-[10px] text-muted-foreground uppercase">D</span>
+                      </div>
+                      {index > 0 && shelf.depth < globalShelves[index - 1].depth && (
+                        <div className="text-[10px] text-muted-foreground italic pl-3 mt-1">↑ Transition board will be added here</div>
+                      )}
+                    </div>
+                  )
+                })}
+                <div className="bg-muted/50 border border-border rounded-lg px-3 py-2.5 space-y-1">
+                  <p className="text-[10px] font-semibold text-foreground">Auto-distributed to zones:</p>
+                  <p className="text-[10px] text-muted-foreground">{zoneFitSummary || "No zones available"}</p>
+                </div>
               </div>
             </ConfigSection>
 
