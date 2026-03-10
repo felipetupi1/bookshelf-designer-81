@@ -30,32 +30,30 @@ interface Portal3DViewProps {
 
 // ─── MODULE WIDTH SEQUENCE ───
 const MODULE_WIDTHS = [7.25, 9.5, 11.75, 14, 16.25, 18.5, 20.75, 23]
+const MAX_GAP = 23
 
-/** Fill a column width with modules from MODULE_WIDTHS, cycling through the sequence */
-function computeModules(columnWidth: number): { width: number }[] {
-  if (columnWidth < MODULE_WIDTHS[0]) return []
-  const modules: { width: number }[] = []
-  let remaining = columnWidth
-  let idx = 0
-  while (remaining >= MODULE_WIDTHS[0]) {
-    // Pick the largest module that fits
-    let picked = MODULE_WIDTHS[0]
-    for (let i = MODULE_WIDTHS.length - 1; i >= 0; i--) {
-      if (MODULE_WIDTHS[i] <= remaining) {
-        picked = MODULE_WIDTHS[i]
-        break
-      }
-    }
-    // But follow the sequence: use idx % MODULE_WIDTHS.length if it fits
-    const seqWidth = MODULE_WIDTHS[idx % MODULE_WIDTHS.length]
-    if (seqWidth <= remaining) {
-      picked = seqWidth
-    }
-    modules.push({ width: picked })
-    remaining -= picked
+/** Same logic as bookshelf-calculator.ts calculateShelfModules */
+function computeModulesForRow(columnWidth: number, startModuleIndex: number): { modules: { width: number }[], nextIndex: number } {
+  if (columnWidth < MODULE_WIDTHS[0]) return { modules: [], nextIndex: startModuleIndex }
+  const moduleWidths: number[] = []
+  let idx = startModuleIndex
+  // Start with first two modules from sequence
+  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
+  idx++
+  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
+  idx++
+  // Keep adding until free space fits between modules
+  let currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
+  let freeSpace = columnWidth - currentWidth
+  let maxAllowed = MAX_GAP * (moduleWidths.length - 1)
+  while (freeSpace > maxAllowed) {
+    moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
     idx++
+    currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
+    freeSpace = columnWidth - currentWidth
+    maxAllowed = MAX_GAP * (moduleWidths.length - 1)
   }
-  return modules
+  return { modules: moduleWidths.map(w => ({ width: w })), nextIndex: idx % MODULE_WIDTHS.length }
 }
 
 // ─── MATERIAL HELPERS ───
@@ -271,10 +269,21 @@ function PortalScene({ props, internalFinish, frameFinish }: {
     return result
   }, [shelves, wallHeight])
 
-  // Pre-compute modules for each column width (memoized)
-  const leftMods = useMemo(() => computeModules(leftGap), [leftGap])
-  const centerMods = useMemo(() => computeModules(objectWidth), [objectWidth])
-  const rightMods = useMemo(() => computeModules(rightGap), [rightGap])
+  // Pre-compute modules for each row × column with continuing sequence index
+  const columnModuleData = useMemo(() => {
+    const data: { left: { width: number }[], center: { width: number }[], right: { width: number }[] }[] = []
+    let leftIdx = 0, centerIdx = 0, rightIdx = 0
+    for (const row of rows) {
+      const lr = computeModulesForRow(leftGap, leftIdx)
+      leftIdx = lr.nextIndex
+      const cr = computeModulesForRow(objectWidth, centerIdx)
+      centerIdx = cr.nextIndex
+      const rr = computeModulesForRow(rightGap, rightIdx)
+      rightIdx = rr.nextIndex
+      data.push({ left: lr.modules, center: cr.modules, right: rr.modules })
+    }
+    return data
+  }, [rows, leftGap, objectWidth, rightGap])
 
   return (
     <group>
@@ -290,32 +299,27 @@ function PortalScene({ props, internalFinish, frameFinish }: {
         const overlapsObject = shelfBottomY < objectTop && shelfTop > floorToObject
         const centerVisible = hasCenter && !overlapsObject
 
-        return (
+      return (
           <group key={ri}>
-            {/* ── LEFT COLUMN (always rendered) ── */}
             {hasLeft && (
               <group>
                 {ri === 0 && <Board position={[leftColX, boardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
                 <Board position={[leftColX, topBoardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                <ColumnModules modules={leftMods} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} />
+                <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} />
               </group>
             )}
-
-            {/* ── CENTER COLUMN (only if not blocked by object) ── */}
             {centerVisible && (
               <group>
                 {ri === 0 && <Board position={[centerColX, boardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
                 <Board position={[centerColX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                <ColumnModules modules={centerMods} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} />
+                <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} />
               </group>
             )}
-
-            {/* ── RIGHT COLUMN (always rendered) ── */}
             {hasRight && (
               <group>
                 {ri === 0 && <Board position={[rightColX, boardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
                 <Board position={[rightColX, topBoardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                <ColumnModules modules={rightMods} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} />
+                <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} />
               </group>
             )}
           </group>
