@@ -260,13 +260,6 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
       {/* Right side panel — full height */}
       <SidePanel x={wL + wallWidth - BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />
 
-      {/* ══════ OBJECT ZONE BOUNDARY BOARDS ══════ */}
-      {/* Board below object (at safeBot) — spans objectWidth, connecting left/right columns */}
-      {safeBot >= BOARD_T && (
-        <Board pos={[wL + objL + objectWidth / 2, safeBot, -defDepth / 2]} w={objectWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
-      )}
-      {/* Board above object (at safeTop) — spans objectWidth */}
-      <Board pos={[wL + objL + objectWidth / 2, safeTop, -defDepth / 2]} w={objectWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
 
       {/* ══════ SHELF ROWS ══════ */}
       {rows.map((row, ri) => {
