@@ -227,19 +227,17 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
       for (const w of widths) {
         const modL = x
         const modR = x + w
-        // Determine zone
-        if (modR <= objL) {
-          // Left zone
-          if (hasLeft) mods.push({ positions: [{ x: modL, w }], zone: "left" })
-        } else if (modL >= objR) {
-          // Right zone
-          if (hasRight) mods.push({ positions: [{ x: modL, w }], zone: "right" })
-        } else {
-          // Object zone — skip if row overlaps object
-          if (!rowOverlapsObj && objectWidth >= MIN_COL) {
-            mods.push({ positions: [{ x: modL, w }], zone: "center" })
+        if (rowOverlapsObj) {
+          // Row overlaps object: only render in left/right zones if they're wide enough
+          if (modR <= objL) {
+            if (hasLeft) mods.push({ positions: [{ x: modL, w }], zone: "left" })
+          } else if (modL >= objR) {
+            if (hasRight) mods.push({ positions: [{ x: modL, w }], zone: "right" })
           }
-          // else: skip entirely
+          // center zone: skip entirely
+        } else {
+          // Row does NOT overlap object: render all modules across full width
+          mods.push({ positions: [{ x: modL, w }], zone: "full" })
         }
         x += w + gap
       }
@@ -255,10 +253,10 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
       <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
       {/* Top board — full wallWidth at wallHeight */}
       <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
-      {/* Left side panel — full height */}
-      <SidePanel x={wL + BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />
-      {/* Right side panel — full height */}
-      <SidePanel x={wL + wallWidth - BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />
+      {/* Left side panel — only if leftGap >= 25" */}
+      {hasLeft && <SidePanel x={wL + BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />}
+      {/* Right side panel — only if rightGap >= 25" */}
+      {hasRight && <SidePanel x={wL + wallWidth - BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />}
 
 
       {/* ══════ SHELF ROWS ══════ */}
@@ -294,10 +292,11 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
             {/* Top board of this row */}
             {renderShelfBoard(topBoardY)}
 
-            {/* Modules */}
+            {/* Modules — only skip center zone modules when row overlaps object */}
             {rowModules[ri]?.map((mod: any, mi: number) => {
               const { x: modX, w: modW } = mod.positions[0]
-              if (rowOverlapsObj && mod.zone !== "left" && mod.zone !== "right") return null
+              // Only skip modules in the object/center zone when the row actually overlaps the object vertically
+              if (rowOverlapsObj && mod.zone === "center") return null
               return (
                 <ModuleBox
                   key={`m${ri}-${mi}`}
