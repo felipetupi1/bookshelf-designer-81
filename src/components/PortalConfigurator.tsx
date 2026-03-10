@@ -274,20 +274,15 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   const topModules = topResult?.shelves.map(s => s.modules)
   const bottomModules = bottomResult?.shelves.map(s => s.modules)
 
-  const makeShelfOps = (shelves: ShelfConfig[], setShelves: React.Dispatch<React.SetStateAction<ShelfConfig[]>>) => ({
-    add: () => { if (shelves.length < 8) setShelves([...shelves, { height: 14, depth: (shelves[shelves.length - 1]?.depth || 10) as 7 | 10 | 13 }]) },
-    remove: () => { if (shelves.length > 1) setShelves(shelves.slice(0, -1)) },
+  const globalOps = {
+    add: () => { if (globalShelves.length < 8) setGlobalShelves([...globalShelves, { height: 14, depth: (globalShelves[globalShelves.length - 1]?.depth || 10) as 7 | 10 | 13 }]) },
+    remove: () => { if (globalShelves.length > 1) setGlobalShelves(globalShelves.slice(0, -1)) },
     update: (index: number, field: "height" | "depth", value: number) => {
-      const newShelves = [...shelves]
+      const newShelves = [...globalShelves]
       newShelves[index] = { ...newShelves[index], [field]: value }
-      setShelves(field === "depth" ? enforceDepthConstraints(newShelves, index) : newShelves)
+      setGlobalShelves(field === "depth" ? enforceDepthConstraints(newShelves, index) : newShelves)
     },
-  })
-
-  const leftOps = makeShelfOps(leftShelves, setLeftShelves)
-  const rightOps = makeShelfOps(rightShelves, setRightShelves)
-  const topOps = makeShelfOps(topShelves, setTopShelves)
-  const bottomOps = makeShelfOps(bottomShelves, setBottomShelves)
+  }
 
   async function handleAddToCart() {
     setIsAddingToCart(true)
