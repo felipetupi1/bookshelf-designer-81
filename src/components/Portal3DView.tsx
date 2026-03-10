@@ -225,109 +225,83 @@ function PortalScene({ props, internalFinish, frameFinish }: {
   const hasLeft = leftGap >= MIN_MODULE_WIDTH
   const hasRight = rightGap >= MIN_MODULE_WIDTH
   const hasCenter = objectWidth >= MIN_MODULE_WIDTH
-
-  // Column X positions (centered on wall)
-  const leftX = -wallWidth / 2 + leftGap / 2
-  const rightX = -wallWidth / 2 + leftGap + objectWidth + rightGap / 2
-  const centerX = -wallWidth / 2 + leftGap + objectWidth / 2
-
   const maxDepth = shelves.length > 0 ? Math.max(...shelves.map(s => s.depth)) : 7
 
-  // Compute absolute row positions
-  const rows: RowData[] = useMemo(() => {
-    const result: RowData[] = []
+  // Wall is centered at x=0. Columns are placed left-to-right.
+  const wallLeft = -wallWidth / 2
+  const leftColX = wallLeft + leftGap / 2
+  const centerColX = wallLeft + leftGap + objectWidth / 2
+  const rightColX = wallLeft + leftGap + objectWidth + rightGap / 2
+
+  // Compute absolute Y positions for each shelf row from the unified shelf list
+  const rows = useMemo(() => {
+    const result: { boardY: number; moduleY: number; topBoardY: number; shelf: { height: number; depth: number } }[] = []
     let y = 0
-    for (let i = 0; i < shelves.length; i++) {
-      const shelf = shelves[i]
+    for (const shelf of shelves) {
       const boardY = y
       const moduleY = y + 0.75
       const topBoardY = moduleY + shelf.height
       const nextY = topBoardY + 0.75
-
-      if (nextY > wallHeight + 0.01) break // doesn't fit
-
-      // Row is "in bottom" if entire row (including top board) fits below object
-      // Must match configurator: topBoardY + 0.75 <= floorToObject === nextY <= floorToObject
-      const inBottom = nextY <= floorToObject
-      // Row is "in top" if modules start at or above object top
-      // Must match configurator: moduleY >= objectTop
-      const inTop = moduleY >= objectTop
-
-      result.push({ index: i, shelf, boardY, moduleY, topBoardY, nextY, inBottom, inTop })
+      if (nextY > wallHeight + 0.01) break
+      result.push({ boardY, moduleY, topBoardY, shelf })
       y = nextY
     }
     return result
-  }, [shelves, wallHeight, floorToObject, objectTop])
+  }, [shelves, wallHeight])
 
-  // Track center-bottom and center-top row indices for module mapping
-  const { bottomIndices, topIndices } = useMemo(() => {
-    const bottomIndices: number[] = []
-    const topIndices: number[] = []
-    rows.forEach((row, ri) => {
-      if (row.inBottom) bottomIndices.push(ri)
-      if (row.inTop) topIndices.push(ri)
+  // For center column, classify each row as below-object, above-object, or blocked
+  const centerClassification = useMemo(() => {
+    let bottomCount = 0
+    let topCount = 0
+    return rows.map(row => {
+      const rowBottom = row.boardY
+      const rowTopEdge = row.topBoardY + 0.75
+      if (rowTopEdge <= floorToObject) {
+        return { visible: true, zone: 'bottom' as const, zoneIndex: bottomCount++ }
+      }
+      if (rowBottom >= objectTop) {
+        return { visible: true, zone: 'top' as const, zoneIndex: topCount++ }
+      }
+      return { visible: false, zone: 'blocked' as const, zoneIndex: -1 }
     })
-    return { bottomIndices, topIndices }
-  }, [rows])
-
-  // Object placeholder position
-  const objY = floorToObject + objectHeight / 2
-  const objCenterX = centerX
+  }, [rows, floorToObject, objectTop])
 
   return (
     <group>
       {rows.map((row, ri) => {
         const { shelf, boardY, moduleY, topBoardY } = row
         const zOffset = -(maxDepth - shelf.depth)
+        const cc = centerClassification[ri]
 
         return (
           <group key={ri}>
-            {/* LEFT COLUMN */}
+            {/* ===== LEFT COLUMN ===== */}
             {hasLeft && (
               <group>
-                {ri === 0 && (
-                  <Board position={[leftX, boardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                )}
-                <Board position={[leftX, topBoardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                {renderColumnModules(leftModules?.[ri], leftGap, moduleY, shelf, maxDepth, internalFinish, frameFinish, leftX, `l-${ri}`)}
+                {ri === 0 && <Board position={[leftColX, boardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
+                <Board position={[leftColX, topBoardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+                {renderColumnModules(leftModules?.[ri], leftGap, moduleY, shelf, maxDepth, internalFinish, frameFinish, leftColX, `L${ri}`)}
               </group>
             )}
 
-            {/* RIGHT COLUMN */}
+            {/* ===== RIGHT COLUMN ===== */}
             {hasRight && (
               <group>
-                {ri === 0 && (
-                  <Board position={[rightX, boardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                )}
-                <Board position={[rightX, topBoardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                {renderColumnModules(rightModules?.[ri], rightGap, moduleY, shelf, maxDepth, internalFinish, frameFinish, rightX, `r-${ri}`)}
+                {ri === 0 && <Board position={[rightColX, boardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
+                <Board position={[rightColX, topBoardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+                {renderColumnModules(rightModules?.[ri], rightGap, moduleY, shelf, maxDepth, internalFinish, frameFinish, rightColX, `R${ri}`)}
               </group>
             )}
 
-            {/* CENTER COLUMN - below object */}
-            {hasCenter && row.inBottom && (
+            {/* ===== CENTER COLUMN (only where object doesn't block) ===== */}
+            {hasCenter && cc.visible && (
               <group>
-                {bottomIndices[0] === ri && (
-                  <Board position={[centerX, boardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                )}
-                <Board position={[centerX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+                {cc.zoneIndex === 0 && <Board position={[centerColX, boardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
+                <Board position={[centerColX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
                 {renderColumnModules(
-                  bottomModules?.[bottomIndices.indexOf(ri)],
-                  objectWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, centerX, `cb-${ri}`
-                )}
-              </group>
-            )}
-
-            {/* CENTER COLUMN - above object */}
-            {hasCenter && row.inTop && (
-              <group>
-                {topIndices[0] === ri && (
-                  <Board position={[centerX, boardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                )}
-                <Board position={[centerX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                {renderColumnModules(
-                  topModules?.[topIndices.indexOf(ri)],
-                  objectWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, centerX, `ct-${ri}`
+                  cc.zone === 'bottom' ? bottomModules?.[cc.zoneIndex] : topModules?.[cc.zoneIndex],
+                  objectWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, centerColX,
+                  `C${cc.zone[0]}${ri}`
                 )}
               </group>
             )}
@@ -335,12 +309,12 @@ function PortalScene({ props, internalFinish, frameFinish }: {
         )
       })}
 
-      {/* Object placeholder */}
-      <mesh position={[objCenterX, objY, -maxDepth / 2]}>
+      {/* Object placeholder (grey translucent box) */}
+      <mesh position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2]}>
         <boxGeometry args={[objectWidth, objectHeight, 1]} />
         <meshStandardMaterial color="#333333" transparent opacity={0.15} side={THREE.DoubleSide} />
       </mesh>
-      <lineSegments position={[objCenterX, objY, -maxDepth / 2 + 0.6]}>
+      <lineSegments position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2 + 0.6]}>
         <edgesGeometry args={[new THREE.BoxGeometry(objectWidth, objectHeight, 0.1)]} />
         <lineBasicMaterial color="#666666" />
       </lineSegments>
