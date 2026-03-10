@@ -358,19 +358,19 @@ function PortalScene({ props, internalFinish, frameFinish }: {
 
   return (
     <group>
-      {/* ── OUTER FRAME: one continuous unit ── */}
+      {/* ── OUTER FRAME ── */}
       {/* Bottom board — full wallWidth */}
       <Board position={[wallCenterX, 0, -defaultDepth / 2]} width={wallWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
       {/* Top board — full wallWidth */}
       <Board position={[wallCenterX, lastRowTopY, -defaultDepth / 2]} width={wallWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
-      {/* Left side panel — full wallHeight */}
-      <mesh position={[wallLeft + 0.375, wallHeight / 2, -maxDepth / 2]} castShadow receiveShadow>
-        <boxGeometry args={[0.75, wallHeight, maxDepth]} />
+      {/* Left side panel — from 0 to lastRowTopY only */}
+      <mesh position={[wallLeft + 0.375, lastRowTopY / 2, -maxDepth / 2]} castShadow receiveShadow>
+        <boxGeometry args={[0.75, lastRowTopY, maxDepth]} />
         <WoodMaterial finish={frameFinish} isFrame />
       </mesh>
-      {/* Right side panel — full wallHeight */}
-      <mesh position={[wallLeft + wallWidth - 0.375, wallHeight / 2, -maxDepth / 2]} castShadow receiveShadow>
-        <boxGeometry args={[0.75, wallHeight, maxDepth]} />
+      {/* Right side panel — from 0 to lastRowTopY only */}
+      <mesh position={[wallLeft + wallWidth - 0.375, lastRowTopY / 2, -maxDepth / 2]} castShadow receiveShadow>
+        <boxGeometry args={[0.75, lastRowTopY, maxDepth]} />
         <WoodMaterial finish={frameFinish} isFrame />
       </mesh>
 
