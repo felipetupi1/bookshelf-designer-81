@@ -7,8 +7,7 @@ export interface Portal3DViewRef {
   captureImage: () => Promise<string>
 }
 
-const MIN_MODULE_WIDTH = 7.25
-
+// Props interface — kept compatible with what PortalConfigurator passes
 interface Portal3DViewProps {
   wallWidth: number
   wallHeight: number
@@ -19,6 +18,7 @@ interface Portal3DViewProps {
   leftGap: number
   topHeight: number
   shelves: { height: number; depth: number }[]
+  // These are accepted but IGNORED — modules are self-computed from MODULE_WIDTHS
   leftModules?: Array<Array<{ width: number }>>
   rightModules?: Array<Array<{ width: number }>>
   topModules?: Array<Array<{ width: number }>>
@@ -28,6 +28,37 @@ interface Portal3DViewProps {
   hideTooltip?: boolean
 }
 
+// ─── MODULE WIDTH SEQUENCE ───
+const MODULE_WIDTHS = [7.25, 9.5, 11.75, 14, 16.25, 18.5, 20.75, 23]
+
+/** Fill a column width with modules from MODULE_WIDTHS, cycling through the sequence */
+function computeModules(columnWidth: number): { width: number }[] {
+  if (columnWidth < MODULE_WIDTHS[0]) return []
+  const modules: { width: number }[] = []
+  let remaining = columnWidth
+  let idx = 0
+  while (remaining >= MODULE_WIDTHS[0]) {
+    // Pick the largest module that fits
+    let picked = MODULE_WIDTHS[0]
+    for (let i = MODULE_WIDTHS.length - 1; i >= 0; i--) {
+      if (MODULE_WIDTHS[i] <= remaining) {
+        picked = MODULE_WIDTHS[i]
+        break
+      }
+    }
+    // But follow the sequence: use idx % MODULE_WIDTHS.length if it fits
+    const seqWidth = MODULE_WIDTHS[idx % MODULE_WIDTHS.length]
+    if (seqWidth <= remaining) {
+      picked = seqWidth
+    }
+    modules.push({ width: picked })
+    remaining -= picked
+    idx++
+  }
+  return modules
+}
+
+// ─── MATERIAL HELPERS ───
 const getWoodColor = (finish: string): string => {
   const colorMap: Record<string, string> = {
     White: "#F5F5F5", Maple: "#E8D4B8", Black: "#1A1A1A", Oak: "#D4A574", Walnut: "#5D432C",
@@ -60,6 +91,7 @@ function WoodMaterial({ finish, isFrame = false }: { finish: string; isFrame?: b
   return <meshStandardMaterial map={clonedTexture} roughness={isFrame ? 0.6 : 0.7} metalness={0.0} side={THREE.DoubleSide} envMapIntensity={0.3} />
 }
 
+// ─── 3D PRIMITIVES ───
 function Board({ position, width, depth, finish, zOffset = 0 }: {
   position: [number, number, number]; width: number; depth: number; finish: string; zOffset?: number
 }) {
@@ -114,6 +146,7 @@ function ModuleBox({ position, width, height, depth, internalFinish, frameFinish
   )
 }
 
+// ─── CANVAS HELPERS ───
 function CanvasCapture({ onReady }: { onReady: (fn: () => Promise<string>) => void }) {
   const { gl, scene, camera } = useThree()
   useMemo(() => {
@@ -167,149 +200,129 @@ function CameraController({ wallWidth, wallHeight, maxDepth, isMobile, resetKey 
   return null
 }
 
-interface RowData {
-  index: number
+// ─── RENDER MODULES IN A COLUMN ───
+function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix }: {
+  modules: { width: number }[]
+  colCenterX: number
+  colWidth: number
+  moduleY: number
   shelf: { height: number; depth: number }
-  boardY: number      // Y of the bottom board (absolute)
-  moduleY: number     // Y where modules start
-  topBoardY: number   // Y of the top board
-  nextY: number       // Y for next row start
-  inBottom: boolean   // row fits below object
-  inTop: boolean      // row fits above object
-}
-
-function renderColumnModules(
-  modules: { width: number }[] | undefined,
-  colWidth: number,
-  moduleY: number,
-  shelf: { height: number; depth: number },
-  maxDepth: number,
-  internalFinish: string,
-  frameFinish: string,
-  colX: number,
-  keyPrefix: string,
-) {
-  if (!modules || modules.length === 0) return null
+  maxDepth: number
+  internalFinish: string
+  frameFinish: string
+  keyPrefix: string
+}) {
   const zOffset = -(maxDepth - shelf.depth)
   const totalModW = modules.reduce((s, m) => s + m.width, 0)
-  const numSpaces = modules.length - 1
-  const spaceW = numSpaces > 0 ? (colWidth - totalModW) / numSpaces : 0
+  const gap = modules.length > 1 ? (colWidth - totalModW) / (modules.length - 1) : 0
+  let mx = colCenterX - colWidth / 2
 
-  const els: JSX.Element[] = []
-  let mx = colX - colWidth / 2
-  modules.forEach((mod, mi) => {
-    els.push(
-      <ModuleBox
-        key={`${keyPrefix}-${mi}`}
-        position={[mx + mod.width / 2, moduleY, 0]}
-        width={mod.width}
-        height={shelf.height}
-        depth={shelf.depth}
-        internalFinish={internalFinish}
-        frameFinish={frameFinish}
-        zOffset={zOffset}
-      />
-    )
-    mx += mod.width + spaceW
-  })
-  return <>{els}</>
+  return (
+    <>
+      {modules.map((mod, mi) => {
+        const el = (
+          <ModuleBox
+            key={`${keyPrefix}-${mi}`}
+            position={[mx + mod.width / 2, moduleY, 0]}
+            width={mod.width}
+            height={shelf.height}
+            depth={shelf.depth}
+            internalFinish={internalFinish}
+            frameFinish={frameFinish}
+            zOffset={zOffset}
+          />
+        )
+        mx += mod.width + gap
+        return el
+      })}
+    </>
+  )
 }
 
+// ─── MAIN SCENE ───
 function PortalScene({ props, internalFinish, frameFinish }: {
   props: Portal3DViewProps; internalFinish: string; frameFinish: string
 }) {
-  const { wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, leftGap, rightGap,
-    shelves, leftModules, rightModules, topModules, bottomModules } = props
+  const { wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, leftGap, rightGap, shelves } = props
 
   const objectTop = floorToObject + objectHeight
-  const hasLeft = leftGap >= MIN_MODULE_WIDTH
-  const hasRight = rightGap >= MIN_MODULE_WIDTH
-  const hasCenter = objectWidth >= MIN_MODULE_WIDTH
   const maxDepth = shelves.length > 0 ? Math.max(...shelves.map(s => s.depth)) : 7
 
-  // Wall is centered at x=0. Columns are placed left-to-right.
+  // Wall centered at x=0
   const wallLeft = -wallWidth / 2
   const leftColX = wallLeft + leftGap / 2
   const centerColX = wallLeft + leftGap + objectWidth / 2
   const rightColX = wallLeft + leftGap + objectWidth + rightGap / 2
 
-  // Compute absolute Y positions for each shelf row from the unified shelf list
+  const hasLeft = leftGap >= MODULE_WIDTHS[0]
+  const hasRight = rightGap >= MODULE_WIDTHS[0]
+  const hasCenter = objectWidth >= MODULE_WIDTHS[0]
+
+  // Step 1: Calculate Y positions for every shelf row
   const rows = useMemo(() => {
-    const result: { boardY: number; moduleY: number; topBoardY: number; shelf: { height: number; depth: number } }[] = []
+    const result: { y: number; shelf: { height: number; depth: number } }[] = []
     let y = 0
     for (const shelf of shelves) {
-      const boardY = y
-      const moduleY = y + 0.75
-      const topBoardY = moduleY + shelf.height
-      const nextY = topBoardY + 0.75
+      const nextY = y + shelf.height + 0.75
       if (nextY > wallHeight + 0.01) break
-      result.push({ boardY, moduleY, topBoardY, shelf })
+      result.push({ y, shelf })
       y = nextY
     }
     return result
   }, [shelves, wallHeight])
 
-  // For center column, classify each row as below-object, above-object, or blocked
-  const centerClassification = useMemo(() => {
-    let bottomCount = 0
-    let topCount = 0
-    return rows.map(row => {
-      const rowBottom = row.boardY
-      const rowTopEdge = row.topBoardY + 0.75
-      if (rowTopEdge <= floorToObject) {
-        return { visible: true, zone: 'bottom' as const, zoneIndex: bottomCount++ }
-      }
-      if (rowBottom >= objectTop) {
-        return { visible: true, zone: 'top' as const, zoneIndex: topCount++ }
-      }
-      return { visible: false, zone: 'blocked' as const, zoneIndex: -1 }
-    })
-  }, [rows, floorToObject, objectTop])
+  // Pre-compute modules for each column width (memoized)
+  const leftMods = useMemo(() => computeModules(leftGap), [leftGap])
+  const centerMods = useMemo(() => computeModules(objectWidth), [objectWidth])
+  const rightMods = useMemo(() => computeModules(rightGap), [rightGap])
 
   return (
     <group>
       {rows.map((row, ri) => {
-        const { shelf, boardY, moduleY, topBoardY } = row
+        const { y: shelfBottomY, shelf } = row
+        const boardY = shelfBottomY                    // bottom board Y
+        const moduleY = shelfBottomY + 0.75            // modules start above bottom board
+        const topBoardY = moduleY + shelf.height       // top board Y
         const zOffset = -(maxDepth - shelf.depth)
-        const cc = centerClassification[ri]
+
+        // Step 2: Does this row overlap the object? (for center column)
+        const shelfTop = shelfBottomY + shelf.height
+        const overlapsObject = shelfBottomY < objectTop && shelfTop > floorToObject
+        const centerVisible = hasCenter && !overlapsObject
 
         return (
           <group key={ri}>
-            {/* ===== LEFT COLUMN ===== */}
+            {/* ── LEFT COLUMN (always rendered) ── */}
             {hasLeft && (
               <group>
                 {ri === 0 && <Board position={[leftColX, boardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
                 <Board position={[leftColX, topBoardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                {renderColumnModules(leftModules?.[ri], leftGap, moduleY, shelf, maxDepth, internalFinish, frameFinish, leftColX, `L${ri}`)}
+                <ColumnModules modules={leftMods} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} />
               </group>
             )}
 
-            {/* ===== RIGHT COLUMN ===== */}
+            {/* ── CENTER COLUMN (only if not blocked by object) ── */}
+            {centerVisible && (
+              <group>
+                {ri === 0 && <Board position={[centerColX, boardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
+                <Board position={[centerColX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+                <ColumnModules modules={centerMods} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} />
+              </group>
+            )}
+
+            {/* ── RIGHT COLUMN (always rendered) ── */}
             {hasRight && (
               <group>
                 {ri === 0 && <Board position={[rightColX, boardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
                 <Board position={[rightColX, topBoardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                {renderColumnModules(rightModules?.[ri], rightGap, moduleY, shelf, maxDepth, internalFinish, frameFinish, rightColX, `R${ri}`)}
-              </group>
-            )}
-
-            {/* ===== CENTER COLUMN (only where object doesn't block) ===== */}
-            {hasCenter && cc.visible && (
-              <group>
-                {cc.zoneIndex === 0 && <Board position={[centerColX, boardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
-                <Board position={[centerColX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                {renderColumnModules(
-                  cc.zone === 'bottom' ? bottomModules?.[cc.zoneIndex] : topModules?.[cc.zoneIndex],
-                  objectWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, centerColX,
-                  `C${cc.zone[0]}${ri}`
-                )}
+                <ColumnModules modules={rightMods} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} />
               </group>
             )}
           </group>
         )
       })}
 
-      {/* Object placeholder (grey translucent box) */}
+      {/* ── OBJECT PLACEHOLDER (grey box) ── */}
       <mesh position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2]}>
         <boxGeometry args={[objectWidth, objectHeight, 1]} />
         <meshStandardMaterial color="#333333" transparent opacity={0.15} side={THREE.DoubleSide} />
@@ -322,6 +335,7 @@ function PortalScene({ props, internalFinish, frameFinish }: {
   )
 }
 
+// ─── EXPORTED COMPONENT ───
 export const Portal3DView = forwardRef<Portal3DViewRef, Portal3DViewProps>(
   function Portal3DView(props, ref) {
     const { wallWidth, wallHeight, finish, isMobile, hideTooltip } = props
