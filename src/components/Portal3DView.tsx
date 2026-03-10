@@ -381,20 +381,48 @@ function PortalScene({ props, internalFinish, frameFinish }: {
         const topBoardY = moduleY + shelf.height
         const zOffset = -(maxDepth - shelf.depth)
 
-        // Does this row overlap the object vertically? (only affects module rendering, NOT boards)
         const shelfTop = shelfBottomY + shelf.height + 0.75
         const overlapsObject = shelfBottomY < objectTop && shelfTop > floorToObject
         const centerVisible = hasCenter && !overlapsObject
 
+        // Object zone in scene coords (wallLeft-relative)
+        const objL = wallLeft + leftGap
+        const objR = wallLeft + leftGap + objectWidth
+        const leftBoardW = leftGap
+        const rightBoardW = rightGap
+        const leftBoardX = wallLeft + leftBoardW / 2
+        const rightBoardX = objR + rightBoardW / 2
+
+        // Helper to render a horizontal board, splitting around object if needed
+        const renderBoard = (boardY: number) => {
+          // Does this board's Y fall inside the object zone? (board is 0.75 thick, centered at boardY + 0.375)
+          const boardBottomY = boardY
+          const boardTopY = boardY + 0.75
+          const boardOverlapsObject = boardBottomY < objectTop && boardTopY > floorToObject
+
+          if (!boardOverlapsObject) {
+            // Full width board — no overlap
+            return <Board position={[wallCenterX, boardY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+          }
+          // Split into left and right pieces around the object
+          return (
+            <>
+              {leftBoardW > 0 && (
+                <Board position={[leftBoardX, boardY, -shelf.depth / 2]} width={leftBoardW} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+              )}
+              {rightBoardW > 0 && (
+                <Board position={[rightBoardX, boardY, -shelf.depth / 2]} width={rightBoardW} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+              )}
+            </>
+          )
+        }
+
         return (
           <group key={ri}>
-            {/* Horizontal shelf boards ALWAYS span full wallWidth — never split */}
-            {ri > 0 && (
-              <Board position={[wallCenterX, shelfBottomY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-            )}
-            <Board position={[wallCenterX, topBoardY, -shelf.depth / 2]} width={wallWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
+            {ri > 0 && renderBoard(shelfBottomY)}
+            {renderBoard(topBoardY)}
 
-            {/* Modules — only skip center zone when overlapping object */}
+            {/* Modules — skip center zone when overlapping object */}
             {hasLeft && <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" />}
             {centerVisible && <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} align="center" />}
             {hasRight && <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" />}
@@ -402,9 +430,9 @@ function PortalScene({ props, internalFinish, frameFinish }: {
         )
       })}
 
-      {/* ── Board above the object at y = objectTop + 0.75 ── */}
+      {/* ── Board above the object at y = objectTop ── */}
       {hasCenter && (
-        <Board position={[centerColX, objectTop + 0.75, -defaultDepth / 2]} width={objectWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
+        <Board position={[centerColX, objectTop, -defaultDepth / 2]} width={objectWidth} depth={defaultDepth} finish={internalFinish} zOffset={-(maxDepth - defaultDepth)} />
       )}
 
       {/* ── OBJECT PLACEHOLDER (grey box) ── */}
