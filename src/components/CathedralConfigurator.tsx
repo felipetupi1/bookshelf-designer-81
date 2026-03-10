@@ -2,6 +2,7 @@
 // This component needs the Cathedral3DView which is being created
 import type React from "react"
 import { useState, useMemo, useRef } from "react"
+import { Cathedral3DView, type Cathedral3DViewRef } from "./Cathedral3DView"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -127,12 +128,26 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   const [selectedFinish, setSelectedFinish] = useState("Oak/Oak")
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
+  const cathedral3DRef = useRef<Cathedral3DViewRef>(null)
 
   const cathedralData = useMemo(() => {
     try { return calculateCathedral(W, H, H1, shelves, direction, selectedFinish) } catch { return null }
   }, [W, H, H1, shelves, direction, selectedFinish])
 
   const rows = cathedralData?.rows || []
+
+  const modulesPerRow = useMemo(() => {
+    return rows.map(row => {
+      const modules: { width: number }[] = []
+      let remaining = row.availableWidth
+      while (remaining > 0) {
+        const w = Math.min(remaining, 25)
+        modules.push({ width: w })
+        remaining -= w
+      }
+      return modules
+    })
+  }, [rows])
 
   const { totalPrice, totalArea } = useMemo(() => {
     const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
@@ -207,9 +222,18 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
             </div>
 
             <div className="flex items-center justify-center h-full">
-              <div className="bg-card/90 backdrop-blur-sm border border-border rounded-lg shadow-md overflow-hidden flex items-center justify-center p-4" style={{ width: '300px', maxHeight: '320px' }}>
-                <CathedralSchematic W={W} H={H} H1={H1} direction={direction} shelfYPositions={shelfYPositions} />
-              </div>
+              <Cathedral3DView
+                ref={cathedral3DRef}
+                W={W} H={H} H1={H1}
+                direction={direction}
+                rows={rows}
+                modulesPerRow={modulesPerRow}
+                finish={selectedFinish}
+              />
+            </div>
+
+            <div className="absolute bottom-6 right-6 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-lg shadow-md overflow-hidden p-2" style={{ width: '160px' }}>
+              <CathedralSchematic W={W} H={H} H1={H1} direction={direction} shelfYPositions={shelfYPositions} />
             </div>
           </div>
         </div>
