@@ -57,8 +57,8 @@ function WoodMaterial({ finish, isFrame = false }: { finish: string; isFrame?: b
 
 // ─── 3D PRIMITIVES ───
 function Board({ pos, w, d, finish, zOff = 0 }: { pos: [number, number, number]; w: number; d: number; finish: string; zOff?: number }) {
+  const geo = useMemo(() => new THREE.BoxGeometry(Math.max(w, 0.01), BOARD_T, d), [w, d])
   if (w <= 0) return null
-  const geo = useMemo(() => new THREE.BoxGeometry(w, BOARD_T, d), [w, d])
   return (
     <mesh position={[pos[0], pos[1] + BOARD_T / 2, pos[2] + zOff]} castShadow receiveShadow geometry={geo}>
       <WoodMaterial finish={finish} />
