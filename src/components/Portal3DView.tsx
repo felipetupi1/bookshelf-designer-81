@@ -164,9 +164,10 @@ function Baguete({ position, height, finish, zOffset = 0 }: {
   )
 }
 
-function ModuleBox({ position, width, height, depth, internalFinish, frameFinish, zOffset = 0 }: {
+function ModuleBox({ position, width, height, depth, internalFinish, frameFinish, zOffset = 0, hideLeftSide = false, hideRightSide = false }: {
   position: [number, number, number]; width: number; height: number; depth: number
   internalFinish: string; frameFinish: string; zOffset?: number
+  hideLeftSide?: boolean; hideRightSide?: boolean
 }) {
   const sideThickness = 0.75
   const backThickness = 0.75
@@ -177,20 +178,28 @@ function ModuleBox({ position, width, height, depth, internalFinish, frameFinish
 
   return (
     <group position={position}>
-      <mesh position={[-width / 2 + sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
-        <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
-      </mesh>
-      <mesh position={[width / 2 - sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
-        <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
-      </mesh>
+      {!hideLeftSide && (
+        <mesh position={[-width / 2 + sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
+          <boxGeometry args={[sideThickness, height, depth]} />
+          <WoodMaterial finish={internalFinish} />
+        </mesh>
+      )}
+      {!hideRightSide && (
+        <mesh position={[width / 2 - sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
+          <boxGeometry args={[sideThickness, height, depth]} />
+          <WoodMaterial finish={internalFinish} />
+        </mesh>
+      )}
       <mesh position={[0, height / 2 + bagueteOffset, backZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
         <WoodMaterial finish={internalFinish} />
       </mesh>
-      <Baguete position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
-      <Baguete position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
+      {!hideLeftSide && (
+        <Baguete position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
+      )}
+      {!hideRightSide && (
+        <Baguete position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
+      )}
     </group>
   )
 }
@@ -250,7 +259,7 @@ function CameraController({ wallWidth, wallHeight, maxDepth, isMobile, resetKey 
 }
 
 // ─── RENDER MODULES IN A COLUMN ───
-function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix, align = "center" }: {
+function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix, align = "center", suppressEdge }: {
   modules: { width: number }[]
   colCenterX: number
   colWidth: number
@@ -261,6 +270,7 @@ function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth
   frameFinish: string
   keyPrefix: string
   align?: "left" | "right" | "center"
+  suppressEdge?: "left" | "right" | null
 }) {
   const zOffset = -(maxDepth - shelf.depth)
   const totalModW = modules.reduce((s, m) => s + m.width, 0)
@@ -283,6 +293,10 @@ function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth
   return (
     <>
       {modules.map((mod, mi) => {
+        const isFirst = mi === 0
+        const isLast = mi === modules.length - 1
+        const hideLeft = suppressEdge === "left" && isFirst
+        const hideRight = suppressEdge === "right" && isLast
         const el = (
           <ModuleBox
             key={`${keyPrefix}-${mi}`}
@@ -293,6 +307,8 @@ function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth
             internalFinish={internalFinish}
             frameFinish={frameFinish}
             zOffset={zOffset}
+            hideLeftSide={hideLeft}
+            hideRightSide={hideRight}
           />
         )
         mx += mod.width + gap
@@ -422,10 +438,10 @@ function PortalScene({ props, internalFinish, frameFinish }: {
             {ri > 0 && renderBoard(shelfBottomY)}
             {renderBoard(topBoardY)}
 
-            {/* Modules — skip center zone when overlapping object */}
-            {hasLeft && <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" />}
+            {/* Modules — skip center zone when overlapping object; suppress side panels facing object */}
+            {hasLeft && <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" suppressEdge={overlapsObject ? "right" : null} />}
             {centerVisible && <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} align="center" />}
-            {hasRight && <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" />}
+            {hasRight && <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" suppressEdge={overlapsObject ? "left" : null} />}
           </group>
         )
       })}
