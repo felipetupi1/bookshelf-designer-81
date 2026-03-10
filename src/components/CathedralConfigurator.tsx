@@ -232,9 +232,6 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
               />
             </div>
 
-            <div className="absolute bottom-6 right-6 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-lg shadow-md overflow-hidden p-2" style={{ width: '160px' }}>
-              <CathedralSchematic W={W} H={H} H1={H1} direction={direction} shelfYPositions={shelfYPositions} />
-            </div>
           </div>
         </div>
 
