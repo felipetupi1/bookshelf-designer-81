@@ -31,10 +31,11 @@ interface Portal3DViewProps {
 // ─── MODULE WIDTH SEQUENCE ───
 const MODULE_WIDTHS = [7.25, 9.5, 11.75, 14, 16.25, 18.5, 20.75, 23]
 const MAX_GAP = 23
+const MIN_COLUMN_WIDTH = 25
 
-/** Same logic as bookshelf-calculator.ts calculateShelfModules */
+/** Portal-specific: fill with smallest possible modules */
 function computeModulesForRow(columnWidth: number, startModuleIndex: number): { modules: { width: number }[], nextIndex: number } {
-  if (columnWidth < MODULE_WIDTHS[0]) return { modules: [], nextIndex: startModuleIndex }
+  if (columnWidth < MIN_COLUMN_WIDTH) return { modules: [], nextIndex: startModuleIndex }
   const moduleWidths: number[] = []
   let idx = startModuleIndex
   // Start with first two modules from sequence
@@ -42,7 +43,7 @@ function computeModulesForRow(columnWidth: number, startModuleIndex: number): { 
   idx++
   moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
   idx++
-  // Keep adding until free space fits between modules
+  // Keep adding smallest modules until free space fits between modules
   let currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
   let freeSpace = columnWidth - currentWidth
   let maxAllowed = MAX_GAP * (moduleWidths.length - 1)
@@ -208,7 +209,7 @@ function CameraController({ wallWidth, wallHeight, maxDepth, isMobile, resetKey 
 }
 
 // ─── RENDER MODULES IN A COLUMN ───
-function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix }: {
+function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth, internalFinish, frameFinish, keyPrefix, align = "center" }: {
   modules: { width: number }[]
   colCenterX: number
   colWidth: number
@@ -218,12 +219,26 @@ function ColumnModules({ modules, colCenterX, colWidth, moduleY, shelf, maxDepth
   internalFinish: string
   frameFinish: string
   keyPrefix: string
+  align?: "left" | "right" | "center"
 }) {
   const zOffset = -(maxDepth - shelf.depth)
   const totalModW = modules.reduce((s, m) => s + m.width, 0)
-  const gap = modules.length > 1 ? (colWidth - totalModW) / (modules.length - 1) : 0
-  let mx = colCenterX - colWidth / 2
+  const remainingSpace = colWidth - totalModW
+  const gap = modules.length > 1 ? remainingSpace / (modules.length - 1) : 0
 
+  // Calculate starting x based on alignment
+  const colLeft = colCenterX - colWidth / 2
+  const colRight = colCenterX + colWidth / 2
+  let startX: number
+  if (modules.length === 1) {
+    if (align === "left") startX = colLeft
+    else if (align === "right") startX = colRight - modules[0].width
+    else startX = colCenterX - modules[0].width / 2
+  } else {
+    startX = colLeft
+  }
+
+  let mx = startX
   return (
     <>
       {modules.map((mod, mi) => {
@@ -261,9 +276,9 @@ function PortalScene({ props, internalFinish, frameFinish }: {
   const centerColX = wallLeft + leftGap + objectWidth / 2
   const rightColX = wallLeft + leftGap + objectWidth + rightGap / 2
 
-  const hasLeft = leftGap >= MODULE_WIDTHS[0]
-  const hasRight = rightGap >= MODULE_WIDTHS[0]
-  const hasCenter = objectWidth >= MODULE_WIDTHS[0]
+  const hasLeft = leftGap >= MIN_COLUMN_WIDTH
+  const hasRight = rightGap >= MIN_COLUMN_WIDTH
+  const hasCenter = objectWidth >= MIN_COLUMN_WIDTH
 
   // Step 1: Calculate Y positions for every shelf row
   const rows = useMemo(() => {
@@ -294,71 +309,57 @@ function PortalScene({ props, internalFinish, frameFinish }: {
     return data
   }, [rows, leftGap, objectWidth, rightGap])
 
+  // Check if top-of-object height is enough for center shelves above
+  const topSpace = wallHeight - objectTop
+
   return (
     <group>
       {rows.map((row, ri) => {
         const { y: shelfBottomY, shelf } = row
-        const boardY = shelfBottomY                    // bottom board Y
-        const moduleY = shelfBottomY + 0.75            // modules start above bottom board
-        const topBoardY = moduleY + shelf.height       // top board Y
+        const boardY = shelfBottomY
+        const moduleY = shelfBottomY + 0.75
+        const topBoardY = moduleY + shelf.height
         const zOffset = -(maxDepth - shelf.depth)
 
-        // Step 2: Does this row overlap the object? (for center column)
+        // Does this row overlap the object? (for center column)
         const shelfTop = shelfBottomY + shelf.height
         const overlapsObject = shelfBottomY < objectTop && shelfTop > floorToObject
+        // Center visible only if no overlap AND objectWidth >= MIN_COLUMN_WIDTH
         const centerVisible = hasCenter && !overlapsObject
 
-      return (
+        // Check if the top board of this row aligns with objectTop (for spanning board)
+        const topBoardIsObjectTop = Math.abs(topBoardY - objectTop) < 1.0
+
+        return (
           <group key={ri}>
             {hasLeft && (
               <group>
                 {ri === 0 && <Board position={[leftColX, boardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
                 <Board position={[leftColX, topBoardY, -shelf.depth / 2]} width={leftGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} />
+                <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" />
               </group>
             )}
             {centerVisible && (
               <group>
                 {ri === 0 && <Board position={[centerColX, boardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
                 <Board position={[centerColX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} />
+                <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} align="center" />
               </group>
+            )}
+            {/* Board spanning center at object top height — even if center modules are hidden */}
+            {!centerVisible && hasCenter && topBoardIsObjectTop && (
+              <Board position={[centerColX, topBoardY, -shelf.depth / 2]} width={objectWidth} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
             )}
             {hasRight && (
               <group>
                 {ri === 0 && <Board position={[rightColX, boardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />}
                 <Board position={[rightColX, topBoardY, -shelf.depth / 2]} width={rightGap} depth={shelf.depth} finish={internalFinish} zOffset={zOffset} />
-                <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} />
+                <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" />
               </group>
             )}
           </group>
         )
       })}
-
-      {/* ── Board above the object ── */}
-      {(() => {
-        // Find the shelf depth at the object top level
-        let boardDepth = maxDepth
-        let y = 0
-        for (const shelf of shelves) {
-          const shelfTop = y + shelf.height + 0.75
-          if (floorToObject + objectHeight >= y && floorToObject + objectHeight <= shelfTop) {
-            boardDepth = shelf.depth
-            break
-          }
-          y = shelfTop
-        }
-        const zOff = -(maxDepth - boardDepth)
-        return (
-          <Board
-            position={[centerColX, floorToObject + objectHeight, -boardDepth / 2]}
-            width={objectWidth}
-            depth={boardDepth}
-            finish={internalFinish}
-            zOffset={zOff}
-          />
-        )
-      })()}
 
       {/* ── OBJECT PLACEHOLDER (grey box) ── */}
       <mesh position={[centerColX, floorToObject + objectHeight / 2, -maxDepth / 2]}>
