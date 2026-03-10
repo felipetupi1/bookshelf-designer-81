@@ -322,11 +322,9 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
               </div>
             </ConfigSection>
 
-            <ConfigSection step={3} title="Shelves" subtitle={`L: ${shelvesLeft.length} · F: ${shelvesFront.length} · R: ${shelvesRight.length}`} defaultOpen={true}>
+            <ConfigSection step={3} title="Shelves" subtitle={`${shelves.length} shelves`} defaultOpen={true}>
               <div className="space-y-6">
-                <SectionShelfConfig label="Left Arm (W1)" shelves={shelvesLeft} onAdd={leftOps.add} onRemove={leftOps.remove} onUpdate={leftOps.update} />
-                <SectionShelfConfig label="Front Section (W)" shelves={shelvesFront} onAdd={frontOps.add} onRemove={frontOps.remove} onUpdate={frontOps.update} />
-                <SectionShelfConfig label="Right Arm (W2)" shelves={shelvesRight} onAdd={rightOps.add} onRemove={rightOps.remove} onUpdate={rightOps.update} />
+                <SectionShelfConfig label="All Arms" shelves={shelves} onAdd={shelfOps.add} onRemove={shelfOps.remove} onUpdate={shelfOps.update} />
               </div>
             </ConfigSection>
 
