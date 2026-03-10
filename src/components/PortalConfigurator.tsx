@@ -204,6 +204,8 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   })
   const portal3DRef = useRef<Portal3DViewRef>(null)
 
+  const showFloorToObject = objectType === "tv" || objectType === "window" || objectType === "other"
+
   function applyPreset(preset: ObjectPreset) {
     setObjectType(preset)
     setSelectedPresetSize(null)
