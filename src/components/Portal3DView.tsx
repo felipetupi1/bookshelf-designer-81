@@ -438,10 +438,10 @@ function PortalScene({ props, internalFinish, frameFinish }: {
             {ri > 0 && renderBoard(shelfBottomY)}
             {renderBoard(topBoardY)}
 
-            {/* Modules — skip center zone when overlapping object */}
-            {hasLeft && <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" />}
+            {/* Modules — skip center zone when overlapping object; suppress side panels facing object */}
+            {hasLeft && <ColumnModules modules={columnModuleData[ri].left} colCenterX={leftColX} colWidth={leftGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`L${ri}`} align="left" suppressEdge={overlapsObject ? "right" : null} />}
             {centerVisible && <ColumnModules modules={columnModuleData[ri].center} colCenterX={centerColX} colWidth={objectWidth} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`C${ri}`} align="center" />}
-            {hasRight && <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" />}
+            {hasRight && <ColumnModules modules={columnModuleData[ri].right} colCenterX={rightColX} colWidth={rightGap} moduleY={moduleY} shelf={shelf} maxDepth={maxDepth} internalFinish={internalFinish} frameFinish={frameFinish} keyPrefix={`R${ri}`} align="right" suppressEdge={overlapsObject ? "left" : null} />}
           </group>
         )
       })}
