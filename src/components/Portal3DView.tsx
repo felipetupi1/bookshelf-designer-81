@@ -164,9 +164,10 @@ function Baguete({ position, height, finish, zOffset = 0 }: {
   )
 }
 
-function ModuleBox({ position, width, height, depth, internalFinish, frameFinish, zOffset = 0 }: {
+function ModuleBox({ position, width, height, depth, internalFinish, frameFinish, zOffset = 0, hideLeftSide = false, hideRightSide = false }: {
   position: [number, number, number]; width: number; height: number; depth: number
   internalFinish: string; frameFinish: string; zOffset?: number
+  hideLeftSide?: boolean; hideRightSide?: boolean
 }) {
   const sideThickness = 0.75
   const backThickness = 0.75
@@ -177,20 +178,28 @@ function ModuleBox({ position, width, height, depth, internalFinish, frameFinish
 
   return (
     <group position={position}>
-      <mesh position={[-width / 2 + sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
-        <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
-      </mesh>
-      <mesh position={[width / 2 - sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
-        <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
-      </mesh>
+      {!hideLeftSide && (
+        <mesh position={[-width / 2 + sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
+          <boxGeometry args={[sideThickness, height, depth]} />
+          <WoodMaterial finish={internalFinish} />
+        </mesh>
+      )}
+      {!hideRightSide && (
+        <mesh position={[width / 2 - sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
+          <boxGeometry args={[sideThickness, height, depth]} />
+          <WoodMaterial finish={internalFinish} />
+        </mesh>
+      )}
       <mesh position={[0, height / 2 + bagueteOffset, backZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
         <WoodMaterial finish={internalFinish} />
       </mesh>
-      <Baguete position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
-      <Baguete position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
+      {!hideLeftSide && (
+        <Baguete position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
+      )}
+      {!hideRightSide && (
+        <Baguete position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
+      )}
     </group>
   )
 }
