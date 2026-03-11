@@ -237,6 +237,7 @@ export function BookshelfConfigurator() {
     isOpen: false, finishName: "", imageSrc: "",
   })
   const bookshelf3DRef = useRef<Bookshelf3DViewRef>(null)
+  const mainPreviewRef = useRef<HTMLDivElement>(null)
   const bookshelfType: BookshelfType = (mainType === "portal" || mainType === "cathedral" || mainType === "usurround") ? "bookshelf" : mainType
 
   useEffect(() => {
