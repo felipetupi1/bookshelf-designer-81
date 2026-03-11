@@ -41,7 +41,7 @@ const getTextureUrl = (finish: string): string | null => {
   const textureMap: Record<string, string> = {
     Maple: "/images/finishes/maple.jpeg",
     Oak: "/images/finishes/oak.jpg",
-    Walnut: "/images/finishes/walnut.jpeg",
+    Walnut: "/images/finishes/walnut.jpg",
   }
   return textureMap[finish] || null
 }
@@ -49,8 +49,7 @@ const getTextureUrl = (finish: string): string | null => {
 function WoodMaterial({
   finish,
   isFrame = false,
-  verticalGrain = false,
-}: { finish: string; isFrame?: boolean; randomId?: number; verticalGrain?: boolean }) {
+}: { finish: string; isFrame?: boolean }) {
   const textureUrl = getTextureUrl(finish)
   const texture = useLoader(
     THREE.TextureLoader,
@@ -62,13 +61,11 @@ function WoodMaterial({
     t.wrapS = THREE.RepeatWrapping
     t.wrapT = THREE.RepeatWrapping
     t.repeat.set(1, 1)
-    if (verticalGrain) {
-      t.rotation = Math.PI / 2
-      t.center.set(0.5, 0.5)
-    }
+    t.rotation = Math.PI / 2
+    t.center.set(0.5, 0.5)
     t.needsUpdate = true
     return t
-  }, [texture, verticalGrain])
+  }, [texture])
 
   if (!textureUrl) {
     const color = getWoodColor(finish)
@@ -233,7 +230,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} isFrame={false} verticalGrain />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
 
       <mesh
@@ -242,7 +239,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} isFrame={false} verticalGrain />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
 
       <mesh
@@ -251,7 +248,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
-        <WoodMaterial finish={internalFinish} isFrame={false} verticalGrain />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
 
       <Baguete

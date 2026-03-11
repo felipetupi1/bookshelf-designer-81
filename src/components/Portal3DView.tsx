@@ -38,7 +38,7 @@ const WOOD_COLORS: Record<string, string> = {
   White: "#F5F5F5", Maple: "#E8D4B8", Black: "#1A1A1A", Oak: "#D4A574", Walnut: "#5D432C",
 }
 const TEXTURE_URLS: Record<string, string> = {
-  Maple: "/images/finishes/maple.jpeg", Oak: "/images/finishes/oak.jpg", Walnut: "/images/finishes/walnut.jpeg",
+  Maple: "/images/finishes/maple.jpeg", Oak: "/images/finishes/oak.jpg", Walnut: "/images/finishes/walnut.jpg",
 }
 
 function WoodMaterial({ finish, isFrame = false }: { finish: string; isFrame?: boolean }) {
@@ -48,6 +48,8 @@ function WoodMaterial({ finish, isFrame = false }: { finish: string; isFrame?: b
     const t = texture.clone()
     t.wrapS = t.wrapT = THREE.RepeatWrapping
     t.repeat.set(1, 1)
+    t.rotation = Math.PI / 2
+    t.center.set(0.5, 0.5)
     t.needsUpdate = true
     return t
   }, [texture])
