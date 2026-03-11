@@ -24,6 +24,7 @@ import type { BookshelfConfig, ShelfConfig, BookshelfType, BookshelfResult } fro
 import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { Bookshelf3DView, type Bookshelf3DViewRef } from "./Bookshelf3DView"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FloatingPreview } from "./FloatingPreview"
 import { PortalConfigurator } from "./PortalConfigurator"
 import { CathedralConfigurator } from "./CathedralConfigurator"
 import { USurroundConfigurator } from "./USurroundConfigurator"
