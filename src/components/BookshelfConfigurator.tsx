@@ -52,11 +52,11 @@ const FINISH_OPTIONS = [
   },
   {
     id: "Oak/Oak", label: "Oak", price: 68.15,
-    color1: "#D4A574", color2: "#D4A574", comingSoon: false, previewImage: "/images/finishes/oak.jpeg",
+    color1: "#D4A574", color2: "#D4A574", comingSoon: false, previewImage: "/images/finishes/oak.jpg",
   },
   {
     id: "Walnut/Walnut", label: "Walnut", price: 76.2,
-    color1: "#5D432C", color2: "#5D432C", comingSoon: false, previewImage: "/images/finishes/walnut.jpeg",
+    color1: "#5D432C", color2: "#5D432C", comingSoon: false, previewImage: "/images/finishes/walnut.jpg",
   },
   {
     id: "Oak/Black", label: "Oak/Black", price: 77.99,

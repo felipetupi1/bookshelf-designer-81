@@ -33,8 +33,8 @@ const FINISH_OPTIONS = [
   { id: "Black/Black", label: "Black", price: 54.59, color1: "#1a1a1a", color2: "#1a1a1a", comingSoon: true, previewImage: null as string | null },
   { id: "Oak/White", label: "Oak/White", price: 60.18, color1: "#D4A574", color2: "#f5f5f5", comingSoon: false, previewImage: null as string | null },
   { id: "Maple/Black", label: "Maple/Black", price: 65.1, color1: "#E8D4B8", color2: "#1a1a1a", comingSoon: false, previewImage: "/images/finishes/maple-black.jpeg" },
-  { id: "Oak/Oak", label: "Oak", price: 68.15, color1: "#D4A574", color2: "#D4A574", comingSoon: false, previewImage: "/images/finishes/oak.jpeg" },
-  { id: "Walnut/Walnut", label: "Walnut", price: 76.2, color1: "#5D432C", color2: "#5D432C", comingSoon: false, previewImage: "/images/finishes/walnut.jpeg" },
+  { id: "Oak/Oak", label: "Oak", price: 68.15, color1: "#D4A574", color2: "#D4A574", comingSoon: false, previewImage: "/images/finishes/oak.jpg" },
+  { id: "Walnut/Walnut", label: "Walnut", price: 76.2, color1: "#5D432C", color2: "#5D432C", comingSoon: false, previewImage: "/images/finishes/walnut.jpg" },
   { id: "Oak/Black", label: "Oak/Black", price: 77.99, color1: "#D4A574", color2: "#1a1a1a", comingSoon: false, previewImage: "/images/finishes/oak-black.jpeg" },
 ]
 
