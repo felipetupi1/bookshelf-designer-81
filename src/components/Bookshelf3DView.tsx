@@ -230,7 +230,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} isFrame={false} verticalGrain />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
 
       <mesh
