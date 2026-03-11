@@ -204,6 +204,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     isOpen: false, finishName: "", imageSrc: "",
   })
   const portal3DRef = useRef<Portal3DViewRef>(null)
+  const mainPreviewRef = useRef<HTMLDivElement>(null)
 
   const showFloorToObject = objectType === "tv" || objectType === "window" || objectType === "other"
 
