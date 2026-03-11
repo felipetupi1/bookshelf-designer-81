@@ -11,6 +11,7 @@ import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { USurround3DView, type USurround3DViewRef } from "./USurround3DView"
 import { USurroundSchematic } from "./USurroundSchematic"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FloatingPreview } from "./FloatingPreview"
 
 import iconHorizontal from "@/assets/icons/Horizontal.png"
 import iconBookshelf from "@/assets/icons/Vertical_Bookshelf.png"
@@ -148,6 +149,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const view3DRef = useRef<USurround3DViewRef>(null)
+  const mainPreviewRef = useRef<HTMLDivElement>(null)
 
   const defaultShelves = (): ShelfConfig[] => [
     { height: 14, depth: 13 }, { height: 14, depth: 13 },
@@ -254,7 +256,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
       </header>
 
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
-        <div className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
+        <div ref={mainPreviewRef} className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 p-4 lg:p-6">
             <div className="absolute top-6 left-6 z-10 flex items-center gap-2">
               {FINISH_OPTIONS.filter(f => f.previewImage && !f.comingSoon).map(fin => (
@@ -281,6 +283,19 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
             )}
           </div>
         </div>
+
+        {usurroundResult && (
+          <FloatingPreview mainPreviewRef={mainPreviewRef}>
+            {(isMini) => (
+              <USurround3DView
+                w1={w1} w={w} w2={w2}
+                shelvesLeft={shelvesLeft} shelvesFront={shelvesFront} shelvesRight={shelvesRight}
+                modulesLeft={modulesLeft} modulesFront={modulesFront} modulesRight={modulesRight}
+                finish={selectedFinish} isMobile={isMini} hideTooltip
+              />
+            )}
+          </FloatingPreview>
+        )}
 
         <div className="lg:w-[40%] xl:w-[35%] flex-shrink-0 configurator-config">
           <div className="p-4 md:p-6 lg:p-8 space-y-0 configurator-config-inner">

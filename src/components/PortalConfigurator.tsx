@@ -25,6 +25,7 @@ import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { PortalSchematic } from "./PortalSchematic"
 import { Portal3DView, type Portal3DViewRef } from "./Portal3DView"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FloatingPreview } from "./FloatingPreview"
 
 const MIN_MODULE_WIDTH = 7.25
 
@@ -203,6 +204,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     isOpen: false, finishName: "", imageSrc: "",
   })
   const portal3DRef = useRef<Portal3DViewRef>(null)
+  const mainPreviewRef = useRef<HTMLDivElement>(null)
 
   const showFloorToObject = objectType === "tv" || objectType === "window" || objectType === "other"
 
@@ -378,7 +380,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
       </header>
 
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
-        <div className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
+        <div ref={mainPreviewRef} className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 p-4 lg:p-6">
             <div className="absolute top-6 left-6 z-10 flex items-center gap-2">
               {FINISH_OPTIONS.filter(f => f.previewImage && !f.comingSoon).map(finish => (
@@ -408,6 +410,21 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
             />
           </div>
         </div>
+
+        <FloatingPreview mainPreviewRef={mainPreviewRef}>
+          {(isMini) => (
+            <Portal3DView
+              wallWidth={wallWidth} wallHeight={wallHeight}
+              objectWidth={objectWidth} objectHeight={objectHeight}
+              floorToObject={floorToObject} rightGap={rightGap}
+              leftGap={leftGap} topHeight={topSectionHeight}
+              shelves={sideShelves}
+              leftModules={leftModules} rightModules={rightModules}
+              topModules={topModules} bottomModules={bottomModules}
+              finish={selectedFinish} isMobile={isMini} hideTooltip
+            />
+          )}
+        </FloatingPreview>
 
         <div className="lg:w-[40%] xl:w-[35%] flex-shrink-0 configurator-config">
           <div className="p-4 md:p-6 lg:p-8 space-y-0 configurator-config-inner">

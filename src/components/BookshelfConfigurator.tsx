@@ -24,6 +24,7 @@ import type { BookshelfConfig, ShelfConfig, BookshelfType, BookshelfResult } fro
 import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { Bookshelf3DView, type Bookshelf3DViewRef } from "./Bookshelf3DView"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FloatingPreview } from "./FloatingPreview"
 import { PortalConfigurator } from "./PortalConfigurator"
 import { CathedralConfigurator } from "./CathedralConfigurator"
 import { USurroundConfigurator } from "./USurroundConfigurator"
@@ -236,6 +237,7 @@ export function BookshelfConfigurator() {
     isOpen: false, finishName: "", imageSrc: "",
   })
   const bookshelf3DRef = useRef<Bookshelf3DViewRef>(null)
+  const mainPreviewRef = useRef<HTMLDivElement>(null)
   const bookshelfType: BookshelfType = (mainType === "portal" || mainType === "cathedral" || mainType === "usurround") ? "bookshelf" : mainType
 
   useEffect(() => {
@@ -449,7 +451,7 @@ export function BookshelfConfigurator() {
       {/* ─── Main layout ─── */}
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
         {/* 3D Preview — sticky on desktop */}
-        <div className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
+        <div ref={mainPreviewRef} className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 p-4 lg:p-6">
             {/* Finish preview chips */}
             <div className="absolute top-6 left-6 z-10 flex items-center gap-2">
@@ -501,6 +503,26 @@ export function BookshelfConfigurator() {
             )}
           </div>
         </div>
+
+        {result && (
+          <FloatingPreview mainPreviewRef={mainPreviewRef}>
+            {(isMini) => (
+              <Bookshelf3DView
+                style={bookshelfType}
+                width={width}
+                width2={mainType === "corner" ? width2 : undefined}
+                shelves={shelves}
+                shelves2={mainType === "corner" ? shelves2 : undefined}
+                finish={selectedFinish}
+                modules={mainType === "corner" ? corner3DModules.arm1 : result.shelves.map((s) => s.modules)}
+                modules2={mainType === "corner" ? corner3DModules.arm2 : undefined}
+                cornerVariant={mainType === "corner" ? cornerVariant : undefined}
+                isMobile={isMini}
+                hideTooltip
+              />
+            )}
+          </FloatingPreview>
+        )}
 
         {/* Controls panel */}
         <div className="lg:w-[40%] xl:w-[35%] flex-shrink-0 configurator-config">

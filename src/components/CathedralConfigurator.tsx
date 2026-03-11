@@ -13,6 +13,7 @@ import type { SlopeDirection } from "@/lib/cathedral-calculator"
 import { computeCathedralRows, calculateCathedral } from "@/lib/cathedral-calculator"
 import { CathedralSchematic } from "./CathedralSchematic"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FloatingPreview } from "./FloatingPreview"
 
 import iconHorizontal from "@/assets/icons/Horizontal.png"
 import iconBookshelf from "@/assets/icons/Vertical_Bookshelf.png"
@@ -129,6 +130,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const cathedral3DRef = useRef<Cathedral3DViewRef>(null)
+  const mainPreviewRef = useRef<HTMLDivElement>(null)
 
   const cathedralData = useMemo(() => {
     try { return calculateCathedral(W, H, H1, shelves, direction, selectedFinish) } catch { return null }
@@ -217,7 +219,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
       </header>
 
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
-        <div className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
+        <div ref={mainPreviewRef} className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 p-4 lg:p-6">
             <div className="absolute top-6 right-6 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-1.5 shadow-sm">
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Cathedral</div>
@@ -237,6 +239,20 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
 
           </div>
         </div>
+
+        <FloatingPreview mainPreviewRef={mainPreviewRef}>
+          {(isMini) => (
+            <Cathedral3DView
+              W={W} H={H} H1={H1}
+              direction={direction}
+              rows={rows}
+              modulesPerRow={modulesPerRow}
+              finish={selectedFinish}
+              isMobile={isMini}
+              hideTooltip
+            />
+          )}
+        </FloatingPreview>
 
         <div className="lg:w-[40%] xl:w-[35%] flex-shrink-0 configurator-config">
           <div className="p-4 md:p-6 lg:p-8 space-y-0 configurator-config-inner">
