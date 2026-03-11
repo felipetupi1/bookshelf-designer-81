@@ -40,7 +40,7 @@ const getWoodColor = (finish: string): string => {
 const getTextureUrl = (finish: string): string | null => {
   const textureMap: Record<string, string> = {
     Maple: "/images/finishes/maple.jpeg",
-    Oak: "/images/finishes/oak.jpeg",
+    Oak: "/images/finishes/oak.jpg",
     Walnut: "/images/finishes/walnut.jpeg",
   }
   return textureMap[finish] || null
@@ -54,7 +54,7 @@ function WoodMaterial({
   const textureUrl = getTextureUrl(finish)
   const texture = useLoader(
     THREE.TextureLoader,
-    textureUrl || "/images/finishes/oak.jpeg"
+    textureUrl || "/images/finishes/oak.jpg"
   )
 
   const clonedTexture = useMemo(() => {
