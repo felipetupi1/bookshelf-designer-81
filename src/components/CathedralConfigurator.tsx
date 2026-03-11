@@ -240,6 +240,20 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
           </div>
         </div>
 
+        <FloatingPreview mainPreviewRef={mainPreviewRef}>
+          {(isMini) => (
+            <Cathedral3DView
+              W={W} H={H} H1={H1}
+              direction={direction}
+              rows={rows}
+              modulesPerRow={modulesPerRow}
+              finish={selectedFinish}
+              isMobile={isMini}
+              hideTooltip
+            />
+          )}
+        </FloatingPreview>
+
         <div className="lg:w-[40%] xl:w-[35%] flex-shrink-0 configurator-config">
           <div className="p-4 md:p-6 lg:p-8 space-y-0 configurator-config-inner">
             <ConfigSection step={1} title="Type" subtitle="Cathedral" defaultOpen={true}>

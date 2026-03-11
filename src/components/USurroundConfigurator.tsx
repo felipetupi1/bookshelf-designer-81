@@ -284,6 +284,19 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
           </div>
         </div>
 
+        {usurroundResult && (
+          <FloatingPreview mainPreviewRef={mainPreviewRef}>
+            {(isMini) => (
+              <USurround3DView
+                w1={w1} w={w} w2={w2}
+                shelvesLeft={shelvesLeft} shelvesFront={shelvesFront} shelvesRight={shelvesRight}
+                modulesLeft={modulesLeft} modulesFront={modulesFront} modulesRight={modulesRight}
+                finish={selectedFinish} isMobile={isMini} hideTooltip
+              />
+            )}
+          </FloatingPreview>
+        )}
+
         <div className="lg:w-[40%] xl:w-[35%] flex-shrink-0 configurator-config">
           <div className="p-4 md:p-6 lg:p-8 space-y-0 configurator-config-inner">
             <ConfigSection step={1} title="Type" subtitle="U-Surround" defaultOpen={true}>
