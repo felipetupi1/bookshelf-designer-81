@@ -251,7 +251,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
-        <WoodMaterial finish={internalFinish} isFrame={false} />
+        <WoodMaterial finish={internalFinish} isFrame={false} verticalGrain />
       </mesh>
 
       <Baguete
