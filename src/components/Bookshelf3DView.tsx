@@ -49,8 +49,7 @@ const getTextureUrl = (finish: string): string | null => {
 function WoodMaterial({
   finish,
   isFrame = false,
-  verticalGrain = false,
-}: { finish: string; isFrame?: boolean; randomId?: number; verticalGrain?: boolean }) {
+}: { finish: string; isFrame?: boolean }) {
   const textureUrl = getTextureUrl(finish)
   const texture = useLoader(
     THREE.TextureLoader,
