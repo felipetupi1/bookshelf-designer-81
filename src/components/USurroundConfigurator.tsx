@@ -256,7 +256,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
       </header>
 
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
-        <div className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
+        <div ref={mainPreviewRef} className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 p-4 lg:p-6">
             <div className="absolute top-6 left-6 z-10 flex items-center gap-2">
               {FINISH_OPTIONS.filter(f => f.previewImage && !f.comingSoon).map(fin => (
