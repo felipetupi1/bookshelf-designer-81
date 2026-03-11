@@ -130,6 +130,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const cathedral3DRef = useRef<Cathedral3DViewRef>(null)
+  const mainPreviewRef = useRef<HTMLDivElement>(null)
 
   const cathedralData = useMemo(() => {
     try { return calculateCathedral(W, H, H1, shelves, direction, selectedFinish) } catch { return null }
