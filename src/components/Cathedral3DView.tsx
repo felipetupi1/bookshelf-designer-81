@@ -24,7 +24,7 @@ const getWoodColor = (finish: string): string => {
 
 const getTextureUrl = (finish: string): string | null => {
   const textureMap: Record<string, string> = {
-    Maple: "/images/finishes/maple1.jpeg", Oak: "/images/finishes/oak.jpg", Walnut: "/images/finishes/walnut.jpg",
+    Maple: "/images/finishes/maple1.jpeg", Oak: "/images/finishes/oak.jpeg", Walnut: "/images/finishes/walnut.jpeg",
   }
   return textureMap[finish] || null
 }
