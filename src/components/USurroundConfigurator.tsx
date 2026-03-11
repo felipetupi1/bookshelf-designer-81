@@ -149,6 +149,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const view3DRef = useRef<USurround3DViewRef>(null)
+  const mainPreviewRef = useRef<HTMLDivElement>(null)
 
   const defaultShelves = (): ShelfConfig[] => [
     { height: 14, depth: 13 }, { height: 14, depth: 13 },
