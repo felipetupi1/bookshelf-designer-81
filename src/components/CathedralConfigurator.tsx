@@ -13,6 +13,7 @@ import type { SlopeDirection } from "@/lib/cathedral-calculator"
 import { computeCathedralRows, calculateCathedral } from "@/lib/cathedral-calculator"
 import { CathedralSchematic } from "./CathedralSchematic"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FloatingPreview } from "./FloatingPreview"
 
 import iconHorizontal from "@/assets/icons/Horizontal.png"
 import iconBookshelf from "@/assets/icons/Vertical_Bookshelf.png"
