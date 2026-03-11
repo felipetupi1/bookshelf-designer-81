@@ -30,7 +30,7 @@ const MIN_MODULE_WIDTH = 7.25
 
 const FINISH_OPTIONS = [
   { id: "White/White", label: "White/White", price: 41.6, color1: "#f5f5f5", color2: "#f5f5f5", comingSoon: true, previewImage: null as string | null },
-  { id: "Maple/Maple", label: "Maple/Maple", price: 49.21, color1: "#E8D4B8", color2: "#E8D4B8", comingSoon: false, previewImage: "/images/finishes/maple.jpeg" },
+  { id: "Maple/Maple", label: "Maple/Maple", price: 49.21, color1: "#E8D4B8", color2: "#E8D4B8", comingSoon: false, previewImage: "/images/finishes/maple1.jpeg" },
   { id: "Black/Black", label: "Black/Black", price: 54.59, color1: "#1a1a1a", color2: "#1a1a1a", comingSoon: false, previewImage: null as string | null },
   { id: "Oak/White", label: "Oak/White", price: 60.18, color1: "#D4A574", color2: "#f5f5f5", comingSoon: true, previewImage: null as string | null },
   { id: "Maple/Black", label: "Maple/Black", price: 65.1, color1: "#E8D4B8", color2: "#1a1a1a", comingSoon: false, previewImage: "/images/finishes/maple-black.jpeg" },

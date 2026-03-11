@@ -35,7 +35,7 @@ const FINISH_OPTIONS = [
   },
   {
     id: "Maple/Maple", label: "Maple/Maple", price: 49.21,
-    color1: "#E8D4B8", color2: "#E8D4B8", comingSoon: false, previewImage: "/images/finishes/maple.jpeg",
+    color1: "#E8D4B8", color2: "#E8D4B8", comingSoon: false, previewImage: "/images/finishes/maple1.jpeg",
   },
   {
     id: "Black/Black", label: "Black/Black", price: 54.59,
