@@ -11,6 +11,7 @@ import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { USurround3DView, type USurround3DViewRef } from "./USurround3DView"
 import { USurroundSchematic } from "./USurroundSchematic"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FloatingPreview } from "./FloatingPreview"
 
 import iconHorizontal from "@/assets/icons/Horizontal.png"
 import iconBookshelf from "@/assets/icons/Vertical_Bookshelf.png"
