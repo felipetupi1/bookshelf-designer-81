@@ -25,6 +25,7 @@ import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { PortalSchematic } from "./PortalSchematic"
 import { Portal3DView, type Portal3DViewRef } from "./Portal3DView"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FloatingPreview } from "./FloatingPreview"
 
 const MIN_MODULE_WIDTH = 7.25
 
