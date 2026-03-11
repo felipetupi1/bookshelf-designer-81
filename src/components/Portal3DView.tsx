@@ -38,12 +38,12 @@ const WOOD_COLORS: Record<string, string> = {
   White: "#F5F5F5", Maple: "#E8D4B8", Black: "#1A1A1A", Oak: "#D4A574", Walnut: "#5D432C",
 }
 const TEXTURE_URLS: Record<string, string> = {
-  Maple: "/images/finishes/maple.jpg", Oak: "/images/finishes/oak.jpg", Walnut: "/images/finishes/walnut.jpg",
+  Maple: "/images/finishes/maple.jpeg", Oak: "/images/finishes/oak.jpeg", Walnut: "/images/finishes/walnut.jpeg",
 }
 
 function WoodMaterial({ finish, isFrame = false }: { finish: string; isFrame?: boolean }) {
   const url = TEXTURE_URLS[finish] || null
-  const texture = useLoader(THREE.TextureLoader, url || "/images/finishes/oak.jpg")
+  const texture = useLoader(THREE.TextureLoader, url || "/images/finishes/oak.jpeg")
   const tex = useMemo(() => {
     const t = texture.clone()
     t.wrapS = t.wrapT = THREE.RepeatWrapping
