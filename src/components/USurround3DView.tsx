@@ -66,18 +66,16 @@ function CameraController({ w1, w, w2, totalHeight, maxDepth, isMobile, resetKey
 function USurroundScene({ props, intF, frameF }: { props: USurround3DViewProps; intF: string; frameF: string }) {
   const { w1, w, w2, shelvesLeft, shelvesFront, shelvesRight, modulesLeft, modulesFront, modulesRight } = props
   const backZ = Math.max(w1, w2)
+  const backArmDepth = Math.max(...shelvesFront.map(s => s.depth))
 
-  // All arms connect at z=-backZ (the back wall).
-  // Side arms are anchored so their BACK end is at z=-backZ, front end at z=-backZ+w1 (or w2).
-  // This ensures they ALWAYS touch the back arm regardless of w1/w2 differences.
-  //
-  // After +90° Y rotation, Bookshelf3D width (local x) → world z, depth (local z) → world x.
-  // Inner (open) face at group_x, outer (back) face at group_x - depth (left) or + depth (right).
+  // Bookshelf3D extends from z=0 (open/front face) to z=-maxDepth (back face).
+  // We position the back arm so its BACK face sits at z=-backZ, flush with side arm back ends.
+  // That means group z = -backZ + backArmDepth.
 
   return (
     <group>
-      {/* Back arm — at z=-backZ, connecting back ends of side arms */}
-      <group position={[0, 0, -backZ]}>
+      {/* Back arm — back face at z=-backZ, open face at z=-backZ+depth, facing forward */}
+      <group position={[0, 0, -backZ + backArmDepth]}>
         <Bookshelf3D
           style="bookshelf" width={w} shelves={shelvesFront} finish={intF} frameFinish={frameF}
           modules={modulesFront}
