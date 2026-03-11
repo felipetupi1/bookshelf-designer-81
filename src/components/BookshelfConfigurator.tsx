@@ -361,11 +361,18 @@ export function BookshelfConfigurator() {
       type: "pbs-checkout",
       price: totalPrice.toFixed(2),
       config: {
-        totalArea: totalArea.toFixed(2), pricePerSqFt: finishOption?.price.toFixed(2),
-        width, ...(mainType === "corner" ? { width2, shelves2 } : {}),
-        height: totalHeight, modules: result.totalModules,
-        finish: finishLabel, shelves, shelvesCount: shelves.length,
-        bookshelfType, skus: result.allSkus,
+        bookshelfType,
+        finish: finishLabel,
+        totalArea: totalArea.toFixed(2),
+        pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
+        dimensions: {
+          width,
+          ...(mainType === "corner" ? { width2 } : {}),
+          height: totalHeight,
+        },
+        shelves,
+        ...(mainType === "corner" ? { shelves2 } : {}),
+        skus: result.allSkus,
       },
       imageDataUrl,
     }

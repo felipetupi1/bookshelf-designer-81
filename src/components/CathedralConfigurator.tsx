@@ -163,13 +163,27 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
     if (!cathedralData) return
     setIsAddingToCart(true)
     const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
+    let imageDataUrl: string | null = null
+    try { if (cathedral3DRef.current) imageDataUrl = await cathedral3DRef.current.captureImage() } catch { /* */ }
+
     const payload = {
-      type: "pbs-checkout", price: totalPrice.toFixed(2),
-      config: { totalArea: totalArea.toFixed(2), W, H, H1, direction, finish: finishOption?.label || selectedFinish, bookshelfType: "cathedral", shelves, rows: rows.length, skus: cathedralData.allSkus },
+      type: "pbs-checkout",
+      price: totalPrice.toFixed(2),
+      config: {
+        bookshelfType: "cathedral",
+        finish: finishOption?.label || selectedFinish,
+        totalArea: totalArea.toFixed(2),
+        pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
+        dimensions: { W, H, H1, direction },
+        shelves,
+        skus: cathedralData.allSkus,
+      },
+      imageDataUrl,
     }
+
     const isInIframe = window.self !== window.top
     if (isInIframe) window.parent.postMessage(payload, "*")
-    else { console.log("Checkout payload:", payload); alert(`Order total: $${totalPrice.toFixed(2)}`) }
+    else { console.log("Checkout payload:", payload); alert(`Order total: $${totalPrice.toFixed(2)}. Checkout integration pending.`) }
     setIsAddingToCart(false)
   }
 

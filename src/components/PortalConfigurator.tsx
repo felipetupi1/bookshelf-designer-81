@@ -300,14 +300,29 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     let imageDataUrl: string | null = null
     try { if (portal3DRef.current) imageDataUrl = await portal3DRef.current.captureImage() } catch { /* */ }
 
+    // Consolidate SKUs from all zones
+    const skuMap = new Map<string, { type: string; quantity: number }>()
+    for (const res of [leftResult, rightResult, bottomResult, topResult]) {
+      if (!res) continue
+      for (const sku of res.allSkus) {
+        const existing = skuMap.get(sku.name)
+        if (existing) existing.quantity += sku.totalQuantity
+        else skuMap.set(sku.name, { type: sku.type, quantity: sku.totalQuantity })
+      }
+    }
+    const skus = Array.from(skuMap.entries()).map(([name, d]) => ({ name, type: d.type, totalQuantity: d.quantity })).sort((a, b) => a.type.localeCompare(b.type))
+
     const payload = {
-      type: "pbs-checkout", price: totalPrice.toFixed(2),
+      type: "pbs-checkout",
+      price: totalPrice.toFixed(2),
       config: {
-        totalArea: totalArea.toFixed(2), pricePerSqFt: finishOption?.price.toFixed(2),
-        wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, rightGap, leftGap,
-        topHeight: topSectionHeight, finish: finishOption?.label || selectedFinish,
         bookshelfType: "portal",
+        finish: finishOption?.label || selectedFinish,
+        totalArea: totalArea.toFixed(2),
+        pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
+        dimensions: { wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, rightGap, leftGap, topHeight: topSectionHeight },
         shelves: globalShelves,
+        skus,
       },
       imageDataUrl,
     }

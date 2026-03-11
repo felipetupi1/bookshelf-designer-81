@@ -200,12 +200,16 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
     try { if (view3DRef.current) imageDataUrl = await view3DRef.current.captureImage() } catch { /* */ }
 
     const payload = {
-      type: "pbs-checkout", price: totalPrice.toFixed(2),
+      type: "pbs-checkout",
+      price: totalPrice.toFixed(2),
       config: {
-        totalArea: totalArea.toFixed(2), pricePerSqFt: finishOption?.price.toFixed(2),
-        w1, w, w2, height: totalHeight, modules: usurroundResult.totalModules,
-        finish: finishOption?.label || selectedFinish, shelvesLeft, shelvesFront, shelvesRight,
-        bookshelfType: "usurround", skus: usurroundResult.allSkus,
+        bookshelfType: "usurround",
+        finish: finishOption?.label || selectedFinish,
+        totalArea: totalArea.toFixed(2),
+        pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
+        dimensions: { w1, w, w2, height: totalHeight },
+        shelves: { left: shelvesLeft, front: shelvesFront, right: shelvesRight },
+        skus: usurroundResult.allSkus,
       },
       imageDataUrl,
     }
