@@ -49,7 +49,8 @@ const getTextureUrl = (finish: string): string | null => {
 function WoodMaterial({
   finish,
   isFrame = false,
-}: { finish: string; isFrame?: boolean; randomId?: number }) {
+  verticalGrain = false,
+}: { finish: string; isFrame?: boolean; randomId?: number; verticalGrain?: boolean }) {
   const textureUrl = getTextureUrl(finish)
   const texture = useLoader(
     THREE.TextureLoader,
@@ -61,9 +62,13 @@ function WoodMaterial({
     t.wrapS = THREE.RepeatWrapping
     t.wrapT = THREE.RepeatWrapping
     t.repeat.set(1, 1)
+    if (verticalGrain) {
+      t.rotation = Math.PI / 2
+      t.center.set(0.5, 0.5)
+    }
     t.needsUpdate = true
     return t
-  }, [texture])
+  }, [texture, verticalGrain])
 
   if (!textureUrl) {
     const color = getWoodColor(finish)
