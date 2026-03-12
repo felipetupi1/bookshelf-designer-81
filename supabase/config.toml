@@ -1,1 +1,4 @@
 project_id = "rjvpkwnkpgxlepmxdpmh"
+
+[functions.pbs-create-checkout]
+verify_jwt = false
