@@ -571,7 +571,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
                 {FINISH_OPTIONS.map(finish => (
                   <button key={finish.id} onClick={() => !finish.comingSoon && setSelectedFinish(finish.id)} disabled={finish.comingSoon}
                     className={`relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all border ${selectedFinish === finish.id ? "border-accent bg-accent/5 shadow-sm" : "border-border bg-card hover:border-accent/40"} ${finish.comingSoon ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}>
-                    {finish.comingSoon && <div className="absolute -top-1 -right-1 bg-muted-foreground text-background text-[8px] font-bold px-1.5 py-0.5 rounded-full">Soon</div>}
+                    {finish.comingSoon && <div className="absolute -top-1 -right-1 bg-muted-foreground text-background text-[8px] font-bold px-1.5 py-0.5 rounded-full">Sold out</div>}
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-border shadow-sm">
                       {finish.id.includes("/") && finish.color1 !== finish.color2 ? (
                         <div className="flex w-full h-full"><div className="w-1/2 h-full" style={{ backgroundColor: finish.color1 }} /><div className="w-1/2 h-full" style={{ backgroundColor: finish.color2 }} /></div>

@@ -339,7 +339,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
                 {FINISH_OPTIONS.map(fin => (
                   <button key={fin.id} onClick={() => !fin.comingSoon && setSelectedFinish(fin.id)} disabled={fin.comingSoon}
                     className={`relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all border ${selectedFinish === fin.id ? "border-accent bg-accent/5 shadow-sm" : "border-border bg-card hover:border-accent/40"} ${fin.comingSoon ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}>
-                    {fin.comingSoon && <div className="absolute -top-1 -right-1 bg-muted-foreground text-background text-[8px] font-bold px-1.5 py-0.5 rounded-full">Soon</div>}
+                    {fin.comingSoon && <div className="absolute -top-1 -right-1 bg-muted-foreground text-background text-[8px] font-bold px-1.5 py-0.5 rounded-full">Sold out</div>}
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-border shadow-sm">
                       {fin.id.includes("/") && fin.color1 !== fin.color2 ? (
                         <div className="flex w-full h-full"><div className="w-1/2 h-full" style={{ backgroundColor: fin.color1 }} /><div className="w-1/2 h-full" style={{ backgroundColor: fin.color2 }} /></div>

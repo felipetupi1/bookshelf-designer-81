@@ -668,7 +668,7 @@ export function BookshelfConfigurator() {
                   >
                     {finish.comingSoon && (
                       <div className="absolute -top-1 -right-1 bg-muted-foreground text-background text-[8px] font-bold px-1.5 py-0.5 rounded-full">
-                        Soon
+                        Sold out
                       </div>
                     )}
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-border shadow-sm">
