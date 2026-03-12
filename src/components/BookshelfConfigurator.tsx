@@ -420,7 +420,7 @@ export function BookshelfConfigurator() {
   return (
     <div className="w-full min-h-screen configurator-root">
       {/* ─── Top bar ─── */}
-      <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border configurator-header">
+      <header className="lg:sticky lg:top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border configurator-header">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between px-4 md:px-8 h-14">
           <div>
             <h1 className="font-display text-lg font-bold text-foreground tracking-tight leading-none">
