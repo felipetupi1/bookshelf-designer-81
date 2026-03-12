@@ -203,15 +203,18 @@ function CameraController({ width, totalHeight, maxDepth, isMobile, resetKey }: 
   useEffect(() => {
     const fov = 60
     const fovRadians = (fov * Math.PI) / 180
+    // Use 1:1 for mobile (aspect-square canvas), otherwise window ratio
     const canvasAspect = isMobile ? 1 : window.innerWidth / window.innerHeight
     const distW = width / 2 / Math.tan(fovRadians / 2) / canvasAspect
     const distH = totalHeight / 2 / Math.tan(fovRadians / 2)
     const distD = maxDepth * 2.5
-    const padding = isMobile ? 1.15 : 1.8
+    const padding = isMobile ? 1.05 : 1.8
     const optimalDist = Math.max(distW, distH, distD) * padding
 
-    const targetPos = new THREE.Vector3(0, totalHeight * 0.45, optimalDist)
-    const lookAt = new THREE.Vector3(0, totalHeight * 0.45, 0)
+    // Cathedral visual center is lower than geometric center since top rows are narrower
+    const centerY = totalHeight * 0.35
+    const targetPos = new THREE.Vector3(0, centerY, optimalDist)
+    const lookAt = new THREE.Vector3(0, centerY, 0)
     const startPos = camera.position.clone()
     const duration = 600
     const startTime = Date.now()
@@ -257,7 +260,7 @@ export const Cathedral3DView = forwardRef<Cathedral3DViewRef, Cathedral3DViewPro
     return (
       <div className={`relative w-full overflow-hidden rounded-lg border-2 border-border bg-gradient-to-b from-secondary to-muted ${isMobile ? "aspect-square" : "min-h-[500px] aspect-[4/3]"}`}>
         <Canvas
-          camera={{ position: [0, totalHeight * 0.5, cameraDistance], fov: 60 }}
+          camera={{ position: [0, totalHeight * 0.35, cameraDistance], fov: 60 }}
           shadows
           gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0, preserveDrawingBuffer: true }}
         >
@@ -282,7 +285,7 @@ export const Cathedral3DView = forwardRef<Cathedral3DViewRef, Cathedral3DViewPro
 
             <Environment preset="studio" environmentIntensity={0.5} />
             <ContactShadows position={[0, -0.1, 0]} opacity={0.3} scale={W * 1.8} blur={2.8} far={totalHeight * 1.5} resolution={1024} />
-            <OrbitControls enableZoom enablePan enableRotate minDistance={20} maxDistance={300} target={[0, totalHeight / 2, 0]} enableDamping dampingFactor={0.05} rotateSpeed={0.5} zoomSpeed={0.5} />
+            <OrbitControls enableZoom enablePan enableRotate minDistance={20} maxDistance={300} target={[0, totalHeight * 0.35, 0]} enableDamping dampingFactor={0.05} rotateSpeed={0.5} zoomSpeed={0.5} />
           </Suspense>
         </Canvas>
 
