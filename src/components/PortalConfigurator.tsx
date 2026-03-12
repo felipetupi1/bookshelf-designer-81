@@ -341,10 +341,10 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   }
 
   function handleReset() {
-    setWallWidth(100); setWallHeight(96); setObjectWidth(40); setObjectHeight(30)
-    setFloorToObject(24); setRightGap(30); setObjectType("tv"); setSelectedPresetSize(null)
+    setWallWidth(100); setWallHeight(96); setObjectWidth(36); setObjectHeight(82)
+    setFloorToObject(0); setRightGap(32); setObjectType("door"); setSelectedPresetSize(null)
     setGlobalShelves(defaultShelvesForHeight(96))
-    setSelectedFinish("Maple/Maple")
+    setSelectedFinish("Oak/Oak")
   }
 
   const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
