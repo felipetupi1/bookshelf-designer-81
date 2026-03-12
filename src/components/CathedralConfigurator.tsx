@@ -1,7 +1,7 @@
 // Placeholder - Cathedral Configurator
 // This component needs the Cathedral3DView which is being created
 import type React from "react"
-import { useState, useMemo, useRef } from "react"
+import { useState, useMemo, useRef, useEffect } from "react"
 import { Cathedral3DView, type Cathedral3DViewRef } from "./Cathedral3DView"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -132,6 +132,13 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const cathedral3DRef = useRef<Cathedral3DViewRef>(null)
   const mainPreviewRef = useRef<HTMLDivElement>(null)
+  const [headerHidden, setHeaderHidden] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setHeaderHidden(window.scrollY > 50)
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   const cathedralData = useMemo(() => {
     try { return calculateCathedral(W, H, H1, shelves, direction, selectedFinish) } catch { return null }
@@ -204,7 +211,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
 
   return (
     <div className="w-full min-h-screen configurator-root">
-      <header className="lg:sticky lg:top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border configurator-header">
+      <header className={`lg:sticky lg:top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border configurator-header transition-all duration-300 ${headerHidden ? "max-lg:h-0 max-lg:overflow-hidden max-lg:border-b-0 max-lg:opacity-0" : ""}`}>
         <div className="max-w-[1600px] mx-auto flex items-center justify-between px-4 md:px-8 h-14">
           <div>
             <h1 className="font-display text-lg font-bold text-foreground tracking-tight leading-none">Perfect Bookshelf</h1>
