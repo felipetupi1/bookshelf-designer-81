@@ -203,16 +203,15 @@ function CameraController({ width, totalHeight, maxDepth, isMobile, resetKey }: 
   useEffect(() => {
     const fov = 60
     const fovRadians = (fov * Math.PI) / 180
-    const aspectRatio = window.innerWidth / window.innerHeight
-    const distW = width / 2 / Math.tan(fovRadians / 2) / aspectRatio
+    const canvasAspect = isMobile ? 1 : window.innerWidth / window.innerHeight
+    const distW = width / 2 / Math.tan(fovRadians / 2) / canvasAspect
     const distH = totalHeight / 2 / Math.tan(fovRadians / 2)
     const distD = maxDepth * 2.5
-    const padding = isMobile ? 0.8 : 1.8
+    const padding = isMobile ? 1.15 : 1.8
     const optimalDist = Math.max(distW, distH, distD) * padding
-    const yOff = isMobile ? -0.8 : 0
 
-    const targetPos = new THREE.Vector3(0, totalHeight * 0.5 + yOff, optimalDist)
-    const lookAt = new THREE.Vector3(0, totalHeight / 2 + yOff, 0)
+    const targetPos = new THREE.Vector3(0, totalHeight * 0.45, optimalDist)
+    const lookAt = new THREE.Vector3(0, totalHeight * 0.45, 0)
     const startPos = camera.position.clone()
     const duration = 600
     const startTime = Date.now()
