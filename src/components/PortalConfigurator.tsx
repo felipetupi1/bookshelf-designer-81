@@ -213,7 +213,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     setObjectType(preset)
     setSelectedPresetSize(null)
     switch (preset) {
-      case "door": setFloorToObject(0); setRightGap(0); break
+      case "door": setObjectWidth(36); setObjectHeight(82); setFloorToObject(0); setRightGap(Math.round((wallWidth - 36) / 2)); break
       case "window": setFloorToObject(36); setRightGap(Math.round((wallWidth - objectWidth) / 2)); break
       case "tv": setFloorToObject(24); setRightGap(Math.round((wallWidth - objectWidth) / 2)); break
       case "fireplace": setFloorToObject(0); setRightGap(Math.round((wallWidth - objectWidth) / 2)); break
