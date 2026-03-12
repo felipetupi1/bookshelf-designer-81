@@ -104,20 +104,11 @@
     overflow: hidden;
   }
 
-  .configurator-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 110;
-    height: 3.5rem;
-  }
-
   .configurator-layout {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 3.5rem);
-    margin-top: 3.5rem;
+    height: 100vh;
+    margin-top: 0;
     overflow: hidden;
   }
 
@@ -134,7 +125,7 @@
   .configurator-preview > div {
     height: 100% !important;
     min-height: 0 !important;
-    padding: 0.5rem !important;
+    padding: 3px 4px 0 4px !important;
   }
 
   .configurator-preview canvas {
