@@ -231,16 +231,16 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
               <div className="text-sm font-semibold text-foreground leading-tight">{toFraction(W)} × {toFraction(H)}–{toFraction(H1)}</div>
             </div>
 
-            <div className="flex items-center justify-center h-full">
-              <Cathedral3DView
-                ref={cathedral3DRef}
-                W={W} H={H} H1={H1}
-                direction={direction}
-                rows={rows}
-                modulesPerRow={modulesPerRow}
-                finish={selectedFinish}
-              />
-            </div>
+            <Cathedral3DView
+              ref={cathedral3DRef}
+              W={W} H={H} H1={H1}
+              direction={direction}
+              rows={rows}
+              modulesPerRow={modulesPerRow}
+              finish={selectedFinish}
+              isMobile={false}
+              hideTooltip
+            />
 
           </div>
         </div>

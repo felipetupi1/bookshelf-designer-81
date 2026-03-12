@@ -233,7 +233,8 @@ function CameraController({ width, totalHeight, maxDepth, isMobile, resetKey }: 
     }
 
     animate()
-  }, [resetKey, camera, isMobile, width, totalHeight, maxDepth])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetKey, camera, isMobile])
 
   return null
 }
@@ -260,8 +261,7 @@ export const Cathedral3DView = forwardRef<Cathedral3DViewRef, Cathedral3DViewPro
     return (
       <div className={`relative w-full overflow-hidden rounded-lg border-2 border-border bg-gradient-to-b from-secondary to-muted ${isMobile ? "aspect-square" : "min-h-[500px] aspect-[4/3]"}`}>
         <Canvas
-          camera={{ position: [0, totalHeight * 0.5 + (isMobile ? -0.8 : 0), cameraDistance], fov: 60 }}
-          style={isMobile ? { transform: "translateY(50px)" } : undefined}
+          camera={{ position: [0, totalHeight * 0.5, cameraDistance], fov: 60 }}
           shadows
           gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0, preserveDrawingBuffer: true }}
         >
@@ -286,7 +286,7 @@ export const Cathedral3DView = forwardRef<Cathedral3DViewRef, Cathedral3DViewPro
 
             <Environment preset="studio" environmentIntensity={0.5} />
             <ContactShadows position={[0, -0.1, 0]} opacity={0.3} scale={W * 1.8} blur={2.8} far={totalHeight * 1.5} resolution={1024} />
-            <OrbitControls enableZoom enablePan enableRotate minDistance={20} maxDistance={200} target={[0, totalHeight / 2 + (isMobile ? -0.8 : 0), 0]} enableDamping dampingFactor={0.05} rotateSpeed={0.5} zoomSpeed={0.5} />
+            <OrbitControls enableZoom enablePan enableRotate minDistance={20} maxDistance={200} target={[0, totalHeight / 2, 0]} enableDamping dampingFactor={0.05} rotateSpeed={0.5} zoomSpeed={0.5} />
           </Suspense>
         </Canvas>
 
