@@ -132,13 +132,6 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const cathedral3DRef = useRef<Cathedral3DViewRef>(null)
   const mainPreviewRef = useRef<HTMLDivElement>(null)
-  const [headerHidden, setHeaderHidden] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => setHeaderHidden(window.scrollY > 50)
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
 
   const cathedralData = useMemo(() => {
     try { return calculateCathedral(W, H, H1, shelves, direction, selectedFinish) } catch { return null }
@@ -211,27 +204,9 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
 
   return (
     <div className="w-full min-h-screen configurator-root">
-      <header className={`lg:sticky lg:top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border configurator-header transition-all duration-300 ${headerHidden ? "max-lg:h-0 max-lg:overflow-hidden max-lg:border-b-0 max-lg:opacity-0" : ""}`}>
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between px-4 md:px-8 h-14">
-          <div>
-            <h1 className="font-display text-lg font-bold text-foreground tracking-tight leading-none">Perfect Bookshelf</h1>
-            <p className="text-[10px] text-muted-foreground tracking-widest uppercase">Cathedral Shelving System</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button onClick={handleReset} className="text-muted-foreground hover:text-foreground transition-colors" title="Reset"><RotateCcw className="h-4 w-4" /></button>
-            <div className="hidden sm:flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Total:</span>
-              <span className="font-display font-bold text-foreground text-lg">${totalPrice.toFixed(2)}</span>
-            </div>
-            <Button onClick={handleAddToCart} disabled={isAddingToCart || !cathedralData} size="sm" className="rounded-full px-5 gap-2">
-              <ShoppingCart className="h-3.5 w-3.5" /><span className="hidden sm:inline">{isAddingToCart ? "Processing..." : "Add to Cart"}</span>
-            </Button>
-          </div>
-        </div>
-      </header>
 
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
-        <div ref={mainPreviewRef} className="lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
+        <div ref={mainPreviewRef} className="lg:sticky lg:top-0 lg:h-screen lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 p-4 lg:p-6">
             <div className="absolute top-6 right-6 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-1.5 shadow-sm">
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Cathedral</div>
