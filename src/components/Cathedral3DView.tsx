@@ -119,12 +119,12 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
       const rowWidth = row.availableWidth
       const zOffset = -(maxDepth - shelf.depth)
 
-      // Compute X offset based on direction so narrower rows align correctly
+      // Compute X offset based on direction so narrower rows align to the tall side
       let xOffset = 0
       if (direction === "left") {
-        xOffset = -(maxWidth - rowWidth) / 2
-      } else if (direction === "right") {
         xOffset = (maxWidth - rowWidth) / 2
+      } else if (direction === "right") {
+        xOffset = -(maxWidth - rowWidth) / 2
       }
 
       // Bottom board for row
