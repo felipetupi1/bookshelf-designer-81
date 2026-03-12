@@ -260,7 +260,7 @@ export const Cathedral3DView = forwardRef<Cathedral3DViewRef, Cathedral3DViewPro
     return (
       <div className={`relative w-full overflow-hidden rounded-lg border-2 border-border bg-gradient-to-b from-secondary to-muted ${isMobile ? "aspect-square" : "min-h-[500px] aspect-[4/3]"}`}>
         <Canvas
-          camera={{ position: [0, totalHeight * 0.5, cameraDistance], fov: 60 }}
+          camera={{ position: [0, totalHeight * 0.5 + (isMobile ? -0.8 : 0), cameraDistance], fov: 60 }}
           shadows
           gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.0, preserveDrawingBuffer: true }}
         >
