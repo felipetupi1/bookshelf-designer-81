@@ -29,25 +29,54 @@ serve(async (req) => {
     }
 
     // Build note from config for the order
+    const dims = config.dimensions || {}
     const noteLines = [
       `Type: ${config.bookshelfType || 'N/A'}`,
       `Finish: ${config.finish || 'N/A'}`,
-      `Total Area: ${config.totalArea || 'N/A'} sq ft`,
-      `Price/sqft: $${config.pricePerSqFt || 'N/A'}`,
-      `Dimensions: ${JSON.stringify(config.dimensions || {})}`,
     ]
 
+    // Per-shelf dimensions (width/length, height, depth)
     if (config.shelves) {
       if (Array.isArray(config.shelves)) {
-        noteLines.push(`Shelves: ${config.shelves.map((s: any, i: number) => `Row${i + 1}: ${s.height}"H x ${s.depth}"D`).join(', ')}`)
+        // Straight, Corner, Cathedral, Portal — single shelf list
+        const shelfWidth = dims.width || dims.W || dims.wallWidth || 'N/A'
+        noteLines.push(`--- Shelves (Width: ${shelfWidth}") ---`)
+        config.shelves.forEach((s: any, i: number) => {
+          noteLines.push(`  Row ${i + 1}: ${shelfWidth}" W x ${s.height}" H x ${s.depth}" D`)
+        })
+        // Corner has a second wall
+        if (config.shelves2 && Array.isArray(config.shelves2)) {
+          const width2 = dims.width2 || 'N/A'
+          noteLines.push(`--- Shelves Wall 2 (Width: ${width2}") ---`)
+          config.shelves2.forEach((s: any, i: number) => {
+            noteLines.push(`  Row ${i + 1}: ${width2}" W x ${s.height}" H x ${s.depth}" D`)
+          })
+        }
       } else {
-        // U-surround style with left/front/right
-        for (const [zone, shelves] of Object.entries(config.shelves)) {
+        // U-surround / L-shape — shelves keyed by wall
+        const wallWidthMap: Record<string, string> = {
+          left: dims.w1 || 'N/A',
+          front: dims.w || 'N/A',
+          right: dims.w2 || 'N/A',
+        }
+        for (const [wall, shelves] of Object.entries(config.shelves)) {
           if (Array.isArray(shelves)) {
-            noteLines.push(`Shelves (${zone}): ${(shelves as any[]).map((s: any, i: number) => `Row${i + 1}: ${s.height}"H x ${s.depth}"D`).join(', ')}`)
+            const wallW = wallWidthMap[wall] || 'N/A'
+            noteLines.push(`--- ${wall.charAt(0).toUpperCase() + wall.slice(1)} Wall (Width: ${wallW}") ---`)
+            ;(shelves as any[]).forEach((s: any, i: number) => {
+              noteLines.push(`  Row ${i + 1}: ${wallW}" W x ${s.height}" H x ${s.depth}" D`)
+            })
           }
         }
       }
+    }
+
+    // Additional dimensions context
+    if (dims.H || dims.H1) {
+      noteLines.push(`Wall Height: ${dims.H || 'N/A'}", Peak Height: ${dims.H1 || 'N/A'}"`)
+    }
+    if (dims.objectWidth) {
+      noteLines.push(`Object: ${dims.objectWidth}" W x ${dims.objectHeight}" H, Floor-to-Object: ${dims.floorToObject}"`)
     }
 
     if (config.skus && Array.isArray(config.skus)) {
@@ -61,9 +90,25 @@ serve(async (req) => {
     const lineItemProperties = [
       { name: "Type", value: config.bookshelfType || "Custom" },
       { name: "Finish", value: config.finish || "N/A" },
-      { name: "Area", value: `${config.totalArea || 'N/A'} sq ft` },
-      { name: "Dimensions", value: JSON.stringify(config.dimensions || {}) },
     ]
+
+    // Add per-shelf summary to line item properties
+    if (config.shelves && Array.isArray(config.shelves)) {
+      config.shelves.forEach((s: any, i: number) => {
+        const shelfW = config.dimensions?.width || config.dimensions?.W || '?'
+        lineItemProperties.push({ name: `Shelf ${i + 1}`, value: `${shelfW}" x ${s.height}" x ${s.depth}"` })
+      })
+    } else if (config.shelves && typeof config.shelves === 'object') {
+      for (const [wall, shelves] of Object.entries(config.shelves)) {
+        if (Array.isArray(shelves)) {
+          const wallWidths: Record<string, any> = { left: config.dimensions?.w1, front: config.dimensions?.w, right: config.dimensions?.w2 }
+          const ww = wallWidths[wall] || '?'
+          ;(shelves as any[]).forEach((s: any, i: number) => {
+            lineItemProperties.push({ name: `${wall} shelf ${i + 1}`, value: `${ww}" x ${s.height}" x ${s.depth}"` })
+          })
+        }
+      }
+    }
 
     // Create draft order via Shopify Admin API
     const draftOrderPayload = {
