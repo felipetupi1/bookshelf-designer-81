@@ -14,6 +14,7 @@ import { computeCathedralRows, calculateCathedral } from "@/lib/cathedral-calcul
 import { CathedralSchematic } from "./CathedralSchematic"
 import { FinishPreviewModal } from "./FinishPreviewModal"
 import { FloatingPreview } from "./FloatingPreview"
+import { createShopifyCheckout } from "@/lib/shopify-checkout"
 
 import iconHorizontal from "@/assets/icons/Horizontal.png"
 import iconBookshelf from "@/assets/icons/Vertical_Bookshelf.png"
