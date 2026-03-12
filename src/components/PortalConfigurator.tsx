@@ -153,7 +153,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   const hasRight = rightGap > 0 && rightGap >= MIN_MODULE_WIDTH
   const hasCenter = objectWidth >= MIN_MODULE_WIDTH
 
-  const [objectType, setObjectType] = useState<ObjectPreset>("tv")
+  const [objectType, setObjectType] = useState<ObjectPreset>("door")
   const [selectedPresetSize, setSelectedPresetSize] = useState<string | null>(null)
 
   const [globalShelves, setGlobalShelves] = useState<ShelfConfig[]>(() => defaultShelvesForHeight(96))
