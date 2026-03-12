@@ -203,16 +203,18 @@ function CameraController({ width, totalHeight, maxDepth, isMobile, resetKey }: 
   useEffect(() => {
     const fov = 60
     const fovRadians = (fov * Math.PI) / 180
-    const canvasAspect = isMobile ? 1 : window.innerWidth / window.innerHeight
-    const distW = width / 2 / Math.tan(fovRadians / 2) / canvasAspect
-    const distH = totalHeight / 2 / Math.tan(fovRadians / 2)
-    const distD = maxDepth * 2.5
-    const padding = isMobile ? 1.05 : 1.8
-    const optimalDist = Math.max(distW, distH, distD) * padding
+    const aspectRatio = window.innerWidth / window.innerHeight
 
-    const centerY = totalHeight * 0.5
-    const targetPos = new THREE.Vector3(0, centerY, optimalDist)
-    const lookAt = new THREE.Vector3(0, centerY, 0)
+    const distanceForWidth = width / 2 / Math.tan(fovRadians / 2) / aspectRatio
+    const distanceForHeight = totalHeight / 2 / Math.tan(fovRadians / 2)
+    const distanceForDepth = maxDepth * 2.5
+
+    const paddingMultiplier = isMobile ? 0.8 : 1.8
+    const optimalDistance = Math.max(distanceForWidth, distanceForHeight, distanceForDepth) * paddingMultiplier
+
+    const targetYOffset = isMobile ? -0.8 : 0
+    const targetPosition = new THREE.Vector3(0, totalHeight * 0.5 + targetYOffset, optimalDistance)
+    const lookAt = new THREE.Vector3(0, totalHeight / 2 + targetYOffset, 0)
     const startPos = camera.position.clone()
     const duration = 600
     const startTime = Date.now()
@@ -221,7 +223,7 @@ function CameraController({ width, totalHeight, maxDepth, isMobile, resetKey }: 
       const elapsed = Date.now() - startTime
       const progress = Math.min(elapsed / duration, 1)
       const eased = 1 - Math.pow(1 - progress, 3)
-      camera.position.lerpVectors(startPos, targetPos, eased)
+      camera.position.lerpVectors(startPos, targetPosition, eased)
       if (controlsRef.current && "target" in controlsRef.current) {
         const oc = controlsRef.current as any
         oc.target.set(lookAt.x, lookAt.y, lookAt.z)
@@ -229,6 +231,7 @@ function CameraController({ width, totalHeight, maxDepth, isMobile, resetKey }: 
       }
       if (progress < 1) requestAnimationFrame(animate)
     }
+
     animate()
   }, [resetKey, camera, isMobile, width, totalHeight, maxDepth])
 
