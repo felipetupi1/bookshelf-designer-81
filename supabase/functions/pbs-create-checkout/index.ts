@@ -94,17 +94,25 @@ serve(async (req) => {
 
     // Add per-shelf summary to line item properties
     if (config.shelves && Array.isArray(config.shelves)) {
+      const shelfW = config.dimensions?.width || config.dimensions?.W || '?'
+      const label = config.bookshelfType === 'corner' ? 'W1 Shelf' : 'Shelf'
       config.shelves.forEach((s: any, i: number) => {
-        const shelfW = config.dimensions?.width || config.dimensions?.W || '?'
-        lineItemProperties.push({ name: `Shelf ${i + 1}`, value: `${shelfW}" x ${s.height}" x ${s.depth}"` })
+        lineItemProperties.push({ name: `${label} ${i + 1}`, value: `${shelfW}" x ${s.height}" x ${s.depth}"` })
       })
+      // Corner wall 2
+      if (config.shelves2 && Array.isArray(config.shelves2)) {
+        const w2 = config.dimensions?.width2 || '?'
+        config.shelves2.forEach((s: any, i: number) => {
+          lineItemProperties.push({ name: `W2 Shelf ${i + 1}`, value: `${w2}" x ${s.height}" x ${s.depth}"` })
+        })
+      }
     } else if (config.shelves && typeof config.shelves === 'object') {
       for (const [wall, shelves] of Object.entries(config.shelves)) {
         if (Array.isArray(shelves)) {
           const wallWidths: Record<string, any> = { left: config.dimensions?.w1, front: config.dimensions?.w, right: config.dimensions?.w2 }
           const ww = wallWidths[wall] || '?'
           ;(shelves as any[]).forEach((s: any, i: number) => {
-            lineItemProperties.push({ name: `${wall} shelf ${i + 1}`, value: `${ww}" x ${s.height}" x ${s.depth}"` })
+            lineItemProperties.push({ name: `${wall.charAt(0).toUpperCase() + wall.slice(1)} Shelf ${i + 1}`, value: `${ww}" x ${s.height}" x ${s.depth}"` })
           })
         }
       }
