@@ -90,9 +90,25 @@ serve(async (req) => {
     const lineItemProperties = [
       { name: "Type", value: config.bookshelfType || "Custom" },
       { name: "Finish", value: config.finish || "N/A" },
-      { name: "Area", value: `${config.totalArea || 'N/A'} sq ft` },
-      { name: "Dimensions", value: JSON.stringify(config.dimensions || {}) },
     ]
+
+    // Add per-shelf summary to line item properties
+    if (config.shelves && Array.isArray(config.shelves)) {
+      config.shelves.forEach((s: any, i: number) => {
+        const shelfW = config.dimensions?.width || config.dimensions?.W || '?'
+        lineItemProperties.push({ name: `Shelf ${i + 1}`, value: `${shelfW}" x ${s.height}" x ${s.depth}"` })
+      })
+    } else if (config.shelves && typeof config.shelves === 'object') {
+      for (const [wall, shelves] of Object.entries(config.shelves)) {
+        if (Array.isArray(shelves)) {
+          const wallWidths: Record<string, any> = { left: config.dimensions?.w1, front: config.dimensions?.w, right: config.dimensions?.w2 }
+          const ww = wallWidths[wall] || '?'
+          ;(shelves as any[]).forEach((s: any, i: number) => {
+            lineItemProperties.push({ name: `${wall} shelf ${i + 1}`, value: `${ww}" x ${s.height}" x ${s.depth}"` })
+          })
+        }
+      }
+    }
 
     // Create draft order via Shopify Admin API
     const draftOrderPayload = {
