@@ -11,8 +11,10 @@ serve(async (req) => {
   }
 
   try {
-    const SHOPIFY_STORE = Deno.env.get('SHOPIFY_STORE')
+    let SHOPIFY_STORE = Deno.env.get('SHOPIFY_STORE')
     if (!SHOPIFY_STORE) throw new Error('SHOPIFY_STORE is not configured')
+    // Ensure full domain
+    if (!SHOPIFY_STORE.includes('.')) SHOPIFY_STORE = `${SHOPIFY_STORE}.myshopify.com`
 
     const SHOPIFY_ACCESS_TOKEN = Deno.env.get('SHOPIFY_ACCESS_TOKEN')
     if (!SHOPIFY_ACCESS_TOKEN) throw new Error('SHOPIFY_ACCESS_TOKEN is not configured')
