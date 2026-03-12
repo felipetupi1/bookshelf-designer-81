@@ -36,24 +36,55 @@ export function computeCathedralRows(W: number, H: number, H1: number, shelves: 
   return rows
 }
 
-function calculateModulesForWidth(totalWidth: number, startModuleIndex: number): { modules: Array<{ width: number }>; nextModuleIndex: number } {
+function calculateModulesForWidth(totalWidth: number): Array<{ width: number }> {
+  // For each row, start a fresh module sequence fitting smallest-first
+  // Pick modules from the sequence that fit within totalWidth
+  if (totalWidth < MIN_MODULE_WIDTH) return []
+
   const moduleWidths: number[] = []
-  let idx = startModuleIndex
+  let idx = 0
+
+  // Add first module
   moduleWidths.push(MODULE_WIDTHS[idx])
-  idx = (idx + 1) % MODULE_WIDTHS.length
-  moduleWidths.push(MODULE_WIDTHS[idx])
-  idx = (idx + 1) % MODULE_WIDTHS.length
+  idx++
+
+  // Keep adding modules while they fit (total module width <= totalWidth)
+  // and while the remaining free space exceeds the max allowed gaps
   let currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
-  let freeSpace = totalWidth - currentWidth
-  let maxAllowedFreeSpace = MAX_GAP * (moduleWidths.length - 1)
-  while (freeSpace > maxAllowedFreeSpace) {
-    moduleWidths.push(MODULE_WIDTHS[idx])
-    idx = (idx + 1) % MODULE_WIDTHS.length
-    currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
-    freeSpace = totalWidth - currentWidth
-    maxAllowedFreeSpace = MAX_GAP * (moduleWidths.length - 1)
+
+  // Check if we need more modules: free space between modules can't exceed MAX_GAP per gap
+  while (idx < MODULE_WIDTHS.length) {
+    const nextWidth = MODULE_WIDTHS[idx]
+    const newTotal = currentWidth + nextWidth
+    // Don't add if total modules would exceed available width
+    if (newTotal > totalWidth) break
+
+    const numGaps = moduleWidths.length // after adding, gaps = modules.length - 1 + 1 = current length
+    const freeAfter = totalWidth - newTotal
+    const maxAllowed = MAX_GAP * numGaps
+
+    moduleWidths.push(nextWidth)
+    currentWidth = newTotal
+    idx++
+
+    // If remaining free space fits within allowed gaps, we have enough modules
+    if (freeAfter <= maxAllowed) break
   }
-  return { modules: moduleWidths.map(w => ({ width: w })), nextModuleIndex: idx }
+
+  // If only 1 module and there's too much free space, try adding a second from start
+  if (moduleWidths.length === 1) {
+    const freeSpace = totalWidth - currentWidth
+    if (freeSpace > MAX_GAP && idx < MODULE_WIDTHS.length) {
+      moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
+    }
+  }
+
+  // Remove last module if total exceeds available width
+  while (moduleWidths.reduce((s, w) => s + w, 0) > totalWidth && moduleWidths.length > 1) {
+    moduleWidths.pop()
+  }
+
+  return moduleWidths.map(w => ({ width: w }))
 }
 
 export function calculateCathedral(W: number, H: number, H1: number, shelves: ShelfConfig[], direction: SlopeDirection, finish: string) {
