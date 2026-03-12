@@ -380,12 +380,12 @@ export function BookshelfConfigurator() {
       imageDataUrl,
     }
 
-    const isInIframe = window.self !== window.top
-    if (isInIframe) {
-      window.parent.postMessage(payload, "*")
-    } else {
-      console.log("Checkout payload:", payload)
-      alert(`Order total: $${totalPrice.toFixed(2)}. Checkout integration pending.`)
+    try {
+      const checkoutUrl = await createShopifyCheckout({ price: totalPrice.toFixed(2), config: payload.config, imageDataUrl })
+      window.open(checkoutUrl, '_blank')
+    } catch (err) {
+      console.error('Checkout error:', err)
+      alert('Failed to create checkout. Please try again.')
     }
     setIsAddingToCart(false)
   }
