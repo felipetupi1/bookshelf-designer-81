@@ -251,8 +251,15 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
   return (
     <group>
       {/* ══════ OUTER FRAME ══════ */}
-      {/* Bottom board — full wallWidth */}
-      <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+      {/* Bottom board — split if object reaches floor */}
+      {objBot <= BOARD_T ? (
+        <>
+          {hasLeft && <Board pos={[wL + leftGap / 2, 0, -defDepth / 2]} w={leftGap} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />}
+          {hasRight && <Board pos={[wL + objR + rightGap / 2, 0, -defDepth / 2]} w={rightGap} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />}
+        </>
+      ) : (
+        <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+      )}
       {/* Top board — full wallWidth at wallHeight */}
       <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
       {/* Left side panel — only if leftGap >= 25" */}
