@@ -89,12 +89,9 @@ function calculateModulesForWidth(totalWidth: number): Array<{ width: number }> 
 
 export function calculateCathedral(W: number, H: number, H1: number, shelves: ShelfConfig[], direction: SlopeDirection, finish: string) {
   const rows = computeCathedralRows(W, H, H1, shelves, direction)
-  let moduleIndex = 0
   const modulesPerRow: Array<Array<{ width: number }>> = []
   for (const row of rows) {
-    const { modules, nextModuleIndex } = calculateModulesForWidth(row.availableWidth, moduleIndex)
-    modulesPerRow.push(modules)
-    moduleIndex = nextModuleIndex
+    modulesPerRow.push(calculateModulesForWidth(row.availableWidth))
   }
   const rowResults = rows.map((row) => {
     try {
