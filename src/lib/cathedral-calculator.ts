@@ -90,8 +90,19 @@ function calculateModulesForWidth(totalWidth: number): Array<{ width: number }> 
 export function calculateCathedral(W: number, H: number, H1: number, shelves: ShelfConfig[], direction: SlopeDirection, finish: string) {
   const rows = computeCathedralRows(W, H, H1, shelves, direction)
   const modulesPerRow: Array<Array<{ width: number }>> = []
+  // Find the max width (base width) - rows at full width share a continuous module sequence
+  const baseWidth = rows.length > 0 ? Math.max(...rows.map(r => r.availableWidth)) : W
+  let carryIdx = 0
   for (const row of rows) {
-    modulesPerRow.push(calculateModulesForWidth(row.availableWidth))
+    if (Math.abs(row.availableWidth - baseWidth) < 0.01) {
+      // Full-width row: use carried sequence like standard bookshelf
+      const result = calculateModulesForWidthSequenced(row.availableWidth, carryIdx)
+      modulesPerRow.push(result.modules)
+      carryIdx = result.nextModuleIndex
+    } else {
+      // Narrower row: fresh module set
+      modulesPerRow.push(calculateModulesForWidth(row.availableWidth))
+    }
   }
   const rowResults = rows.map((row) => {
     try {
