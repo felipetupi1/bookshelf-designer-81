@@ -36,6 +36,26 @@ export function computeCathedralRows(W: number, H: number, H1: number, shelves: 
   return rows
 }
 
+function calculateModulesForWidthSequenced(totalWidth: number, startModuleIndex: number): { modules: Array<{ width: number }>; nextModuleIndex: number } {
+  const moduleWidths: number[] = []
+  let idx = startModuleIndex
+  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
+  idx++
+  moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
+  idx++
+  let currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
+  let freeSpace = totalWidth - currentWidth
+  let maxAllowedFreeSpace = MAX_GAP * (moduleWidths.length - 1)
+  while (freeSpace > maxAllowedFreeSpace) {
+    moduleWidths.push(MODULE_WIDTHS[idx % MODULE_WIDTHS.length])
+    idx++
+    currentWidth = moduleWidths.reduce((s, w) => s + w, 0)
+    freeSpace = totalWidth - currentWidth
+    maxAllowedFreeSpace = MAX_GAP * (moduleWidths.length - 1)
+  }
+  return { modules: moduleWidths.map(w => ({ width: w })), nextModuleIndex: idx % MODULE_WIDTHS.length }
+}
+
 function calculateModulesForWidth(totalWidth: number): Array<{ width: number }> {
   // For each row, start a fresh module sequence fitting smallest-first
   // Pick modules from the sequence that fit within totalWidth
