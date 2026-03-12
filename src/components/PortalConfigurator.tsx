@@ -213,7 +213,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     setObjectType(preset)
     setSelectedPresetSize(null)
     switch (preset) {
-      case "door": setFloorToObject(0); setRightGap(0); break
+      case "door": setObjectWidth(36); setObjectHeight(82); setFloorToObject(0); setRightGap(Math.round((wallWidth - 36) / 2)); break
       case "window": setFloorToObject(36); setRightGap(Math.round((wallWidth - objectWidth) / 2)); break
       case "tv": setFloorToObject(24); setRightGap(Math.round((wallWidth - objectWidth) / 2)); break
       case "fireplace": setFloorToObject(0); setRightGap(Math.round((wallWidth - objectWidth) / 2)); break
@@ -341,10 +341,10 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   }
 
   function handleReset() {
-    setWallWidth(100); setWallHeight(96); setObjectWidth(40); setObjectHeight(30)
-    setFloorToObject(24); setRightGap(30); setObjectType("tv"); setSelectedPresetSize(null)
+    setWallWidth(100); setWallHeight(96); setObjectWidth(36); setObjectHeight(82)
+    setFloorToObject(0); setRightGap(32); setObjectType("door"); setSelectedPresetSize(null)
     setGlobalShelves(defaultShelvesForHeight(96))
-    setSelectedFinish("Maple/Maple")
+    setSelectedFinish("Oak/Oak")
   }
 
   const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
