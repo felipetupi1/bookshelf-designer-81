@@ -203,15 +203,18 @@ function CameraController({ width, totalHeight, maxDepth, isMobile, resetKey }: 
   useEffect(() => {
     const fov = 60
     const fovRadians = (fov * Math.PI) / 180
+    // Use 1:1 for mobile (aspect-square canvas), otherwise window ratio
     const canvasAspect = isMobile ? 1 : window.innerWidth / window.innerHeight
     const distW = width / 2 / Math.tan(fovRadians / 2) / canvasAspect
     const distH = totalHeight / 2 / Math.tan(fovRadians / 2)
     const distD = maxDepth * 2.5
-    const padding = isMobile ? 1.15 : 1.8
+    const padding = isMobile ? 1.05 : 1.8
     const optimalDist = Math.max(distW, distH, distD) * padding
 
-    const targetPos = new THREE.Vector3(0, totalHeight * 0.45, optimalDist)
-    const lookAt = new THREE.Vector3(0, totalHeight * 0.45, 0)
+    // Cathedral visual center is lower than geometric center since top rows are narrower
+    const centerY = totalHeight * 0.35
+    const targetPos = new THREE.Vector3(0, centerY, optimalDist)
+    const lookAt = new THREE.Vector3(0, centerY, 0)
     const startPos = camera.position.clone()
     const duration = 600
     const startTime = Date.now()
