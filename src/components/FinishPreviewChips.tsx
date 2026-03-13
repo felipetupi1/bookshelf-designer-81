@@ -13,6 +13,7 @@ const CHIPS: ChipDef[] = [
   { id: "Oak/Oak", label: "White Oak", image: "/images/finishes/Oak_Close.jpg" },
   { id: "Maple/Maple", label: "Maple", image: "/images/finishes/Maple_Close.jpg" },
   { id: "Walnut/Walnut", label: "Walnut", image: "/images/finishes/Walnut_Close.jpg" },
+  { id: "Oak/White", label: "White Oak / White", image: "/images/finishes/White___Oak.jpg" },
   { id: "Maple/Black", label: "Maple / Black", leftImage: "/images/finishes/Maple_Close.jpg", rightImage: "/images/finishes/Maple___Black_Closer_2.jpg", split: true },
   { id: "Oak/Black", label: "White Oak / Black", leftImage: "/images/finishes/Oak_Close.jpg", rightImage: "/images/finishes/Oak___Black_Closer_2.jpg", split: true },
 ]
