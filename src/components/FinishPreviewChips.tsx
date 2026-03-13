@@ -3,13 +3,17 @@ interface FinishPreviewChipsProps {
   selectedFinish?: string
 }
 
-const CHIPS = [
+type ChipDef =
+  | { id: string; label: string; image: string; split?: false }
+  | { id: string; label: string; leftImage: string; rightImage: string; split: true }
+
+const CHIPS: ChipDef[] = [
   { id: "Oak/Oak", label: "White Oak", image: "/images/finishes/oak1.jpeg" },
   { id: "Maple/Maple", label: "Maple", image: "/images/finishes/maple1.jpeg" },
   { id: "Walnut/Walnut", label: "Walnut", image: "/images/finishes/walnut1.jpeg" },
   { id: "Maple/Black", label: "Maple/Black", leftImage: "/images/finishes/maple1.jpeg", rightImage: "/images/finishes/valchromat.png", split: true },
   { id: "Oak/Black", label: "White Oak/Black", leftImage: "/images/finishes/oak1.jpeg", rightImage: "/images/finishes/valchromat.png", split: true },
-] as const
+]
 
 export function FinishPreviewChips({ onSelectFinish, selectedFinish }: FinishPreviewChipsProps) {
   return (
