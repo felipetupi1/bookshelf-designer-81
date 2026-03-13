@@ -391,7 +391,8 @@ function CornerBookshelf3D({
   modules,
   modules2,
   frameFinish,
-}: Bookshelf3DViewProps & { frameFinish?: string }) {
+  backFinish,
+}: Bookshelf3DViewProps & { frameFinish?: string; backFinish?: string }) {
   const arm2Shelves = shelves2 || shelves
   const maxDepth2 = Math.max(...arm2Shelves.map((s) => s.depth))
 
@@ -408,6 +409,7 @@ function CornerBookshelf3D({
           shelves={shelves}
           finish={finish}
           frameFinish={frameFinish}
+          backFinish={backFinish}
           modules={modules}
         />
       </group>
@@ -421,6 +423,7 @@ function CornerBookshelf3D({
           shelves={arm2Shelves}
           finish={finish}
           frameFinish={frameFinish}
+          backFinish={backFinish}
           modules={modules2 || modules}
         />
       </group>
