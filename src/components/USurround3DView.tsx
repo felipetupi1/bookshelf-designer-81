@@ -63,37 +63,33 @@ function CameraController({ w1, w, w2, totalHeight, maxDepth, isMobile, resetKey
   return null
 }
 
-function USurroundScene({ props, intF, frameF }: { props: USurround3DViewProps; intF: string; frameF: string }) {
+function USurroundScene({ props, intF, frameF, backF }: { props: USurround3DViewProps; intF: string; frameF: string; backF: string }) {
   const { w1, w, w2, shelvesLeft, shelvesFront, shelvesRight, modulesLeft, modulesFront, modulesRight } = props
   const backZ = Math.max(w1, w2)
   const backArmDepth = Math.max(...shelvesFront.map(s => s.depth))
 
-  // Bookshelf3D extends from z=0 (open/front face) to z=-maxDepth (back face).
-  // We position the back arm so its BACK face sits at z=-backZ, flush with side arm back ends.
-  // That means group z = -backZ + backArmDepth.
-
   return (
     <group>
-      {/* Back arm — back face at z=-backZ, open face at z=-backZ+depth, facing forward */}
+      {/* Back arm */}
       <group position={[0, 0, -backZ + backArmDepth]}>
         <Bookshelf3D
-          style="bookshelf" width={w} shelves={shelvesFront} finish={intF} frameFinish={frameF}
+          style="bookshelf" width={w} shelves={shelvesFront} finish={intF} frameFinish={frameF} backFinish={backF}
           modules={modulesFront}
         />
       </group>
 
-      {/* Left arm — inner face fixed at x=-w/2, back end anchored at z=-backZ */}
+      {/* Left arm */}
       <group position={[-w / 2, 0, -backZ + w1 / 2]} rotation={[0, Math.PI / 2, 0]}>
         <Bookshelf3D
-          style="bookshelf" width={w1} shelves={shelvesLeft} finish={intF} frameFinish={frameF}
+          style="bookshelf" width={w1} shelves={shelvesLeft} finish={intF} frameFinish={frameF} backFinish={backF}
           modules={modulesLeft}
         />
       </group>
 
-      {/* Right arm — inner face fixed at x=+w/2, back end anchored at z=-backZ */}
+      {/* Right arm */}
       <group position={[w / 2, 0, -backZ + w2 / 2]} rotation={[0, -Math.PI / 2, 0]}>
         <Bookshelf3D
-          style="bookshelf" width={w2} shelves={shelvesRight} finish={intF} frameFinish={frameF}
+          style="bookshelf" width={w2} shelves={shelvesRight} finish={intF} frameFinish={frameF} backFinish={backF}
           modules={modulesRight}
         />
       </group>
