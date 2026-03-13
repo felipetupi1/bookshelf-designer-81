@@ -362,7 +362,7 @@ export function Bookshelf3D({
           finish={finish}
           zOffset={board.zOffset}
           hasBaguetes={!!showBaguetes}
-          frameFinish={frameFinish}
+          frameFinish={finish}
         />
       ))}
       {renderData.transitionBoards.map((tb, index) => (
