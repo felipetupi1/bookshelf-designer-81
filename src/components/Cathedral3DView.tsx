@@ -87,11 +87,11 @@ function ModuleBox({ position, width, height, depth, internalFinish, frameFinish
     <group position={position}>
       <mesh position={[-width / 2 + sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
+        <WoodMaterial finish={frameFinish} />
       </mesh>
       <mesh position={[width / 2 - sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
+        <WoodMaterial finish={frameFinish} />
       </mesh>
       <mesh position={[0, height / 2 + bagueteOffset, backZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
@@ -128,12 +128,12 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
 
       // Bottom board for row
       els.push(
-        <Board
+      <Board
           key={`board-bottom-${rowIndex}`}
           position={[xOffset, row.yPosition, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={internalFinish}
+          finish={frameFinish}
           zOffset={zOffset}
         />
       )
@@ -146,7 +146,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, topY, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={internalFinish}
+          finish={frameFinish}
           zOffset={zOffset}
         />
       )

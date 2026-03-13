@@ -95,12 +95,12 @@ function ModuleBox({ pos, w, h, d, intF, frameF, zOff = 0 }: {
       {/* left side */}
       <mesh position={[-w / 2 + BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
         <boxGeometry args={[BOARD_T, h, d]} />
-        <WoodMaterial finish={intF} />
+        <WoodMaterial finish={frameF} />
       </mesh>
       {/* right side */}
       <mesh position={[w / 2 - BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
         <boxGeometry args={[BOARD_T, h, d]} />
-        <WoodMaterial finish={intF} />
+        <WoodMaterial finish={frameF} />
       </mesh>
       {/* back */}
       <mesh position={[0, h / 2 + bOff, -d - BOARD_T / 2 + zOff]} castShadow receiveShadow>
@@ -253,14 +253,14 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
       {/* Bottom board — split if object reaches floor */}
       {objBot <= BOARD_T ? (
         <>
-          {hasLeft && <Board pos={[wL + leftGap / 2, 0, -defDepth / 2]} w={leftGap} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />}
-          {hasRight && <Board pos={[wL + objR + rightGap / 2, 0, -defDepth / 2]} w={rightGap} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />}
+          {hasLeft && <Board pos={[wL + leftGap / 2, 0, -defDepth / 2]} w={leftGap} d={defDepth} finish={frameF} zOff={-(maxDepth - defDepth)} />}
+          {hasRight && <Board pos={[wL + objR + rightGap / 2, 0, -defDepth / 2]} w={rightGap} d={defDepth} finish={frameF} zOff={-(maxDepth - defDepth)} />}
         </>
       ) : (
-        <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+        <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={frameF} zOff={-(maxDepth - defDepth)} />
       )}
       {/* Top board — full wallWidth at wallHeight */}
-      <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+      <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={frameF} zOff={-(maxDepth - defDepth)} />
       {/* Left side panel — only if leftGap >= 25" */}
       {hasLeft && <SidePanel x={wL + BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />}
       {/* Right side panel — only if rightGap >= 25" */}
@@ -279,16 +279,16 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
         const rowOverlapsObj = moduleY < safeTop && topBoardY > safeBot
 
         // Render a horizontal shelf board, splitting if it intersects the object zone
-        const renderShelfBoard = (by: number) => {
+  const renderShelfBoard = (by: number) => {
           if (!boardInObj(by)) {
             // Full width
-            return <Board pos={[0, by, -shelf.depth / 2]} w={wallWidth} d={shelf.depth} finish={intF} zOff={zOff} />
+            return <Board pos={[0, by, -shelf.depth / 2]} w={wallWidth} d={shelf.depth} finish={frameF} zOff={zOff} />
           }
           // Split into left and right portions, skipping object zone
           return (
             <>
-              {hasLeft && <Board pos={[wL + leftGap / 2, by, -shelf.depth / 2]} w={leftGap} d={shelf.depth} finish={intF} zOff={zOff} />}
-              {hasRight && <Board pos={[wL + objR + rightGap / 2, by, -shelf.depth / 2]} w={rightGap} d={shelf.depth} finish={intF} zOff={zOff} />}
+              {hasLeft && <Board pos={[wL + leftGap / 2, by, -shelf.depth / 2]} w={leftGap} d={shelf.depth} finish={frameF} zOff={zOff} />}
+              {hasRight && <Board pos={[wL + objR + rightGap / 2, by, -shelf.depth / 2]} w={rightGap} d={shelf.depth} finish={frameF} zOff={zOff} />}
             </>
           )
         }
