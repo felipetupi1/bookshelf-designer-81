@@ -374,7 +374,7 @@ export function Bookshelf3D({
           finish={finish}
           zOffset={tb.zOffset}
           hasBaguetes={!!showBaguetes}
-          frameFinish={frameFinish}
+          frameFinish={finish}
         />
       ))}
       {moduleElements}
