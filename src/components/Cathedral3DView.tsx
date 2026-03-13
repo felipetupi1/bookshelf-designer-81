@@ -38,8 +38,7 @@ function WoodMaterial({ finish, isFrame = false }: { finish: string; isFrame?: b
     t.wrapS = THREE.RepeatWrapping
     t.wrapT = THREE.RepeatWrapping
     t.repeat.set(1, 1)
-    t.rotation = Math.PI / 2
-    t.center.set(0.5, 0.5)
+    t.rotation = 0
     t.needsUpdate = true
     return t
   }, [texture])
