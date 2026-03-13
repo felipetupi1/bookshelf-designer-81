@@ -13,6 +13,7 @@ import type { SlopeDirection } from "@/lib/cathedral-calculator"
 import { computeCathedralRows, calculateCathedral } from "@/lib/cathedral-calculator"
 import { CathedralSchematic } from "./CathedralSchematic"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FinishPreviewChips } from "./FinishPreviewChips"
 import { FloatingPreview } from "./FloatingPreview"
 import { createShopifyCheckout } from "@/lib/shopify-checkout"
 
@@ -208,6 +209,10 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
         <div ref={mainPreviewRef} className="lg:sticky lg:top-0 lg:h-screen lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 pt-[3px] px-1 lg:p-6">
+            <FinishPreviewChips
+              finishes={FINISH_OPTIONS}
+              onChipClick={(name, src) => setPreviewModal({ isOpen: true, finishName: name, imageSrc: src })}
+            />
             <div className="absolute top-6 right-6 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-1.5 shadow-sm">
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Cathedral</div>
               <div className="text-sm font-semibold text-foreground leading-tight">{toFraction(W)} × {toFraction(H)}–{toFraction(H1)}</div>

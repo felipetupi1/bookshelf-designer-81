@@ -24,6 +24,7 @@ import type { BookshelfConfig, ShelfConfig, BookshelfType, BookshelfResult } fro
 import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { Bookshelf3DView, type Bookshelf3DViewRef } from "./Bookshelf3DView"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FinishPreviewChips } from "./FinishPreviewChips"
 import { FloatingPreview } from "./FloatingPreview"
 import { createShopifyCheckout } from "@/lib/shopify-checkout"
 import { PortalConfigurator } from "./PortalConfigurator"
@@ -44,7 +45,7 @@ const FINISH_OPTIONS = [
     color1: "#1a1a1a", color2: "#1a1a1a", comingSoon: true, previewImage: null as string | null,
   },
   {
-    id: "Oak/White", label: "Oak/White", price: 60.18,
+    id: "Oak/White", label: "White Oak / White", price: 60.18,
     color1: "#D4A574", color2: "#f5f5f5", comingSoon: false, previewImage: null as string | null,
   },
   {
@@ -60,7 +61,7 @@ const FINISH_OPTIONS = [
     color1: "#5D432C", color2: "#5D432C", comingSoon: false, previewImage: "/images/finishes/walnut.jpg",
   },
   {
-    id: "Oak/Black", label: "Oak/Black", price: 77.99,
+    id: "Oak/Black", label: "White Oak / Black", price: 77.99,
     color1: "#D4A574", color2: "#1a1a1a", comingSoon: false, previewImage: "/images/finishes/oak-black.jpeg",
   },
 ]
@@ -425,21 +426,10 @@ export function BookshelfConfigurator() {
         {/* 3D Preview — sticky on desktop */}
         <div ref={mainPreviewRef} className="lg:sticky lg:top-0 lg:h-screen lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 pt-[3px] px-1 lg:p-6">
-            {/* Finish preview chips */}
-            <div className="absolute top-6 left-6 z-10 flex items-center gap-2">
-              {FINISH_OPTIONS.filter((f) => f.previewImage && !f.comingSoon).map((finish) => (
-                <button
-                  key={finish.id}
-                  onClick={() => setPreviewModal({ isOpen: true, finishName: finish.label, imageSrc: finish.previewImage! })}
-                  className="group relative"
-                  title={finish.label}
-                >
-                  <div className="w-8 h-8 rounded-full border-2 border-background shadow-md overflow-hidden hover:scale-110 transition-transform">
-                    <img src={finish.previewImage!} alt={finish.label} className="object-cover w-full h-full" />
-                  </div>
-                </button>
-              ))}
-            </div>
+            <FinishPreviewChips
+              finishes={FINISH_OPTIONS}
+              onChipClick={(name, src) => setPreviewModal({ isOpen: true, finishName: name, imageSrc: src })}
+            />
 
             {/* Dimension badge */}
             <div className="absolute top-6 right-6 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-1.5 shadow-sm">
