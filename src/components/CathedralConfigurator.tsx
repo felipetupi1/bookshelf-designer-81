@@ -13,6 +13,7 @@ import type { SlopeDirection } from "@/lib/cathedral-calculator"
 import { computeCathedralRows, calculateCathedral } from "@/lib/cathedral-calculator"
 import { CathedralSchematic } from "./CathedralSchematic"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FinishPreviewChips } from "./FinishPreviewChips"
 import { FloatingPreview } from "./FloatingPreview"
 import { createShopifyCheckout } from "@/lib/shopify-checkout"
 
