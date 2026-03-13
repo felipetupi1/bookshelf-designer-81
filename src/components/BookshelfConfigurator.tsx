@@ -24,6 +24,7 @@ import type { BookshelfConfig, ShelfConfig, BookshelfType, BookshelfResult } fro
 import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { Bookshelf3DView, type Bookshelf3DViewRef } from "./Bookshelf3DView"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FinishPreviewChips } from "./FinishPreviewChips"
 import { FloatingPreview } from "./FloatingPreview"
 import { createShopifyCheckout } from "@/lib/shopify-checkout"
 import { PortalConfigurator } from "./PortalConfigurator"
