@@ -3,9 +3,7 @@ interface FinishPreviewChipsProps {
   selectedFinish?: string
 }
 
-type ChipDef =
-  | { id: string; label: string; image: string; split?: false }
-  | { id: string; label: string; leftImage: string; rightImage: string; split: true }
+type ChipDef = { id: string; label: string; image?: string; leftImage?: string; rightImage?: string; split?: boolean }
 
 const CHIPS: ChipDef[] = [
   { id: "Oak/Oak", label: "White Oak", image: "/images/finishes/oak1.jpeg" },
