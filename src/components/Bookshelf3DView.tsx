@@ -676,6 +676,7 @@ export const Bookshelf3DView = forwardRef<
               shelves2={shelves2}
               finish={internalFinish}
               frameFinish={frameFinish}
+              backFinish={backFinish}
               modules={modules}
               modules2={modules2}
             />
@@ -688,6 +689,7 @@ export const Bookshelf3DView = forwardRef<
               shelves2={shelves2}
               finish={internalFinish}
               frameFinish={frameFinish}
+              backFinish={backFinish}
               modules={modules}
               modules2={modules2}
             />
@@ -698,6 +700,7 @@ export const Bookshelf3DView = forwardRef<
               shelves={shelves}
               finish={internalFinish}
               frameFinish={frameFinish}
+              backFinish={backFinish}
               modules={modules}
             />
           )}

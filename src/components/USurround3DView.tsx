@@ -100,8 +100,10 @@ function USurroundScene({ props, intF, frameF, backF }: { props: USurround3DView
 export const USurround3DView = forwardRef<USurround3DViewRef, USurround3DViewProps>(
   function USurround3DView(props, ref) {
     const { w1, w, w2, shelvesLeft, shelvesFront, shelvesRight, finish, isMobile, hideTooltip } = props
-    const [intF, frameF] = finish.includes("/") ? finish.split("/") : [finish, finish]
-    const [resetCount, setResetCount] = useState(0)
+    const parts = finish.includes("/") ? finish.split("/").map(s => s.trim()) : null
+    const intF = parts ? parts[1] : finish    // sides + boards = second part
+    const frameF = parts ? parts[0] : finish  // baguetes = first part
+    const backF = parts ? parts[0] : finish   // back panel = first part
 
     let captureFn: (() => Promise<string>) | null = null
     useImperativeHandle(ref, () => ({

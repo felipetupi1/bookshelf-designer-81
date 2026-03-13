@@ -279,6 +279,7 @@ export const Cathedral3DView = forwardRef<Cathedral3DViewRef, Cathedral3DViewPro
               maxWidth={W}
               internalFinish={internalFinish}
               frameFinish={frameFinish}
+              backFinish={backFinish}
               direction={direction}
             />
 
