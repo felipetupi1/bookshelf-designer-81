@@ -237,8 +237,10 @@ function CameraController({ width, totalHeight, maxDepth, isMobile, resetKey }: 
 
 export const Cathedral3DView = forwardRef<Cathedral3DViewRef, Cathedral3DViewProps>(
   function Cathedral3DView({ W, H, H1, direction, rows, modulesPerRow, finish, isMobile, hideTooltip }, ref) {
-    const [internalFinish, frameFinish] = finish.includes("/") ? finish.split("/") : [finish, finish]
-    const [resetCount, setResetCount] = useState(0)
+    const parts = finish.includes("/") ? finish.split("/").map(s => s.trim()) : null
+    const internalFinish = parts ? parts[1] : finish  // sides + boards = second part
+    const frameFinish = parts ? parts[0] : finish     // baguetes = first part
+    const backFinish = parts ? parts[0] : finish      // back panel = first part
 
     let captureFunction: (() => Promise<string>) | null = null
     useImperativeHandle(ref, () => ({
