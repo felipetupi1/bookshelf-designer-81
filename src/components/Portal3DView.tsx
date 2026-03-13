@@ -260,11 +260,11 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
         <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
       )}
       {/* Top board — full wallWidth at wallHeight */}
-      <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={frameF} zOff={-(maxDepth - defDepth)} />
+      <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
       {/* Left side panel — only if leftGap >= 25" */}
-      {hasLeft && <SidePanel x={wL + BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />}
+      {hasLeft && <SidePanel x={wL + BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={intF} />}
       {/* Right side panel — only if rightGap >= 25" */}
-      {hasRight && <SidePanel x={wL + wallWidth - BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={frameF} />}
+      {hasRight && <SidePanel x={wL + wallWidth - BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={intF} />}
 
 
       {/* ══════ SHELF ROWS ══════ */}
