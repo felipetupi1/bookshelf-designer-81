@@ -87,11 +87,11 @@ function ModuleBox({ position, width, height, depth, internalFinish, frameFinish
     <group position={position}>
       <mesh position={[-width / 2 + sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={frameFinish} />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
       <mesh position={[width / 2 - sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={frameFinish} />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
       <mesh position={[0, height / 2 + bagueteOffset, backZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
@@ -133,7 +133,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, row.yPosition, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={frameFinish}
+          finish={internalFinish}
           zOffset={zOffset}
         />
       )
@@ -146,7 +146,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, topY, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={frameFinish}
+          finish={internalFinish}
           zOffset={zOffset}
         />
       )

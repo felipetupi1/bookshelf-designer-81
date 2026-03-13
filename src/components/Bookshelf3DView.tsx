@@ -230,7 +230,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={frameFinish} />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
 
       <mesh
@@ -239,7 +239,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={frameFinish} />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
 
       <mesh
@@ -355,7 +355,7 @@ export function Bookshelf3D({
           position={[0, board.y, -board.depth / 2]}
           width={width}
           depth={board.depth}
-          finish={frameFinish || finish}
+          finish={finish}
           zOffset={board.zOffset}
           hasBaguetes={!!showBaguetes}
           frameFinish={frameFinish}
@@ -367,7 +367,7 @@ export function Bookshelf3D({
           position={[0, tb.y, -tb.depth / 2]}
           width={width}
           depth={tb.depth}
-          finish={frameFinish || finish}
+          finish={finish}
           zOffset={tb.zOffset}
           hasBaguetes={!!showBaguetes}
           frameFinish={frameFinish}
