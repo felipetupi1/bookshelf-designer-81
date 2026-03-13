@@ -204,6 +204,8 @@ function ModuleBox({
   depth,
   internalFinish,
   frameFinish,
+  sideFinish,
+  bagueteFinish,
   zOffset = 0,
 }: {
   position: [number, number, number]
@@ -212,6 +214,8 @@ function ModuleBox({
   depth: number
   internalFinish: string
   frameFinish: string
+  sideFinish?: string
+  bagueteFinish?: string
   zOffset?: number
 }) {
   const sideThickness = 0.75
@@ -222,6 +226,9 @@ function ModuleBox({
   const sideZ = -depth / 2
   const backZ = -depth - backThickness / 2
 
+  const actualSideFinish = sideFinish || internalFinish
+  const actualBagueteFinish = bagueteFinish || frameFinish
+
   return (
     <group position={position}>
       <mesh
@@ -230,7 +237,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
+        <WoodMaterial finish={actualSideFinish} />
       </mesh>
 
       <mesh
@@ -239,7 +246,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
+        <WoodMaterial finish={actualSideFinish} />
       </mesh>
 
       <mesh
@@ -254,14 +261,14 @@ function ModuleBox({
       <Baguete
         position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]}
         height={bagueteHeight}
-        finish={frameFinish}
+        finish={actualBagueteFinish}
         zOffset={zOffset}
       />
 
       <Baguete
         position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]}
         height={bagueteHeight}
-        finish={frameFinish}
+        finish={actualBagueteFinish}
         zOffset={zOffset}
       />
     </group>
