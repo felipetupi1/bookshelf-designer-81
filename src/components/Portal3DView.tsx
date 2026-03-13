@@ -340,6 +340,10 @@ export const Portal3DView = forwardRef<Portal3DViewRef, Portal3DViewProps>(
   function Portal3DView(props, ref) {
     const { wallWidth, wallHeight, finish, isMobile, hideTooltip } = props
     const [intF, frameF] = finish.includes("/") ? finish.split("/") : [finish, finish]
+    const isWhiteCombo = frameF === "White" && intF !== "White" && intF !== frameF
+    const sideF = isWhiteCombo ? frameF : intF
+    const boardF = isWhiteCombo ? frameF : intF
+    const bagueteF = isWhiteCombo ? intF : frameF
     const [resetCount, setResetCount] = useState(0)
 
     let captureFn: (() => Promise<string>) | null = null
