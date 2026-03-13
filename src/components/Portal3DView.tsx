@@ -85,22 +85,24 @@ function Baguete({ position, height, finish, zOff = 0 }: { position: [number, nu
   )
 }
 
-function ModuleBox({ pos, w, h, d, intF, frameF, zOff = 0 }: {
-  pos: [number, number, number]; w: number; h: number; d: number; intF: string; frameF: string; zOff?: number
+function ModuleBox({ pos, w, h, d, intF, frameF, sideF, bagueteF, zOff = 0 }: {
+  pos: [number, number, number]; w: number; h: number; d: number; intF: string; frameF: string; sideF?: string; bagueteF?: string; zOff?: number
 }) {
   const bH = h + 0.625
   const bOff = -0.3125
+  const actualSideF = sideF || intF
+  const actualBagueteF = bagueteF || frameF
   return (
     <group position={pos}>
       {/* left side */}
       <mesh position={[-w / 2 + BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
         <boxGeometry args={[BOARD_T, h, d]} />
-        <WoodMaterial finish={intF} />
+        <WoodMaterial finish={actualSideF} />
       </mesh>
       {/* right side */}
       <mesh position={[w / 2 - BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
         <boxGeometry args={[BOARD_T, h, d]} />
-        <WoodMaterial finish={intF} />
+        <WoodMaterial finish={actualSideF} />
       </mesh>
       {/* back */}
       <mesh position={[0, h / 2 + bOff, -d - BOARD_T / 2 + zOff]} castShadow receiveShadow>
@@ -108,8 +110,8 @@ function ModuleBox({ pos, w, h, d, intF, frameF, zOff = 0 }: {
         <WoodMaterial finish={intF} />
       </mesh>
       {/* baguetes */}
-      <Baguete position={[-w / 2 + BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={frameF} zOff={zOff} />
-      <Baguete position={[w / 2 - BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={frameF} zOff={zOff} />
+      <Baguete position={[-w / 2 + BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={actualBagueteF} zOff={zOff} />
+      <Baguete position={[w / 2 - BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={actualBagueteF} zOff={zOff} />
     </group>
   )
 }
@@ -174,7 +176,7 @@ function CameraController({ wallWidth, wallHeight, maxDepth, isMobile, resetKey 
 }
 
 // ─── MAIN SCENE ───
-function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: string; frameF: string }) {
+function PortalScene({ props, intF, frameF, sideF, boardF, bagueteF }: { props: Portal3DViewProps; intF: string; frameF: string; sideF: string; boardF: string; bagueteF: string }) {
   const { wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, leftGap, rightGap, shelves } = props
   const maxDepth = shelves.length > 0 ? Math.max(...shelves.map(s => s.depth)) : 7
   const defDepth = shelves.length > 0 ? shelves[0].depth : maxDepth
@@ -253,18 +255,18 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
       {/* Bottom board — split if object reaches floor */}
       {objBot <= BOARD_T ? (
         <>
-          {hasLeft && <Board pos={[wL + leftGap / 2, 0, -defDepth / 2]} w={leftGap} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />}
-          {hasRight && <Board pos={[wL + objR + rightGap / 2, 0, -defDepth / 2]} w={rightGap} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />}
+          {hasLeft && <Board pos={[wL + leftGap / 2, 0, -defDepth / 2]} w={leftGap} d={defDepth} finish={boardF} zOff={-(maxDepth - defDepth)} />}
+          {hasRight && <Board pos={[wL + objR + rightGap / 2, 0, -defDepth / 2]} w={rightGap} d={defDepth} finish={boardF} zOff={-(maxDepth - defDepth)} />}
         </>
       ) : (
-        <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+        <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={boardF} zOff={-(maxDepth - defDepth)} />
       )}
       {/* Top board — full wallWidth at wallHeight */}
-      <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
+      <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={boardF} zOff={-(maxDepth - defDepth)} />
       {/* Left side panel — only if leftGap >= 25" */}
-      {hasLeft && <SidePanel x={wL + BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={intF} />}
+      {hasLeft && <SidePanel x={wL + BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={sideF} />}
       {/* Right side panel — only if rightGap >= 25" */}
-      {hasRight && <SidePanel x={wL + wallWidth - BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={intF} />}
+      {hasRight && <SidePanel x={wL + wallWidth - BOARD_T / 2} h={lastTop + BOARD_T} d={maxDepth} finish={sideF} />}
 
 
       {/* ══════ SHELF ROWS ══════ */}
@@ -282,13 +284,13 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
   const renderShelfBoard = (by: number) => {
           if (!boardInObj(by)) {
             // Full width
-            return <Board pos={[0, by, -shelf.depth / 2]} w={wallWidth} d={shelf.depth} finish={intF} zOff={zOff} />
+            return <Board pos={[0, by, -shelf.depth / 2]} w={wallWidth} d={shelf.depth} finish={boardF} zOff={zOff} />
           }
           // Split into left and right portions, skipping object zone
           return (
             <>
-              {hasLeft && <Board pos={[wL + leftGap / 2, by, -shelf.depth / 2]} w={leftGap} d={shelf.depth} finish={intF} zOff={zOff} />}
-              {hasRight && <Board pos={[wL + objR + rightGap / 2, by, -shelf.depth / 2]} w={rightGap} d={shelf.depth} finish={intF} zOff={zOff} />}
+              {hasLeft && <Board pos={[wL + leftGap / 2, by, -shelf.depth / 2]} w={leftGap} d={shelf.depth} finish={boardF} zOff={zOff} />}
+              {hasRight && <Board pos={[wL + objR + rightGap / 2, by, -shelf.depth / 2]} w={rightGap} d={shelf.depth} finish={boardF} zOff={zOff} />}
             </>
           )
         }
@@ -311,6 +313,7 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
                   pos={[wL + modX + modW / 2, moduleY, 0]}
                   w={modW} h={shelf.height} d={shelf.depth}
                   intF={intF} frameF={frameF}
+                  sideF={sideF} bagueteF={bagueteF}
                   zOff={zOff}
                 />
               )
@@ -337,6 +340,10 @@ export const Portal3DView = forwardRef<Portal3DViewRef, Portal3DViewProps>(
   function Portal3DView(props, ref) {
     const { wallWidth, wallHeight, finish, isMobile, hideTooltip } = props
     const [intF, frameF] = finish.includes("/") ? finish.split("/") : [finish, finish]
+    const isWhiteCombo = frameF === "White" && intF !== "White" && intF !== frameF
+    const sideF = isWhiteCombo ? frameF : intF
+    const boardF = isWhiteCombo ? frameF : intF
+    const bagueteF = isWhiteCombo ? intF : frameF
     const [resetCount, setResetCount] = useState(0)
 
     let captureFn: (() => Promise<string>) | null = null
@@ -361,7 +368,7 @@ export const Portal3DView = forwardRef<Portal3DViewRef, Portal3DViewProps>(
             <directionalLight position={[15, 20, 10]} intensity={1.2} castShadow shadow-mapSize-width={4096} shadow-mapSize-height={4096} shadow-bias={-0.00001} shadow-camera-left={-wallWidth} shadow-camera-right={wallWidth} shadow-camera-top={wallHeight} shadow-camera-bottom={-5} />
             <directionalLight position={[-10, 10, -8]} intensity={0.4} />
             <pointLight position={[0, wallHeight * 0.7, maxDepth * 1.5]} intensity={0.8} distance={maxDepth * 4} />
-            <PortalScene props={props} intF={intF} frameF={frameF} />
+            <PortalScene props={props} intF={intF} frameF={frameF} sideF={sideF} boardF={boardF} bagueteF={bagueteF} />
             <Environment preset="studio" environmentIntensity={0.5} />
             <ContactShadows position={[0, -0.1, 0]} opacity={0.3} scale={wallWidth * 1.8} blur={2.8} far={wallHeight * 1.5} resolution={1024} />
             <OrbitControls enableZoom enablePan enableRotate minDistance={20} maxDistance={300} target={[0, wallHeight / 2, 0]} enableDamping dampingFactor={0.05} rotateSpeed={0.5} zoomSpeed={0.5} />

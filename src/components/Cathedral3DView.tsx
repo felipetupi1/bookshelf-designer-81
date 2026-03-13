@@ -72,9 +72,9 @@ function Baguete({ position, height, finish, zOffset = 0 }: {
   )
 }
 
-function ModuleBox({ position, width, height, depth, internalFinish, frameFinish, zOffset = 0 }: {
+function ModuleBox({ position, width, height, depth, internalFinish, frameFinish, sideFinish, bagueteFinish, zOffset = 0 }: {
   position: [number, number, number]; width: number; height: number; depth: number
-  internalFinish: string; frameFinish: string; zOffset?: number
+  internalFinish: string; frameFinish: string; sideFinish?: string; bagueteFinish?: string; zOffset?: number
 }) {
   const sideThickness = 0.75
   const backThickness = 0.75
@@ -83,22 +83,25 @@ function ModuleBox({ position, width, height, depth, internalFinish, frameFinish
   const sideZ = -depth / 2
   const backZ = -depth - backThickness / 2
 
+  const actualSideFinish = sideFinish || internalFinish
+  const actualBagueteFinish = bagueteFinish || frameFinish
+
   return (
     <group position={position}>
       <mesh position={[-width / 2 + sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
+        <WoodMaterial finish={actualSideFinish} />
       </mesh>
       <mesh position={[width / 2 - sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
+        <WoodMaterial finish={actualSideFinish} />
       </mesh>
       <mesh position={[0, height / 2 + bagueteOffset, backZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
         <WoodMaterial finish={internalFinish} />
       </mesh>
-      <Baguete position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
-      <Baguete position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
+      <Baguete position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={actualBagueteFinish} zOffset={zOffset} />
+      <Baguete position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={actualBagueteFinish} zOffset={zOffset} />
     </group>
   )
 }
@@ -108,6 +111,12 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
   maxWidth: number; internalFinish: string; frameFinish: string; direction: string
 }) {
   const maxDepth = Math.max(...rows.flatMap(r => r.shelves.map(s => s.depth)), 7)
+
+  // For "Oak/White": sides/boards → White, back → Oak, baguetes → Oak
+  const isWhiteCombo = frameFinish === "White" && internalFinish !== "White" && internalFinish !== frameFinish
+  const boardF = isWhiteCombo ? frameFinish : internalFinish
+  const sideF = isWhiteCombo ? frameFinish : internalFinish
+  const bagueteF = isWhiteCombo ? internalFinish : frameFinish
 
   const elements = useMemo(() => {
     const els: JSX.Element[] = []
@@ -133,7 +142,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, row.yPosition, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={internalFinish}
+          finish={boardF}
           zOffset={zOffset}
         />
       )
@@ -146,7 +155,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, topY, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={internalFinish}
+          finish={boardF}
           zOffset={zOffset}
         />
       )
@@ -169,6 +178,8 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
             depth={shelf.depth}
             internalFinish={internalFinish}
             frameFinish={frameFinish}
+            sideFinish={sideF}
+            bagueteFinish={bagueteF}
             zOffset={zOffset}
           />
         )
@@ -177,7 +188,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
     })
 
     return els
-  }, [rows, modulesPerRow, maxWidth, maxDepth, internalFinish, frameFinish, direction])
+  }, [rows, modulesPerRow, maxWidth, maxDepth, internalFinish, frameFinish, direction, boardF, sideF, bagueteF])
 
   return <group>{elements}</group>
 }
