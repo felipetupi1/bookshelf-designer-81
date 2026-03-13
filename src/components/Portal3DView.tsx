@@ -335,11 +335,10 @@ function PortalScene({ props, intF, frameF, backF }: { props: Portal3DViewProps;
 export const Portal3DView = forwardRef<Portal3DViewRef, Portal3DViewProps>(
   function Portal3DView(props, ref) {
     const { wallWidth, wallHeight, finish, isMobile, hideTooltip } = props
-    const [intF, frameF] = finish.includes("/") ? finish.split("/") : [finish, finish]
-    const isWhiteCombo = frameF === "White" && intF !== "White" && intF !== frameF
-    const sideF = isWhiteCombo ? frameF : intF
-    const boardF = isWhiteCombo ? frameF : intF
-    const bagueteF = isWhiteCombo ? intF : frameF
+    const parts = finish.includes("/") ? finish.split("/").map(s => s.trim()) : null
+    const intF = parts ? parts[1] : finish    // sides + boards = second part
+    const frameF = parts ? parts[0] : finish  // baguetes = first part
+    const backF = parts ? parts[0] : finish   // back panel = first part
     const [resetCount, setResetCount] = useState(0)
 
     let captureFn: (() => Promise<string>) | null = null
