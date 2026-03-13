@@ -52,19 +52,25 @@ export function FinishPreviewChips({ selectedFinish }: FinishPreviewChipsProps) 
         ))}
       </div>
 
-      {modal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setModal(m => ({ ...m, isOpen: false }))}>
-          <div className="relative bg-card border border-border rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setModal(m => ({ ...m, isOpen: false }))} className="absolute top-3 right-3 p-1 rounded-full hover:bg-secondary transition-colors">
-              <X className="h-5 w-5 text-muted-foreground" />
-            </button>
-            <h3 className="text-lg font-semibold text-foreground mb-4">{modal.finishName}</h3>
-            <div className={`flex gap-3 ${modal.image2 ? "" : "justify-center"}`}>
-              <img src={modal.image1} alt={modal.finishName} className={`rounded-xl object-cover ${modal.image2 ? "w-1/2" : "w-full max-h-[400px]"}`} />
-              {modal.image2 && <img src={modal.image2} alt="Frame finish" className="w-1/2 rounded-xl object-cover" />}
+      {modal.isOpen && createPortal(
+        (
+          <>
+            <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm" onClick={() => setModal(m => ({ ...m, isOpen: false }))} />
+            <div className="fixed inset-0 z-[10000] flex items-center justify-center pointer-events-none">
+              <div className="relative bg-card border border-border rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4 pointer-events-auto" onClick={e => e.stopPropagation()}>
+                <button onClick={() => setModal(m => ({ ...m, isOpen: false }))} className="absolute top-3 right-3 p-1 rounded-full hover:bg-secondary transition-colors">
+                  <X className="h-5 w-5 text-muted-foreground" />
+                </button>
+                <h3 className="text-lg font-semibold text-foreground mb-4">{modal.finishName}</h3>
+                <div className={`flex gap-3 ${modal.image2 ? "" : "justify-center"}`}>
+                  <img src={modal.image1} alt={modal.finishName} className={`rounded-xl object-cover ${modal.image2 ? "w-1/2" : "w-full max-h-[400px]"}`} />
+                  {modal.image2 && <img src={modal.image2} alt="Frame finish" className="w-1/2 rounded-xl object-cover" />}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        ),
+        document.body
       )}
     </>
   )
