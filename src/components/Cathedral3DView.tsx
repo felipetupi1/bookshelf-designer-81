@@ -72,9 +72,9 @@ function Baguete({ position, height, finish, zOffset = 0 }: {
   )
 }
 
-function ModuleBox({ position, width, height, depth, internalFinish, frameFinish, zOffset = 0 }: {
+function ModuleBox({ position, width, height, depth, internalFinish, frameFinish, sideFinish, bagueteFinish, zOffset = 0 }: {
   position: [number, number, number]; width: number; height: number; depth: number
-  internalFinish: string; frameFinish: string; zOffset?: number
+  internalFinish: string; frameFinish: string; sideFinish?: string; bagueteFinish?: string; zOffset?: number
 }) {
   const sideThickness = 0.75
   const backThickness = 0.75
@@ -83,22 +83,25 @@ function ModuleBox({ position, width, height, depth, internalFinish, frameFinish
   const sideZ = -depth / 2
   const backZ = -depth - backThickness / 2
 
+  const actualSideFinish = sideFinish || internalFinish
+  const actualBagueteFinish = bagueteFinish || frameFinish
+
   return (
     <group position={position}>
       <mesh position={[-width / 2 + sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
+        <WoodMaterial finish={actualSideFinish} />
       </mesh>
       <mesh position={[width / 2 - sideThickness / 2, height / 2, sideZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={internalFinish} />
+        <WoodMaterial finish={actualSideFinish} />
       </mesh>
       <mesh position={[0, height / 2 + bagueteOffset, backZ + zOffset]} castShadow receiveShadow>
         <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
         <WoodMaterial finish={internalFinish} />
       </mesh>
-      <Baguete position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
-      <Baguete position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={frameFinish} zOffset={zOffset} />
+      <Baguete position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={actualBagueteFinish} zOffset={zOffset} />
+      <Baguete position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]} height={bagueteHeight} finish={actualBagueteFinish} zOffset={zOffset} />
     </group>
   )
 }
