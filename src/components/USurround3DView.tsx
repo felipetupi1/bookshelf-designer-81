@@ -1,4 +1,8 @@
-// USurround3DView uses Bookshelf3D which reads from Bookshelf3DView.tsx textures
+import { Suspense, useMemo, useImperativeHandle, forwardRef, useEffect, useRef, useState } from "react"
+import { Canvas, useThree } from "@react-three/fiber"
+import { OrbitControls, Environment, ContactShadows } from "@react-three/drei"
+import * as THREE from "three"
+import { Bookshelf3D } from "./Bookshelf3DView"
 import { Canvas, useThree } from "@react-three/fiber"
 import { OrbitControls, Environment, ContactShadows } from "@react-three/drei"
 import * as THREE from "three"
