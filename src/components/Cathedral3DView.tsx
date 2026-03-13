@@ -241,6 +241,7 @@ export const Cathedral3DView = forwardRef<Cathedral3DViewRef, Cathedral3DViewPro
     const internalFinish = parts ? parts[1] : finish  // sides + boards = second part
     const frameFinish = parts ? parts[0] : finish     // baguetes = first part
     const backFinish = parts ? parts[0] : finish      // back panel = first part
+    const [resetCount, setResetCount] = useState(0)
 
     let captureFunction: (() => Promise<string>) | null = null
     useImperativeHandle(ref, () => ({
