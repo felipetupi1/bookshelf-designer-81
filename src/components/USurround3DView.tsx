@@ -3,10 +3,6 @@ import { Canvas, useThree } from "@react-three/fiber"
 import { OrbitControls, Environment, ContactShadows } from "@react-three/drei"
 import * as THREE from "three"
 import { Bookshelf3D } from "./Bookshelf3DView"
-import { Canvas, useThree } from "@react-three/fiber"
-import { OrbitControls, Environment, ContactShadows } from "@react-three/drei"
-import * as THREE from "three"
-import { Bookshelf3D } from "./Bookshelf3DView"
 
 export interface USurround3DViewRef {
   captureImage: () => Promise<string>
