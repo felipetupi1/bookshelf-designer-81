@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useImperativeHandle, forwardRef, useEffect, useRef, useState } from "react"
+// USurround3DView uses Bookshelf3D which reads from Bookshelf3DView.tsx textures
 import { Canvas, useThree } from "@react-three/fiber"
 import { OrbitControls, Environment, ContactShadows } from "@react-three/drei"
 import * as THREE from "three"

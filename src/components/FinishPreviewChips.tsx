@@ -14,11 +14,11 @@ interface FinishPreviewChipsProps {
 
 const TEXTURE_MAP: Record<string, string> = {
   "Maple/Maple": "/images/finishes/maple1.jpeg",
-  "Oak/Oak": "/images/finishes/OAK6.png",
+  "Oak/Oak": "/images/finishes/oak1.jpeg",
   "Walnut/Walnut": "/images/finishes/walnut1.jpeg",
   "Maple/Black": "/images/finishes/maple-black.jpeg",
   "Oak/Black": "/images/finishes/oak-black.jpeg",
-  "Oak/White": "/images/finishes/OAK6.png",
+  "Oak/White": "/images/finishes/oak1.jpeg",
 }
 
 export function FinishPreviewChips({ finishes, onChipClick }: FinishPreviewChipsProps) {
