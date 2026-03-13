@@ -53,7 +53,7 @@ function WoodMaterial({
   const textureUrl = getTextureUrl(finish)
   const texture = useLoader(
     THREE.TextureLoader,
-    textureUrl || "/images/finishes/oak1.jpeg"
+    textureUrl || "/images/finishes/OAK6.png"
   )
 
   const clonedTexture = useMemo(() => {

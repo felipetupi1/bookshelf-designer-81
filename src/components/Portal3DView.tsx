@@ -43,7 +43,7 @@ const TEXTURE_URLS: Record<string, string> = {
 
 function WoodMaterial({ finish, isFrame = false }: { finish: string; isFrame?: boolean }) {
   const url = TEXTURE_URLS[finish] || null
-  const texture = useLoader(THREE.TextureLoader, url || "/images/finishes/oak1.jpeg")
+  const texture = useLoader(THREE.TextureLoader, url || "/images/finishes/OAK6.png")
   const tex = useMemo(() => {
     const t = texture.clone()
     t.wrapS = t.wrapT = THREE.RepeatWrapping
