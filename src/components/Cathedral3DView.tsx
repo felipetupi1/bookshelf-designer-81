@@ -128,12 +128,12 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
 
       // Bottom board for row
       els.push(
-        <Board
+      <Board
           key={`board-bottom-${rowIndex}`}
           position={[xOffset, row.yPosition, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={internalFinish}
+          finish={frameFinish}
           zOffset={zOffset}
         />
       )
@@ -146,7 +146,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, topY, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={internalFinish}
+          finish={frameFinish}
           zOffset={zOffset}
         />
       )
