@@ -95,12 +95,12 @@ function ModuleBox({ pos, w, h, d, intF, frameF, zOff = 0 }: {
       {/* left side */}
       <mesh position={[-w / 2 + BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
         <boxGeometry args={[BOARD_T, h, d]} />
-        <WoodMaterial finish={intF} />
+        <WoodMaterial finish={frameF} />
       </mesh>
       {/* right side */}
       <mesh position={[w / 2 - BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
         <boxGeometry args={[BOARD_T, h, d]} />
-        <WoodMaterial finish={intF} />
+        <WoodMaterial finish={frameF} />
       </mesh>
       {/* back */}
       <mesh position={[0, h / 2 + bOff, -d - BOARD_T / 2 + zOff]} castShadow receiveShadow>
