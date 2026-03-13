@@ -282,7 +282,7 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
   const renderShelfBoard = (by: number) => {
           if (!boardInObj(by)) {
             // Full width
-            return <Board pos={[0, by, -shelf.depth / 2]} w={wallWidth} d={shelf.depth} finish={frameF} zOff={zOff} />
+            return <Board pos={[0, by, -shelf.depth / 2]} w={wallWidth} d={shelf.depth} finish={intF} zOff={zOff} />
           }
           // Split into left and right portions, skipping object zone
           return (
