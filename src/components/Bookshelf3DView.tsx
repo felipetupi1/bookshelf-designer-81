@@ -41,7 +41,7 @@ const getTextureUrl = (finish: string): string | null => {
   const textureMap: Record<string, string> = {
     Maple: "/images/finishes/maple1.jpeg",
     Oak: "/images/finishes/oak1.jpeg",
-    Walnut: "/images/finishes/walnut.jpg",
+    Walnut: "/images/finishes/walnut1.jpeg",
   }
   return textureMap[finish] || null
 }
