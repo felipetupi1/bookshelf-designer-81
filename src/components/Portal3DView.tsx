@@ -174,7 +174,7 @@ function CameraController({ wallWidth, wallHeight, maxDepth, isMobile, resetKey 
 }
 
 // ─── MAIN SCENE ───
-function PortalScene({ props, intF, frameF, sideF, boardF, bagueteF }: { props: Portal3DViewProps; intF: string; frameF: string; sideF: string; boardF: string; bagueteF: string }) {
+function PortalScene({ props, intF, frameF, backF }: { props: Portal3DViewProps; intF: string; frameF: string; backF: string }) {
   const { wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, leftGap, rightGap, shelves } = props
   const maxDepth = shelves.length > 0 ? Math.max(...shelves.map(s => s.depth)) : 7
   const defDepth = shelves.length > 0 ? shelves[0].depth : maxDepth
