@@ -25,6 +25,7 @@ import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { PortalSchematic } from "./PortalSchematic"
 import { Portal3DView, type Portal3DViewRef } from "./Portal3DView"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FinishPreviewChips } from "./FinishPreviewChips"
 import { FloatingPreview } from "./FloatingPreview"
 import { createShopifyCheckout } from "@/lib/shopify-checkout"
 
