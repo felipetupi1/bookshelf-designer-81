@@ -276,15 +276,10 @@ export function Bookshelf3D({
   finish,
   modules,
   frameFinish,
-}: Bookshelf3DViewProps & { frameFinish?: string }) {
+  backFinish,
+}: Bookshelf3DViewProps & { frameFinish?: string; backFinish?: string }) {
   const maxDepth = Math.max(...shelves.map((s) => s.depth))
   const showBaguetes = frameFinish && frameFinish !== finish
-
-  // For "Oak/White": sides/boards → White, back → Oak, baguetes → Oak
-  const isWhiteCombo = !!(frameFinish && frameFinish === "White" && finish !== "White" && finish !== frameFinish)
-  const boardF = isWhiteCombo ? frameFinish : finish
-  const sideF = isWhiteCombo ? frameFinish : finish
-  const bagueteF = isWhiteCombo ? finish : (frameFinish || finish)
 
   const renderData = useMemo(() => {
     const boardPositions: Array<{ y: number; depth: number; zOffset: number }> = []
@@ -345,8 +340,7 @@ export function Bookshelf3D({
             depth={shelf.depth}
             internalFinish={finish}
             frameFinish={frameFinish || finish}
-            sideFinish={sideF}
-            bagueteFinish={bagueteF}
+            backFinish={backFinish}
             zOffset={shelfZOffset}
           />,
         )
@@ -355,7 +349,7 @@ export function Bookshelf3D({
     })
 
     return elements
-  }, [shelves, maxDepth, modules, width, finish, frameFinish, renderData, sideF, bagueteF])
+  }, [shelves, maxDepth, modules, width, finish, frameFinish, backFinish, renderData])
 
   return (
     <group>
@@ -365,10 +359,10 @@ export function Bookshelf3D({
           position={[0, board.y, -board.depth / 2]}
           width={width}
           depth={board.depth}
-          finish={boardF}
+          finish={finish}
           zOffset={board.zOffset}
           hasBaguetes={!!showBaguetes}
-          frameFinish={bagueteF}
+          frameFinish={frameFinish}
         />
       ))}
       {renderData.transitionBoards.map((tb, index) => (
@@ -377,10 +371,10 @@ export function Bookshelf3D({
           position={[0, tb.y, -tb.depth / 2]}
           width={width}
           depth={tb.depth}
-          finish={boardF}
+          finish={finish}
           zOffset={tb.zOffset}
           hasBaguetes={!!showBaguetes}
-          frameFinish={bagueteF}
+          frameFinish={frameFinish}
         />
       ))}
       {moduleElements}
