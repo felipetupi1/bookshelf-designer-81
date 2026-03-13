@@ -104,6 +104,7 @@ export const USurround3DView = forwardRef<USurround3DViewRef, USurround3DViewPro
     const intF = parts ? parts[1] : finish    // sides + boards = second part
     const frameF = parts ? parts[0] : finish  // baguetes = first part
     const backF = parts ? parts[0] : finish   // back panel = first part
+    const [resetCount, setResetCount] = useState(0)
 
     let captureFn: (() => Promise<string>) | null = null
     useImperativeHandle(ref, () => ({
