@@ -45,7 +45,7 @@ const FINISH_OPTIONS = [
     color1: "#1a1a1a", color2: "#1a1a1a", comingSoon: true, previewImage: null as string | null,
   },
   {
-    id: "Oak/White", label: "Oak/White", price: 60.18,
+    id: "Oak/White", label: "White Oak / White", price: 60.18,
     color1: "#D4A574", color2: "#f5f5f5", comingSoon: false, previewImage: null as string | null,
   },
   {
