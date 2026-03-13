@@ -112,6 +112,12 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
 }) {
   const maxDepth = Math.max(...rows.flatMap(r => r.shelves.map(s => s.depth)), 7)
 
+  // For "Oak/White": sides/boards → White, back → Oak, baguetes → Oak
+  const isWhiteCombo = frameFinish === "White" && internalFinish !== "White" && internalFinish !== frameFinish
+  const boardF = isWhiteCombo ? frameFinish : internalFinish
+  const sideF = isWhiteCombo ? frameFinish : internalFinish
+  const bagueteF = isWhiteCombo ? internalFinish : frameFinish
+
   const elements = useMemo(() => {
     const els: JSX.Element[] = []
 
@@ -136,7 +142,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, row.yPosition, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={internalFinish}
+          finish={boardF}
           zOffset={zOffset}
         />
       )
@@ -149,7 +155,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, topY, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={internalFinish}
+          finish={boardF}
           zOffset={zOffset}
         />
       )
@@ -172,6 +178,8 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
             depth={shelf.depth}
             internalFinish={internalFinish}
             frameFinish={frameFinish}
+            sideFinish={sideF}
+            bagueteFinish={bagueteF}
             zOffset={zOffset}
           />
         )
@@ -180,7 +188,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
     })
 
     return els
-  }, [rows, modulesPerRow, maxWidth, maxDepth, internalFinish, frameFinish, direction])
+  }, [rows, modulesPerRow, maxWidth, maxDepth, internalFinish, frameFinish, direction, boardF, sideF, bagueteF])
 
   return <group>{elements}</group>
 }

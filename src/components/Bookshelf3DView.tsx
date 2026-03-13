@@ -285,6 +285,12 @@ export function Bookshelf3D({
   const maxDepth = Math.max(...shelves.map((s) => s.depth))
   const showBaguetes = frameFinish && frameFinish !== finish
 
+  // For "Oak/White": sides/boards → White, back → Oak, baguetes → Oak
+  const isWhiteCombo = !!(frameFinish && frameFinish === "White" && finish !== "White" && finish !== frameFinish)
+  const boardF = isWhiteCombo ? frameFinish : finish
+  const sideF = isWhiteCombo ? frameFinish : finish
+  const bagueteF = isWhiteCombo ? finish : (frameFinish || finish)
+
   const renderData = useMemo(() => {
     const boardPositions: Array<{ y: number; depth: number; zOffset: number }> = []
     const transitionBoards: Array<{ y: number; depth: number; zOffset: number }> = []
@@ -344,6 +350,8 @@ export function Bookshelf3D({
             depth={shelf.depth}
             internalFinish={finish}
             frameFinish={frameFinish || finish}
+            sideFinish={sideF}
+            bagueteFinish={bagueteF}
             zOffset={shelfZOffset}
           />,
         )
@@ -352,7 +360,7 @@ export function Bookshelf3D({
     })
 
     return elements
-  }, [shelves, maxDepth, modules, width, finish, frameFinish, renderData])
+  }, [shelves, maxDepth, modules, width, finish, frameFinish, renderData, sideF, bagueteF])
 
   return (
     <group>
@@ -362,10 +370,10 @@ export function Bookshelf3D({
           position={[0, board.y, -board.depth / 2]}
           width={width}
           depth={board.depth}
-          finish={finish}
+          finish={boardF}
           zOffset={board.zOffset}
           hasBaguetes={!!showBaguetes}
-          frameFinish={frameFinish}
+          frameFinish={bagueteF}
         />
       ))}
       {renderData.transitionBoards.map((tb, index) => (
@@ -374,10 +382,10 @@ export function Bookshelf3D({
           position={[0, tb.y, -tb.depth / 2]}
           width={width}
           depth={tb.depth}
-          finish={finish}
+          finish={boardF}
           zOffset={tb.zOffset}
           hasBaguetes={!!showBaguetes}
-          frameFinish={frameFinish}
+          frameFinish={bagueteF}
         />
       ))}
       {moduleElements}
