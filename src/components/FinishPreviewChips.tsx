@@ -19,6 +19,7 @@ const TEXTURE_MAP: Record<string, string> = {
   "Maple/Black": "/images/finishes/maple-black.jpeg",
   "Oak/Black": "/images/finishes/oak-black.jpeg",
   "Oak/White": "/images/finishes/oak1.jpeg",
+  "Black/Black": "/images/finishes/valchromat.png",
 }
 
 export function FinishPreviewChips({ finishes, onChipClick }: FinishPreviewChipsProps) {

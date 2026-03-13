@@ -42,6 +42,7 @@ const getTextureUrl = (finish: string): string | null => {
     Maple: "/images/finishes/maple1.jpeg",
     Oak: "/images/finishes/oak1.jpeg",
     Walnut: "/images/finishes/walnut1.jpeg",
+    Black: "/images/finishes/valchromat.png",
   }
   return textureMap[finish] || null
 }

@@ -38,7 +38,7 @@ const WOOD_COLORS: Record<string, string> = {
   White: "#F5F5F5", Maple: "#E8D4B8", Black: "#1A1A1A", Oak: "#D4A574", Walnut: "#5D432C",
 }
 const TEXTURE_URLS: Record<string, string> = {
-  Maple: "/images/finishes/maple1.jpeg", Oak: "/images/finishes/oak1.jpeg", Walnut: "/images/finishes/walnut1.jpeg",
+  Maple: "/images/finishes/maple1.jpeg", Oak: "/images/finishes/oak1.jpeg", Walnut: "/images/finishes/walnut1.jpeg", Black: "/images/finishes/valchromat.png",
 }
 
 function WoodMaterial({ finish, isFrame = false }: { finish: string; isFrame?: boolean }) {
