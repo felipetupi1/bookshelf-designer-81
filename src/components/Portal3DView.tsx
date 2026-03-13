@@ -313,6 +313,7 @@ function PortalScene({ props, intF, frameF, sideF, boardF, bagueteF }: { props: 
                   pos={[wL + modX + modW / 2, moduleY, 0]}
                   w={modW} h={shelf.height} d={shelf.depth}
                   intF={intF} frameF={frameF}
+                  sideF={sideF} bagueteF={bagueteF}
                   zOff={zOff}
                 />
               )
