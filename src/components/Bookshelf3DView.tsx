@@ -204,8 +204,7 @@ function ModuleBox({
   depth,
   internalFinish,
   frameFinish,
-  sideFinish,
-  bagueteFinish,
+  backFinish,
   zOffset = 0,
 }: {
   position: [number, number, number]
@@ -214,8 +213,7 @@ function ModuleBox({
   depth: number
   internalFinish: string
   frameFinish: string
-  sideFinish?: string
-  bagueteFinish?: string
+  backFinish?: string
   zOffset?: number
 }) {
   const sideThickness = 0.75
@@ -226,9 +224,6 @@ function ModuleBox({
   const sideZ = -depth / 2
   const backZ = -depth - backThickness / 2
 
-  const actualSideFinish = sideFinish || internalFinish
-  const actualBagueteFinish = bagueteFinish || frameFinish
-
   return (
     <group position={position}>
       <mesh
@@ -237,7 +232,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={actualSideFinish} />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
 
       <mesh
@@ -246,7 +241,7 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[sideThickness, height, depth]} />
-        <WoodMaterial finish={actualSideFinish} />
+        <WoodMaterial finish={internalFinish} />
       </mesh>
 
       <mesh
@@ -255,20 +250,20 @@ function ModuleBox({
         receiveShadow
       >
         <boxGeometry args={[width - sideThickness * 2, bagueteHeight, backThickness]} />
-        <WoodMaterial finish={internalFinish} />
+        <WoodMaterial finish={backFinish ?? internalFinish} />
       </mesh>
 
       <Baguete
         position={[-width / 2 + sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]}
         height={bagueteHeight}
-        finish={actualBagueteFinish}
+        finish={frameFinish}
         zOffset={zOffset}
       />
 
       <Baguete
         position={[width / 2 - sideThickness / 2, bagueteHeight / 2 + bagueteOffset, 0]}
         height={bagueteHeight}
-        finish={actualBagueteFinish}
+        finish={frameFinish}
         zOffset={zOffset}
       />
     </group>
@@ -281,15 +276,10 @@ export function Bookshelf3D({
   finish,
   modules,
   frameFinish,
-}: Bookshelf3DViewProps & { frameFinish?: string }) {
+  backFinish,
+}: Bookshelf3DViewProps & { frameFinish?: string; backFinish?: string }) {
   const maxDepth = Math.max(...shelves.map((s) => s.depth))
   const showBaguetes = frameFinish && frameFinish !== finish
-
-  // For "Oak/White": sides/boards → White, back → Oak, baguetes → Oak
-  const isWhiteCombo = !!(frameFinish && frameFinish === "White" && finish !== "White" && finish !== frameFinish)
-  const boardF = isWhiteCombo ? frameFinish : finish
-  const sideF = isWhiteCombo ? frameFinish : finish
-  const bagueteF = isWhiteCombo ? finish : (frameFinish || finish)
 
   const renderData = useMemo(() => {
     const boardPositions: Array<{ y: number; depth: number; zOffset: number }> = []
@@ -350,8 +340,7 @@ export function Bookshelf3D({
             depth={shelf.depth}
             internalFinish={finish}
             frameFinish={frameFinish || finish}
-            sideFinish={sideF}
-            bagueteFinish={bagueteF}
+            backFinish={backFinish}
             zOffset={shelfZOffset}
           />,
         )
@@ -360,7 +349,7 @@ export function Bookshelf3D({
     })
 
     return elements
-  }, [shelves, maxDepth, modules, width, finish, frameFinish, renderData, sideF, bagueteF])
+  }, [shelves, maxDepth, modules, width, finish, frameFinish, backFinish, renderData])
 
   return (
     <group>
@@ -370,10 +359,10 @@ export function Bookshelf3D({
           position={[0, board.y, -board.depth / 2]}
           width={width}
           depth={board.depth}
-          finish={boardF}
+          finish={finish}
           zOffset={board.zOffset}
           hasBaguetes={!!showBaguetes}
-          frameFinish={bagueteF}
+          frameFinish={frameFinish}
         />
       ))}
       {renderData.transitionBoards.map((tb, index) => (
@@ -382,10 +371,10 @@ export function Bookshelf3D({
           position={[0, tb.y, -tb.depth / 2]}
           width={width}
           depth={tb.depth}
-          finish={boardF}
+          finish={finish}
           zOffset={tb.zOffset}
           hasBaguetes={!!showBaguetes}
-          frameFinish={bagueteF}
+          frameFinish={frameFinish}
         />
       ))}
       {moduleElements}
@@ -402,7 +391,8 @@ function CornerBookshelf3D({
   modules,
   modules2,
   frameFinish,
-}: Bookshelf3DViewProps & { frameFinish?: string }) {
+  backFinish,
+}: Bookshelf3DViewProps & { frameFinish?: string; backFinish?: string }) {
   const arm2Shelves = shelves2 || shelves
   const maxDepth2 = Math.max(...arm2Shelves.map((s) => s.depth))
 
@@ -419,6 +409,7 @@ function CornerBookshelf3D({
           shelves={shelves}
           finish={finish}
           frameFinish={frameFinish}
+          backFinish={backFinish}
           modules={modules}
         />
       </group>
@@ -432,6 +423,7 @@ function CornerBookshelf3D({
           shelves={arm2Shelves}
           finish={finish}
           frameFinish={frameFinish}
+          backFinish={backFinish}
           modules={modules2 || modules}
         />
       </group>
@@ -448,7 +440,8 @@ function InsideCornerBookshelf3D({
   modules,
   modules2,
   frameFinish,
-}: Bookshelf3DViewProps & { frameFinish?: string }) {
+  backFinish,
+}: Bookshelf3DViewProps & { frameFinish?: string; backFinish?: string }) {
   const arm2Shelves = shelves2 || shelves
 
   const maxDepth1 = Math.max(...shelves.map((s) => s.depth))
@@ -466,6 +459,7 @@ function InsideCornerBookshelf3D({
           shelves={shelves}
           finish={finish}
           frameFinish={frameFinish}
+          backFinish={backFinish}
           modules={modules}
         />
       </group>
@@ -479,6 +473,7 @@ function InsideCornerBookshelf3D({
           shelves={arm2Shelves}
           finish={finish}
           frameFinish={frameFinish}
+          backFinish={backFinish}
           modules={modules2 || modules}
         />
       </group>
@@ -602,7 +597,10 @@ export const Bookshelf3DView = forwardRef<
   Bookshelf3DViewRef,
   Omit<Bookshelf3DViewProps, "frameFinish"> & { hideTooltip?: boolean }
 >(function Bookshelf3DView({ style, width, width2, shelves, shelves2, finish, modules, modules2, cornerVariant, isMobile, hideTooltip }, ref) {
-  const [internalFinish, frameFinish] = finish.includes("/") ? finish.split("/") : [finish, finish]
+  const parts = finish.includes("/") ? finish.split("/").map(s => s.trim()) : null
+  const internalFinish = parts ? parts[1] : finish // sides + boards = second part
+  const frameFinish = parts ? parts[0] : finish    // baguetes = first part
+  const backFinish = parts ? parts[0] : finish     // back panel = first part
   const [resetCount, setResetCount] = useState(0)
 
   let captureFunction: (() => Promise<string>) | null = null
@@ -678,6 +676,7 @@ export const Bookshelf3DView = forwardRef<
               shelves2={shelves2}
               finish={internalFinish}
               frameFinish={frameFinish}
+              backFinish={backFinish}
               modules={modules}
               modules2={modules2}
             />
@@ -690,6 +689,7 @@ export const Bookshelf3DView = forwardRef<
               shelves2={shelves2}
               finish={internalFinish}
               frameFinish={frameFinish}
+              backFinish={backFinish}
               modules={modules}
               modules2={modules2}
             />
@@ -700,6 +700,7 @@ export const Bookshelf3DView = forwardRef<
               shelves={shelves}
               finish={internalFinish}
               frameFinish={frameFinish}
+              backFinish={backFinish}
               modules={modules}
             />
           )}

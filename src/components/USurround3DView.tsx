@@ -63,37 +63,33 @@ function CameraController({ w1, w, w2, totalHeight, maxDepth, isMobile, resetKey
   return null
 }
 
-function USurroundScene({ props, intF, frameF }: { props: USurround3DViewProps; intF: string; frameF: string }) {
+function USurroundScene({ props, intF, frameF, backF }: { props: USurround3DViewProps; intF: string; frameF: string; backF: string }) {
   const { w1, w, w2, shelvesLeft, shelvesFront, shelvesRight, modulesLeft, modulesFront, modulesRight } = props
   const backZ = Math.max(w1, w2)
   const backArmDepth = Math.max(...shelvesFront.map(s => s.depth))
 
-  // Bookshelf3D extends from z=0 (open/front face) to z=-maxDepth (back face).
-  // We position the back arm so its BACK face sits at z=-backZ, flush with side arm back ends.
-  // That means group z = -backZ + backArmDepth.
-
   return (
     <group>
-      {/* Back arm — back face at z=-backZ, open face at z=-backZ+depth, facing forward */}
+      {/* Back arm */}
       <group position={[0, 0, -backZ + backArmDepth]}>
         <Bookshelf3D
-          style="bookshelf" width={w} shelves={shelvesFront} finish={intF} frameFinish={frameF}
+          style="bookshelf" width={w} shelves={shelvesFront} finish={intF} frameFinish={frameF} backFinish={backF}
           modules={modulesFront}
         />
       </group>
 
-      {/* Left arm — inner face fixed at x=-w/2, back end anchored at z=-backZ */}
+      {/* Left arm */}
       <group position={[-w / 2, 0, -backZ + w1 / 2]} rotation={[0, Math.PI / 2, 0]}>
         <Bookshelf3D
-          style="bookshelf" width={w1} shelves={shelvesLeft} finish={intF} frameFinish={frameF}
+          style="bookshelf" width={w1} shelves={shelvesLeft} finish={intF} frameFinish={frameF} backFinish={backF}
           modules={modulesLeft}
         />
       </group>
 
-      {/* Right arm — inner face fixed at x=+w/2, back end anchored at z=-backZ */}
+      {/* Right arm */}
       <group position={[w / 2, 0, -backZ + w2 / 2]} rotation={[0, -Math.PI / 2, 0]}>
         <Bookshelf3D
-          style="bookshelf" width={w2} shelves={shelvesRight} finish={intF} frameFinish={frameF}
+          style="bookshelf" width={w2} shelves={shelvesRight} finish={intF} frameFinish={frameF} backFinish={backF}
           modules={modulesRight}
         />
       </group>
@@ -104,7 +100,10 @@ function USurroundScene({ props, intF, frameF }: { props: USurround3DViewProps; 
 export const USurround3DView = forwardRef<USurround3DViewRef, USurround3DViewProps>(
   function USurround3DView(props, ref) {
     const { w1, w, w2, shelvesLeft, shelvesFront, shelvesRight, finish, isMobile, hideTooltip } = props
-    const [intF, frameF] = finish.includes("/") ? finish.split("/") : [finish, finish]
+    const parts = finish.includes("/") ? finish.split("/").map(s => s.trim()) : null
+    const intF = parts ? parts[1] : finish    // sides + boards = second part
+    const frameF = parts ? parts[0] : finish  // baguetes = first part
+    const backF = parts ? parts[0] : finish   // back panel = first part
     const [resetCount, setResetCount] = useState(0)
 
     let captureFn: (() => Promise<string>) | null = null
@@ -135,7 +134,7 @@ export const USurround3DView = forwardRef<USurround3DViewRef, USurround3DViewPro
             <directionalLight position={[15, 20, 10]} intensity={1.2} castShadow shadow-mapSize-width={4096} shadow-mapSize-height={4096} shadow-bias={-0.00001} />
             <directionalLight position={[-10, 10, -8]} intensity={0.4} />
             <pointLight position={[0, totalHeight * 0.7, maxDepth * 1.5]} intensity={0.8} distance={maxDepth * 4} />
-            <USurroundScene props={props} intF={intF} frameF={frameF} />
+            <USurroundScene props={props} intF={intF} frameF={frameF} backF={backF} />
             <Environment preset="studio" environmentIntensity={0.5} />
             <ContactShadows position={[0, -0.1, 0]} opacity={0.3} scale={spread * 1.2} blur={2.8} far={totalHeight * 1.5} resolution={1024} />
             <OrbitControls enableZoom enablePan enableRotate minDistance={20} maxDistance={500} target={[0, totalHeight / 2, 0]} enableDamping dampingFactor={0.05} rotateSpeed={0.5} zoomSpeed={0.5} />
