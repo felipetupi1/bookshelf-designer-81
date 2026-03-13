@@ -279,16 +279,16 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
         const rowOverlapsObj = moduleY < safeTop && topBoardY > safeBot
 
         // Render a horizontal shelf board, splitting if it intersects the object zone
-        const renderShelfBoard = (by: number) => {
+  const renderShelfBoard = (by: number) => {
           if (!boardInObj(by)) {
             // Full width
-            return <Board pos={[0, by, -shelf.depth / 2]} w={wallWidth} d={shelf.depth} finish={intF} zOff={zOff} />
+            return <Board pos={[0, by, -shelf.depth / 2]} w={wallWidth} d={shelf.depth} finish={frameF} zOff={zOff} />
           }
           // Split into left and right portions, skipping object zone
           return (
             <>
-              {hasLeft && <Board pos={[wL + leftGap / 2, by, -shelf.depth / 2]} w={leftGap} d={shelf.depth} finish={intF} zOff={zOff} />}
-              {hasRight && <Board pos={[wL + objR + rightGap / 2, by, -shelf.depth / 2]} w={rightGap} d={shelf.depth} finish={intF} zOff={zOff} />}
+              {hasLeft && <Board pos={[wL + leftGap / 2, by, -shelf.depth / 2]} w={leftGap} d={shelf.depth} finish={frameF} zOff={zOff} />}
+              {hasRight && <Board pos={[wL + objR + rightGap / 2, by, -shelf.depth / 2]} w={rightGap} d={shelf.depth} finish={frameF} zOff={zOff} />}
             </>
           )
         }
