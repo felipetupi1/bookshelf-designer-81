@@ -103,17 +103,11 @@ function ModuleBox({ position, width, height, depth, internalFinish, frameFinish
   )
 }
 
-function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frameFinish, direction }: {
+function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frameFinish, backFinish, direction }: {
   rows: Cathedral3DViewProps["rows"]; modulesPerRow: Cathedral3DViewProps["modulesPerRow"]
-  maxWidth: number; internalFinish: string; frameFinish: string; direction: string
+  maxWidth: number; internalFinish: string; frameFinish: string; backFinish: string; direction: string
 }) {
   const maxDepth = Math.max(...rows.flatMap(r => r.shelves.map(s => s.depth)), 7)
-
-  // For "Oak/White": sides/boards → White, back → Oak, baguetes → Oak
-  const isWhiteCombo = frameFinish === "White" && internalFinish !== "White" && internalFinish !== frameFinish
-  const boardF = isWhiteCombo ? frameFinish : internalFinish
-  const sideF = isWhiteCombo ? frameFinish : internalFinish
-  const bagueteF = isWhiteCombo ? internalFinish : frameFinish
 
   const elements = useMemo(() => {
     const els: JSX.Element[] = []
@@ -124,7 +118,6 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
       const rowWidth = row.availableWidth
       const zOffset = -(maxDepth - shelf.depth)
 
-      // Compute X offset based on direction so narrower rows align to the tall side
       let xOffset = 0
       if (direction === "left") {
         xOffset = (maxWidth - rowWidth) / 2
@@ -132,19 +125,17 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
         xOffset = -(maxWidth - rowWidth) / 2
       }
 
-      // Bottom board for row
       els.push(
       <Board
           key={`board-bottom-${rowIndex}`}
           position={[xOffset, row.yPosition, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={boardF}
+          finish={internalFinish}
           zOffset={zOffset}
         />
       )
 
-      // Top board for row
       const topY = row.yPosition + shelf.height + 0.75
       els.push(
         <Board
@@ -152,12 +143,11 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, topY, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={boardF}
+          finish={internalFinish}
           zOffset={zOffset}
         />
       )
 
-      // Modules for this row
       const rowModules = modulesPerRow[rowIndex] || []
       const totalModuleWidth = rowModules.reduce((s, m) => s + m.width, 0)
       const numSpaces = rowModules.length - 1
@@ -175,8 +165,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
             depth={shelf.depth}
             internalFinish={internalFinish}
             frameFinish={frameFinish}
-            sideFinish={sideF}
-            bagueteFinish={bagueteF}
+            backFinish={backFinish}
             zOffset={zOffset}
           />
         )
@@ -185,7 +174,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
     })
 
     return els
-  }, [rows, modulesPerRow, maxWidth, maxDepth, internalFinish, frameFinish, direction, boardF, sideF, bagueteF])
+  }, [rows, modulesPerRow, maxWidth, maxDepth, internalFinish, frameFinish, backFinish, direction])
 
   return <group>{elements}</group>
 }
