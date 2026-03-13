@@ -257,7 +257,7 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
           {hasRight && <Board pos={[wL + objR + rightGap / 2, 0, -defDepth / 2]} w={rightGap} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />}
         </>
       ) : (
-        <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={frameF} zOff={-(maxDepth - defDepth)} />
+        <Board pos={[0, 0, -defDepth / 2]} w={wallWidth} d={defDepth} finish={intF} zOff={-(maxDepth - defDepth)} />
       )}
       {/* Top board — full wallWidth at wallHeight */}
       <Board pos={[0, lastTop, -defDepth / 2]} w={wallWidth} d={defDepth} finish={frameF} zOff={-(maxDepth - defDepth)} />
