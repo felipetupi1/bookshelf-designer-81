@@ -85,33 +85,31 @@ function Baguete({ position, height, finish, zOff = 0 }: { position: [number, nu
   )
 }
 
-function ModuleBox({ pos, w, h, d, intF, frameF, sideF, bagueteF, zOff = 0 }: {
-  pos: [number, number, number]; w: number; h: number; d: number; intF: string; frameF: string; sideF?: string; bagueteF?: string; zOff?: number
+function ModuleBox({ pos, w, h, d, intF, frameF, backF, zOff = 0 }: {
+  pos: [number, number, number]; w: number; h: number; d: number; intF: string; frameF: string; backF?: string; zOff?: number
 }) {
   const bH = h + 0.625
   const bOff = -0.3125
-  const actualSideF = sideF || intF
-  const actualBagueteF = bagueteF || frameF
   return (
     <group position={pos}>
       {/* left side */}
       <mesh position={[-w / 2 + BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
         <boxGeometry args={[BOARD_T, h, d]} />
-        <WoodMaterial finish={actualSideF} />
+        <WoodMaterial finish={intF} />
       </mesh>
       {/* right side */}
       <mesh position={[w / 2 - BOARD_T / 2, h / 2, -d / 2 + zOff]} castShadow receiveShadow>
         <boxGeometry args={[BOARD_T, h, d]} />
-        <WoodMaterial finish={actualSideF} />
+        <WoodMaterial finish={intF} />
       </mesh>
       {/* back */}
       <mesh position={[0, h / 2 + bOff, -d - BOARD_T / 2 + zOff]} castShadow receiveShadow>
         <boxGeometry args={[w - BOARD_T * 2, bH, BOARD_T]} />
-        <WoodMaterial finish={intF} />
+        <WoodMaterial finish={backF ?? intF} />
       </mesh>
       {/* baguetes */}
-      <Baguete position={[-w / 2 + BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={actualBagueteF} zOff={zOff} />
-      <Baguete position={[w / 2 - BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={actualBagueteF} zOff={zOff} />
+      <Baguete position={[-w / 2 + BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={frameF} zOff={zOff} />
+      <Baguete position={[w / 2 - BOARD_T / 2, bH / 2 + bOff, 0]} height={bH} finish={frameF} zOff={zOff} />
     </group>
   )
 }
