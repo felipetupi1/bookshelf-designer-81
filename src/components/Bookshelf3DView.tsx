@@ -367,7 +367,7 @@ export function Bookshelf3D({
           position={[0, tb.y, -tb.depth / 2]}
           width={width}
           depth={tb.depth}
-          finish={frameFinish || finish}
+          finish={finish}
           zOffset={tb.zOffset}
           hasBaguetes={!!showBaguetes}
           frameFinish={frameFinish}

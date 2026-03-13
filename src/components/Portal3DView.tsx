@@ -287,8 +287,8 @@ function PortalScene({ props, intF, frameF }: { props: Portal3DViewProps; intF: 
           // Split into left and right portions, skipping object zone
           return (
             <>
-              {hasLeft && <Board pos={[wL + leftGap / 2, by, -shelf.depth / 2]} w={leftGap} d={shelf.depth} finish={frameF} zOff={zOff} />}
-              {hasRight && <Board pos={[wL + objR + rightGap / 2, by, -shelf.depth / 2]} w={rightGap} d={shelf.depth} finish={frameF} zOff={zOff} />}
+              {hasLeft && <Board pos={[wL + leftGap / 2, by, -shelf.depth / 2]} w={leftGap} d={shelf.depth} finish={intF} zOff={zOff} />}
+              {hasRight && <Board pos={[wL + objR + rightGap / 2, by, -shelf.depth / 2]} w={rightGap} d={shelf.depth} finish={intF} zOff={zOff} />}
             </>
           )
         }

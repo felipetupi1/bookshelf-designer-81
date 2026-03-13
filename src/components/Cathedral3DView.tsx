@@ -146,7 +146,7 @@ function CathedralShelf3D({ rows, modulesPerRow, maxWidth, internalFinish, frame
           position={[xOffset, topY, -shelf.depth / 2]}
           width={rowWidth}
           depth={shelf.depth}
-          finish={frameFinish}
+          finish={internalFinish}
           zOffset={zOffset}
         />
       )
