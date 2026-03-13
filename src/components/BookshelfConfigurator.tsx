@@ -426,21 +426,10 @@ export function BookshelfConfigurator() {
         {/* 3D Preview — sticky on desktop */}
         <div ref={mainPreviewRef} className="lg:sticky lg:top-0 lg:h-screen lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 pt-[3px] px-1 lg:p-6">
-            {/* Finish preview chips */}
-            <div className="absolute top-6 left-6 z-10 flex items-center gap-2">
-              {FINISH_OPTIONS.filter((f) => f.previewImage && !f.comingSoon).map((finish) => (
-                <button
-                  key={finish.id}
-                  onClick={() => setPreviewModal({ isOpen: true, finishName: finish.label, imageSrc: finish.previewImage! })}
-                  className="group relative"
-                  title={finish.label}
-                >
-                  <div className="w-8 h-8 rounded-full border-2 border-background shadow-md overflow-hidden hover:scale-110 transition-transform">
-                    <img src={finish.previewImage!} alt={finish.label} className="object-cover w-full h-full" />
-                  </div>
-                </button>
-              ))}
-            </div>
+            <FinishPreviewChips
+              finishes={FINISH_OPTIONS}
+              onChipClick={(name, src) => setPreviewModal({ isOpen: true, finishName: name, imageSrc: src })}
+            />
 
             {/* Dimension badge */}
             <div className="absolute top-6 right-6 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-1.5 shadow-sm">
