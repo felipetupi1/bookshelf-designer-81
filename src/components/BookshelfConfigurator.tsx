@@ -61,7 +61,7 @@ const FINISH_OPTIONS = [
     color1: "#5D432C", color2: "#5D432C", comingSoon: false, previewImage: "/images/finishes/walnut.jpg",
   },
   {
-    id: "Oak/Black", label: "Oak/Black", price: 77.99,
+    id: "Oak/Black", label: "White Oak / Black", price: 77.99,
     color1: "#D4A574", color2: "#1a1a1a", comingSoon: false, previewImage: "/images/finishes/oak-black.jpeg",
   },
 ]
