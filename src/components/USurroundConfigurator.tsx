@@ -11,6 +11,7 @@ import { calculateBookshelf } from "@/lib/bookshelf-calculator"
 import { USurround3DView, type USurround3DViewRef } from "./USurround3DView"
 import { USurroundSchematic } from "./USurroundSchematic"
 import { FinishPreviewModal } from "./FinishPreviewModal"
+import { FinishPreviewChips } from "./FinishPreviewChips"
 import { FloatingPreview } from "./FloatingPreview"
 import { createShopifyCheckout } from "@/lib/shopify-checkout"
 
