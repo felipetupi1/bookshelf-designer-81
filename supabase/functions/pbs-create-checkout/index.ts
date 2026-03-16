@@ -86,11 +86,38 @@ serve(async (req) => {
       }
     }
 
+    // Format inches as fraction string (e.g. 69.75 → '69 3/4"')
+    function toFraction(decimal: number): string {
+      const whole = Math.floor(decimal)
+      const frac = decimal - whole
+      const eighths = Math.round(frac * 8)
+      if (eighths === 0) return `${whole}"`
+      if (eighths === 8) return `${whole + 1}"`
+      const map: Record<number, string> = { 1: '1/8', 2: '1/4', 3: '3/8', 4: '1/2', 5: '5/8', 6: '3/4', 7: '7/8' }
+      return `${whole} ${map[eighths]}"`
+    }
+
+    // Build "Total Dimensions" string based on bookshelf type
+    let totalDimensions = ''
+    const bt = config.bookshelfType || ''
+    if (bt === 'usurround') {
+      totalDimensions = `${toFraction(dims.w1 || 0)} x ${toFraction(dims.w || 0)} x ${toFraction(dims.w2 || 0)} x ${toFraction(dims.height || 0)}`
+    } else if (bt === 'corner') {
+      totalDimensions = `${toFraction(dims.width || 0)} x ${toFraction(dims.width2 || 0)} x ${toFraction(dims.height || 0)}`
+    } else if (bt === 'cathedral') {
+      totalDimensions = `${toFraction(dims.W || 0)} x ${toFraction(dims.H || 0)}–${toFraction(dims.H1 || 0)}`
+    } else if (bt === 'portal') {
+      totalDimensions = `${toFraction(dims.wallWidth || 0)} x ${toFraction(dims.wallHeight || 0)}`
+    } else {
+      // bookshelf, rack
+      totalDimensions = `${toFraction(dims.width || 0)} x ${toFraction(dims.height || 0)}`
+    }
+
     // Build line item properties (visible to customer and in admin)
     const lineItemProperties = [
       { name: "Type", value: config.bookshelfType || "Custom" },
       { name: "Finish", value: config.finish || "N/A" },
-      ...(config.totalDimensions ? [{ name: "Dimensions", value: config.totalDimensions }] : []),
+      { name: "Total Dimensions", value: totalDimensions },
     ]
 
     // Add per-shelf summary to line item properties
