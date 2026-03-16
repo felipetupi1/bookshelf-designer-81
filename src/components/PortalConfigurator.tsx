@@ -333,7 +333,11 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
 
     try {
       const checkoutUrl = await createShopifyCheckout({ price: totalPrice.toFixed(2), config: payload.config, imageDataUrl })
-      window.open(checkoutUrl, '_blank')
+      if (window.top) {
+        window.top.location.href = checkoutUrl
+      } else {
+        window.location.href = checkoutUrl
+      }
     } catch (err) {
       console.error('Checkout error:', err)
       alert('Failed to create checkout. Please try again.')
