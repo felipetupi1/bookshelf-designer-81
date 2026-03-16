@@ -260,14 +260,21 @@ export function BookshelfConfigurator() {
   useEffect(() => {
     const emitHeight = () => {
       try {
-        window.parent.postMessage({ type: 'pbs-height', height: document.body.scrollHeight }, '*')
+        window.parent.postMessage({ type: 'pbs-height', height: document.documentElement.scrollHeight }, '*')
       } catch { /* ignore */ }
     }
     emitHeight()
     const observer = new ResizeObserver(emitHeight)
-    observer.observe(document.body)
+    observer.observe(document.documentElement)
     return () => observer.disconnect()
   }, [])
+
+  // Also emit height when config changes
+  useEffect(() => {
+    try {
+      window.parent.postMessage({ type: 'pbs-height', height: document.documentElement.scrollHeight }, '*')
+    } catch { /* ignore */ }
+  }, [mainType, width, width2, selectedFinish, shelves, shelves2])
 
   const totalHeight = calculateTotalHeight(shelves)
 
@@ -524,9 +531,6 @@ export function BookshelfConfigurator() {
                   >
                     <img src={TYPE_ICONS[type]} alt={type} className="h-10 w-10 object-contain" />
                     <span className="text-[10px] font-medium text-foreground capitalize">{type === "rack" ? "Horiz." : type === "portal" ? "Portal" : type === "cathedral" ? "Cathed." : type === "usurround" ? "U-Surr." : type}</span>
-                    {mainType === type && (
-                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent" />
-                    )}
                   </button>
                  ))}
                </div>
@@ -551,9 +555,6 @@ export function BookshelfConfigurator() {
                        <line x1="22" y1="14" x2="32" y2="14" stroke="currentColor" strokeWidth="1.5" />
                      </svg>
                      <span className="text-[10px] font-medium text-foreground">Outside Corner</span>
-                     {cornerVariant === "outside" && (
-                       <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent" />
-                     )}
                    </button>
                    <button
                      onClick={() => setCornerVariant("inside")}
@@ -575,9 +576,6 @@ export function BookshelfConfigurator() {
                        <line x1="22" y1="32" x2="32" y2="32" stroke="currentColor" strokeWidth="1.5" />
                      </svg>
                      <span className="text-[10px] font-medium text-foreground">Inside Corner</span>
-                     {cornerVariant === "inside" && (
-                       <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent" />
-                     )}
                    </button>
                  </div>
                )}
@@ -615,7 +613,7 @@ export function BookshelfConfigurator() {
             </ConfigSection>
 
             {/* ─── Step 3: Shelves ─── */}
-            <ConfigSection step={3} title="Shelves" subtitle={`${shelves.length} shelves · ${toFraction(totalHeight)} tall`} defaultOpen={true}>
+            <ConfigSection step={3} title="Shelves" subtitle={`${shelves.length} shelves · ${toFraction(totalHeight)} tall`} defaultOpen={false}>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Number of shelves</span>
@@ -663,7 +661,7 @@ export function BookshelfConfigurator() {
             </ConfigSection>
 
             {/* ─── Step 4: Finish ─── */}
-            <ConfigSection step={4} title="Finish" subtitle={finishOption?.label} defaultOpen={true}>
+            <ConfigSection step={4} title="Finish" subtitle={finishOption?.label} defaultOpen={false}>
               <div className="grid grid-cols-4 gap-2">
                 {FINISH_OPTIONS.map((finish) => (
                   <button
@@ -681,7 +679,11 @@ export function BookshelfConfigurator() {
                         Sold out
                       </div>
                     )}
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-border shadow-sm">
+                    <div className={`w-10 h-10 rounded-full overflow-hidden shadow-sm transition-all ${
+                      selectedFinish === finish.id
+                        ? "ring-2 ring-accent ring-offset-2 ring-offset-card border border-accent"
+                        : "border border-border"
+                    }`}>
                       {finish.id.includes("/") && finish.color1 !== finish.color2 ? (
                         <div className="flex w-full h-full">
                           <div className="w-1/2 h-full" style={{ backgroundColor: finish.color1 }} />
@@ -694,9 +696,6 @@ export function BookshelfConfigurator() {
                     <span className="text-[10px] font-medium text-foreground leading-tight text-center">
                       {finish.label.replace("/", " / ")}
                     </span>
-                    {selectedFinish === finish.id && (
-                      <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent" />
-                    )}
                   </button>
                 ))}
               </div>
@@ -709,7 +708,7 @@ export function BookshelfConfigurator() {
                 <span className="text-2xl font-display font-bold text-foreground">${totalPrice.toFixed(2)}</span>
               </div>
               {checkoutError && (
-                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+                <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
                   {checkoutError}{' — '}
                   <a
                     href="https://www.perfectbookshelf.com/pages/contact"
