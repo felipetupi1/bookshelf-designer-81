@@ -260,7 +260,7 @@ export function BookshelfConfigurator() {
   useEffect(() => {
     const emitHeight = () => {
       try {
-        window.parent.postMessage({ type: 'pbs-height', height: document.body.scrollHeight }, '*')
+        window.parent.postMessage({ type: 'pbs-height', height: document.documentElement.scrollHeight }, '*')
       } catch { /* ignore */ }
     }
     emitHeight()
