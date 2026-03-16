@@ -686,12 +686,24 @@ export function BookshelfConfigurator() {
               </div>
             </ConfigSection>
 
-            {/* ─── Summary (mobile only) ─── */}
-            <div className="sm:hidden pt-4 space-y-3">
+            {/* ─── Price + Add to Cart (always visible) ─── */}
+            <div className="pt-4 space-y-3">
               <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="text-2xl font-display font-bold text-foreground">${totalPrice.toFixed(2)}</span>
               </div>
+              {checkoutError && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+                  {checkoutError}{' — '}
+                  <a
+                    href="https://www.perfectbookshelf.com/pages/contact"
+                    target="_top"
+                    className="underline font-medium"
+                  >
+                    Contact us
+                  </a>
+                </div>
+              )}
               <Button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || !result}
