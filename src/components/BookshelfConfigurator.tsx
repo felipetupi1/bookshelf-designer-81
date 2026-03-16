@@ -391,9 +391,10 @@ export function BookshelfConfigurator() {
       }
     } catch (err) {
       console.error('Checkout error:', err)
-      alert('Failed to create checkout. Please try again.')
+      setCheckoutError('Something went wrong. Please try again or contact us.')
+    } finally {
+      setIsAddingToCart(false)
     }
-    setIsAddingToCart(false)
   }
 
   function handleReset() {
