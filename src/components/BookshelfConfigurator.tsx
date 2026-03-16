@@ -265,9 +265,16 @@ export function BookshelfConfigurator() {
     }
     emitHeight()
     const observer = new ResizeObserver(emitHeight)
-    observer.observe(document.body)
+    observer.observe(document.documentElement)
     return () => observer.disconnect()
   }, [])
+
+  // Also emit height when config changes
+  useEffect(() => {
+    try {
+      window.parent.postMessage({ type: 'pbs-height', height: document.documentElement.scrollHeight }, '*')
+    } catch { /* ignore */ }
+  }, [mainType, width, width2, selectedFinish, shelves, shelves2])
 
   const totalHeight = calculateTotalHeight(shelves)
 
