@@ -253,7 +253,21 @@ export function BookshelfConfigurator() {
 
   useEffect(() => {
     safeSetItem("bookshelf-config", JSON.stringify({ mainType, width, width2, selectedFinish, shelves, shelves2 }))
+    setCheckoutError(null)
   }, [mainType, width, width2, selectedFinish, shelves, shelves2])
+
+  // Emit height to parent iframe for dynamic resizing
+  useEffect(() => {
+    const emitHeight = () => {
+      try {
+        window.parent.postMessage({ type: 'pbs-height', height: document.body.scrollHeight }, '*')
+      } catch { /* ignore */ }
+    }
+    emitHeight()
+    const observer = new ResizeObserver(emitHeight)
+    observer.observe(document.body)
+    return () => observer.disconnect()
+  }, [])
 
   const totalHeight = calculateTotalHeight(shelves)
 
