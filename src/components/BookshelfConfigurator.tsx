@@ -576,9 +576,6 @@ export function BookshelfConfigurator() {
                        <line x1="22" y1="32" x2="32" y2="32" stroke="currentColor" strokeWidth="1.5" />
                      </svg>
                      <span className="text-[10px] font-medium text-foreground">Inside Corner</span>
-                     {cornerVariant === "inside" && (
-                       <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent" />
-                     )}
                    </button>
                  </div>
                )}
