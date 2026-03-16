@@ -15,7 +15,7 @@ export function FloatingPreview({ mainPreviewRef, children }: FloatingPreviewPro
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 1024)
+    const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener("resize", check)
     return () => window.removeEventListener("resize", check)
@@ -32,8 +32,8 @@ export function FloatingPreview({ mainPreviewRef, children }: FloatingPreviewPro
     return () => observer.disconnect()
   }, [mainPreviewRef])
 
-  // Don't render if main is visible
-  if (isMainVisible) return null
+  // Don't render if main is visible OR if on desktop (>= 768px)
+  if (isMainVisible || !isMobile) return null
 
   const floatingContent = (
     <>

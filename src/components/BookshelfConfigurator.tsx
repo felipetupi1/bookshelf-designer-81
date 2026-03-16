@@ -235,6 +235,7 @@ export function BookshelfConfigurator() {
   })
 
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({
     isOpen: false, finishName: "", imageSrc: "",
   })
@@ -252,7 +253,21 @@ export function BookshelfConfigurator() {
 
   useEffect(() => {
     safeSetItem("bookshelf-config", JSON.stringify({ mainType, width, width2, selectedFinish, shelves, shelves2 }))
+    setCheckoutError(null)
   }, [mainType, width, width2, selectedFinish, shelves, shelves2])
+
+  // Emit height to parent iframe for dynamic resizing
+  useEffect(() => {
+    const emitHeight = () => {
+      try {
+        window.parent.postMessage({ type: 'pbs-height', height: document.body.scrollHeight }, '*')
+      } catch { /* ignore */ }
+    }
+    emitHeight()
+    const observer = new ResizeObserver(emitHeight)
+    observer.observe(document.body)
+    return () => observer.disconnect()
+  }, [])
 
   const totalHeight = calculateTotalHeight(shelves)
 
@@ -390,9 +405,10 @@ export function BookshelfConfigurator() {
       }
     } catch (err) {
       console.error('Checkout error:', err)
-      alert('Failed to create checkout. Please try again.')
+      setCheckoutError('Something went wrong. Please try again or contact us.')
+    } finally {
+      setIsAddingToCart(false)
     }
-    setIsAddingToCart(false)
   }
 
   function handleReset() {
@@ -423,7 +439,7 @@ export function BookshelfConfigurator() {
   }
 
   return (
-    <div className="w-full min-h-screen configurator-root">
+    <div className="w-full configurator-root">
 
       {/* ─── Main layout ─── */}
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
@@ -686,12 +702,24 @@ export function BookshelfConfigurator() {
               </div>
             </ConfigSection>
 
-            {/* ─── Summary (mobile only) ─── */}
-            <div className="sm:hidden pt-4 space-y-3">
+            {/* ─── Price + Add to Cart (always visible) ─── */}
+            <div className="pt-4 space-y-3">
               <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="text-2xl font-display font-bold text-foreground">${totalPrice.toFixed(2)}</span>
               </div>
+              {checkoutError && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+                  {checkoutError}{' — '}
+                  <a
+                    href="https://www.perfectbookshelf.com/pages/contact"
+                    target="_top"
+                    className="underline font-medium"
+                  >
+                    Contact us
+                  </a>
+                </div>
+              )}
               <Button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart || !result}
