@@ -235,6 +235,7 @@ export function BookshelfConfigurator() {
   })
 
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({
     isOpen: false, finishName: "", imageSrc: "",
   })
