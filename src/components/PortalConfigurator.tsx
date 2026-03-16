@@ -324,6 +324,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
         finish: finishOption?.label || selectedFinish,
         totalArea: totalArea.toFixed(2),
         pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
+        totalDimensions: `Total dimensions: ${toFraction(wallWidth)} x ${toFraction(wallHeight)}`,
         dimensions: { wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, rightGap, leftGap, topHeight: topSectionHeight },
         shelves: globalShelves,
         skus,

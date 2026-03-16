@@ -178,6 +178,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
         finish: finishOption?.label || selectedFinish,
         totalArea: totalArea.toFixed(2),
         pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
+        totalDimensions: `Total dimensions: ${toFraction(W)} x ${toFraction(H)}–${toFraction(H1)}`,
         dimensions: { W, H, H1, direction },
         shelves,
         skus: cathedralData.allSkus,
