@@ -531,9 +531,6 @@ export function BookshelfConfigurator() {
                   >
                     <img src={TYPE_ICONS[type]} alt={type} className="h-10 w-10 object-contain" />
                     <span className="text-[10px] font-medium text-foreground capitalize">{type === "rack" ? "Horiz." : type === "portal" ? "Portal" : type === "cathedral" ? "Cathed." : type === "usurround" ? "U-Surr." : type}</span>
-                    {mainType === type && (
-                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent" />
-                    )}
                   </button>
                  ))}
                </div>
