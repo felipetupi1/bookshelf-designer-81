@@ -211,6 +211,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
         finish: finishOption?.label || selectedFinish,
         totalArea: totalArea.toFixed(2),
         pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
+        totalDimensions: `Total dimensions: ${toFraction(w1)} x ${toFraction(w)} x ${toFraction(w2)} x ${toFraction(totalHeight)}`,
         dimensions: { w1, w, w2, height: totalHeight },
         shelves: { left: shelvesLeft, front: shelvesFront, right: shelvesRight },
         skus: usurroundResult.allSkus,
