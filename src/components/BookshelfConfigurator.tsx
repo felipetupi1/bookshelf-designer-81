@@ -439,7 +439,7 @@ export function BookshelfConfigurator() {
   }
 
   return (
-    <div className="w-full min-h-screen configurator-root">
+    <div className="w-full configurator-root">
 
       {/* ─── Main layout ─── */}
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
