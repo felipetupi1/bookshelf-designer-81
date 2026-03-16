@@ -391,6 +391,7 @@ export function BookshelfConfigurator() {
         finish: finishLabel,
         totalArea: totalArea.toFixed(2),
         pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
+        totalDimensions: `Total dimensions: ${toFraction(width)} x ${toFraction(totalHeight)}`,
         dimensions: {
           width,
           ...(mainType === "corner" ? { width2 } : {}),

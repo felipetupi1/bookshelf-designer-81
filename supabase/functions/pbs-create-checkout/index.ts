@@ -90,6 +90,7 @@ serve(async (req) => {
     const lineItemProperties = [
       { name: "Type", value: config.bookshelfType || "Custom" },
       { name: "Finish", value: config.finish || "N/A" },
+      ...(config.totalDimensions ? [{ name: "Dimensions", value: config.totalDimensions }] : []),
     ]
 
     // Add per-shelf summary to line item properties
