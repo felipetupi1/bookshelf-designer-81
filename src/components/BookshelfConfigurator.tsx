@@ -670,7 +670,7 @@ export function BookshelfConfigurator() {
             </ConfigSection>
 
             {/* ─── Step 4: Finish ─── */}
-            <ConfigSection step={4} title="Finish" subtitle={finishOption?.label} defaultOpen={true}>
+            <ConfigSection step={4} title="Finish" subtitle={finishOption?.label} defaultOpen={false}>
               <div className="grid grid-cols-4 gap-2">
                 {FINISH_OPTIONS.map((finish) => (
                   <button
