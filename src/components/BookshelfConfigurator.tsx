@@ -622,7 +622,7 @@ export function BookshelfConfigurator() {
             </ConfigSection>
 
             {/* ─── Step 3: Shelves ─── */}
-            <ConfigSection step={3} title="Shelves" subtitle={`${shelves.length} shelves · ${toFraction(totalHeight)} tall`} defaultOpen={true}>
+            <ConfigSection step={3} title="Shelves" subtitle={`${shelves.length} shelves · ${toFraction(totalHeight)} tall`} defaultOpen={false}>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Number of shelves</span>
