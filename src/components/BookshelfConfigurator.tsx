@@ -679,7 +679,11 @@ export function BookshelfConfigurator() {
                         Sold out
                       </div>
                     )}
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-border shadow-sm">
+                    <div className={`w-10 h-10 rounded-full overflow-hidden shadow-sm transition-all ${
+                      selectedFinish === finish.id
+                        ? "ring-2 ring-accent ring-offset-2 ring-offset-card border border-accent"
+                        : "border border-border"
+                    }`}>
                       {finish.id.includes("/") && finish.color1 !== finish.color2 ? (
                         <div className="flex w-full h-full">
                           <div className="w-1/2 h-full" style={{ backgroundColor: finish.color1 }} />
@@ -692,9 +696,6 @@ export function BookshelfConfigurator() {
                     <span className="text-[10px] font-medium text-foreground leading-tight text-center">
                       {finish.label.replace("/", " / ")}
                     </span>
-                    {selectedFinish === finish.id && (
-                      <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent" />
-                    )}
                   </button>
                 ))}
               </div>
