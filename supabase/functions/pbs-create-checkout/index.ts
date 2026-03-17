@@ -28,64 +28,15 @@ serve(async (req) => {
       })
     }
 
-    // Build note from config for the order
+    // Build note from config (summary only — shelf details in lineItemProperties)
     const dims = config.dimensions || {}
-    const noteLines = [
-      `Type: ${config.bookshelfType || 'N/A'}`,
-      `Finish: ${config.finish || 'N/A'}`,
-    ]
-
-    // Per-shelf dimensions (width/length, height, depth)
-    if (config.shelves) {
-      if (Array.isArray(config.shelves)) {
-        // Straight, Corner, Cathedral, Portal — single shelf list
-        const shelfWidth = dims.width || dims.W || dims.wallWidth || 'N/A'
-        noteLines.push(`--- Shelves (Width: ${shelfWidth}") ---`)
-        config.shelves.forEach((s: any, i: number) => {
-          noteLines.push(`  Row ${i + 1}: ${shelfWidth}" W x ${s.height}" H x ${s.depth}" D`)
-        })
-        // Corner has a second wall
-        if (config.shelves2 && Array.isArray(config.shelves2)) {
-          const width2 = dims.width2 || 'N/A'
-          noteLines.push(`--- Shelves Wall 2 (Width: ${width2}") ---`)
-          config.shelves2.forEach((s: any, i: number) => {
-            noteLines.push(`  Row ${i + 1}: ${width2}" W x ${s.height}" H x ${s.depth}" D`)
-          })
-        }
-      } else {
-        // U-surround / L-shape — shelves keyed by wall
-        const wallWidthMap: Record<string, string> = {
-          left: dims.w1 || 'N/A',
-          front: dims.w || 'N/A',
-          right: dims.w2 || 'N/A',
-        }
-        for (const [wall, shelves] of Object.entries(config.shelves)) {
-          if (Array.isArray(shelves)) {
-            const wallW = wallWidthMap[wall] || 'N/A'
-            noteLines.push(`--- ${wall.charAt(0).toUpperCase() + wall.slice(1)} Wall (Width: ${wallW}") ---`)
-            ;(shelves as any[]).forEach((s: any, i: number) => {
-              noteLines.push(`  Row ${i + 1}: ${wallW}" W x ${s.height}" H x ${s.depth}" D`)
-            })
-          }
-        }
-      }
-    }
-
-    // Additional dimensions context
-    if (dims.H || dims.H1) {
-      noteLines.push(`Wall Height: ${dims.H || 'N/A'}", Peak Height: ${dims.H1 || 'N/A'}"`)
-    }
-    if (dims.objectWidth) {
-      noteLines.push(`Object: ${dims.objectWidth}" W x ${dims.objectHeight}" H, Floor-to-Object: ${dims.floorToObject}"`)
-    }
-
+    const noteLines: string[] = []
     if (config.skus && Array.isArray(config.skus)) {
       noteLines.push('--- SKUs ---')
       for (const sku of config.skus) {
         noteLines.push(`${sku.name}: ${sku.totalQuantity || sku.quantity || 0}`)
       }
     }
-
     // Format inches as fraction string (e.g. 69.75 → '69 3/4"')
     function toFraction(decimal: number): string {
       const whole = Math.floor(decimal)
@@ -112,6 +63,13 @@ serve(async (req) => {
       // bookshelf, rack
       totalDimensions = `${toFraction(dims.width || 0)} x ${toFraction(dims.height || 0)}`
     }
+
+    // Add summary to note
+    noteLines.unshift(
+      `Type: ${config.bookshelfType || 'N/A'}`,
+      `Finish: ${config.finish || 'N/A'}`,
+      `Total Dimensions: ${totalDimensions}`,
+    )
 
     // Build line item properties (visible to customer and in admin)
     const lineItemProperties = [
