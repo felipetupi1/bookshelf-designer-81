@@ -268,6 +268,19 @@ export function BookshelfConfigurator() {
     observer.observe(document.documentElement)
     return () => observer.disconnect()
   }, [])
+  // Respond to height requests from parent (Shopify iframe resize)
+  useEffect(() => {
+    const handleRequest = (e: MessageEvent) => {
+      if (e.data?.type === 'pbs-request-height') {
+        try {
+          window.parent.postMessage({ type: 'pbs-height', height: document.documentElement.scrollHeight }, '*')
+        } catch { /* ignore */ }
+      }
+    }
+    window.addEventListener('message', handleRequest)
+    return () => window.removeEventListener('message', handleRequest)
+  }, [])
+
 
   // Also emit height when config changes
   useEffect(() => {
