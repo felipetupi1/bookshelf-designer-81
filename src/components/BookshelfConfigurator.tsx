@@ -428,15 +428,12 @@ export function BookshelfConfigurator() {
       }
       _pbsSet('pbs_checkout_url', checkoutUrl)
       if (imageDataUrl) _pbsSet('pbs_cart_image', imageDataUrl)
-      // Send checkout URL to parent before redirecting
-      try {
+      // Let parent handle redirect so it can save to localStorage first
+      if (window.self !== window.top) {
+        // Inside iframe: ask parent to save + redirect
         window.parent.postMessage({ type: 'pbs-checkout-redirect', checkoutUrl }, '*')
-      } catch {}
-      // Small delay to allow postMessage to be processed
-      await new Promise(r => setTimeout(r, 80))
-      if (window.top) {
-        window.top.location.href = checkoutUrl
       } else {
+        // Standalone: redirect directly
         window.location.href = checkoutUrl
       }
     } catch (err) {
