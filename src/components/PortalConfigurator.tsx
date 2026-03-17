@@ -334,6 +334,13 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
 
     try {
       const checkoutUrl = await createShopifyCheckout({ price: totalPrice.toFixed(2), config: payload.config, imageDataUrl })
+      // Save for cart/checkout preview — iframe-safe (works in Safari cross-origin)
+      const _pbsSet = (key: string, value: string) => {
+        try { localStorage.setItem(key, value) } catch {}
+        if (window.self !== window.top) window.parent.postMessage({ type: 'pbs-storage-set', key, value }, '*')
+      }
+      _pbsSet('pbs_checkout_url', checkoutUrl)
+      if (imageDataUrl) _pbsSet('pbs_cart_image', imageDataUrl)
       if (window.top) {
         window.top.location.href = checkoutUrl
       } else {
