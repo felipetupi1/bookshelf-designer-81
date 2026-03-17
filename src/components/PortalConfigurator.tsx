@@ -334,9 +334,6 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
 
     try {
       const checkoutUrl = await createShopifyCheckout({ price: totalPrice.toFixed(2), config: payload.config, imageDataUrl })
-      // Save checkout URL and 3D preview image for cart/checkout display
-      try { localStorage.setItem('pbs_checkout_url', checkoutUrl) } catch {}
-      try { if (imageDataUrl) localStorage.setItem('pbs_cart_image', imageDataUrl) } catch {}
       if (window.top) {
         window.top.location.href = checkoutUrl
       } else {
@@ -373,7 +370,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   ].filter(Boolean).join(" · ")
 
   return (
-    <div className="w-full min-h-screen configurator-root">
+    <div className="w-full configurator-root">
 
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
         <div ref={mainPreviewRef} className="lg:sticky lg:top-0 lg:h-screen lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
