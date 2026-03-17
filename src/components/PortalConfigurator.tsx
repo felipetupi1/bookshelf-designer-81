@@ -324,7 +324,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
         finish: finishOption?.label || selectedFinish,
         totalArea: totalArea.toFixed(2),
         pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
-        totalDimensions: `Total dimensions: ${toFraction(wallWidth)} x ${toFraction(wallHeight)}`,
+        totalDimensions: `${toFraction(wallWidth)} x ${toFraction(wallHeight)}`,
         dimensions: { wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, rightGap, leftGap, topHeight: topSectionHeight },
         shelves: globalShelves,
         skus,
@@ -375,6 +375,19 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     hasCenter && bottomRowIndices.length > 0 ? `Below: ${bottomRowIndices.length} rows` : null,
     hasCenter && topRowIndices.length > 0 ? `Above: ${topRowIndices.length} rows` : null,
   ].filter(Boolean).join(" · ")
+
+  // Emit height to parent iframe for dynamic resizing
+  useEffect(() => {
+    const emitHeight = () => {
+      try {
+        window.parent.postMessage({ type: 'pbs-height', height: document.documentElement.scrollHeight }, '*')
+      } catch { /* ignore */ }
+    }
+    emitHeight()
+    const observer = new ResizeObserver(emitHeight)
+    observer.observe(document.documentElement)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div className="w-full configurator-root">
