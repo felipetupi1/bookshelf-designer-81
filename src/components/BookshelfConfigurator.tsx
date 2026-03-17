@@ -406,9 +406,15 @@ export function BookshelfConfigurator() {
 
     try {
       const checkoutUrl = await createShopifyCheckout({ price: totalPrice.toFixed(2), config: payload.config, imageDataUrl })
-      // Save checkout URL and 3D preview image for cart/checkout display
-      try { localStorage.setItem('pbs_checkout_url', checkoutUrl) } catch {}
-      try { if (imageDataUrl) localStorage.setItem('pbs_cart_image', imageDataUrl) } catch {}
+      // Save checkout URL and 3D preview image — iframe-safe postMessage for Safari cross-origin
+      const _pbsSet = (key: string, value: string) => {
+        try { localStorage.setItem(key, value) } catch {}
+        if (window.self !== window.top) {
+          window.parent.postMessage({ type: 'pbs-storage-set', key, value }, '*')
+        }
+      }
+      _pbsSet('pbs_checkout_url', checkoutUrl)
+      if (imageDataUrl) _pbsSet('pbs_cart_image', imageDataUrl)
       if (window.top) {
         window.top.location.href = checkoutUrl
       } else {
