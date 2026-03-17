@@ -252,6 +252,19 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
     rack: iconHorizontal, bookshelf: iconBookshelf, corner: iconCorner, portal: iconPortal, cathedral: iconCathedral, usurround: iconUModel,
   }
 
+  // Emit height to parent iframe for dynamic resizing
+  useEffect(() => {
+    const emitHeight = () => {
+      try {
+        window.parent.postMessage({ type: 'pbs-height', height: document.documentElement.scrollHeight }, '*')
+      } catch { /* ignore */ }
+    }
+    emitHeight()
+    const observer = new ResizeObserver(emitHeight)
+    observer.observe(document.documentElement)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div className="w-full configurator-root">
 
