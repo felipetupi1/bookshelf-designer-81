@@ -178,7 +178,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
         finish: finishOption?.label || selectedFinish,
         totalArea: totalArea.toFixed(2),
         pricePerSqFt: finishOption?.price.toFixed(2) || "0.00",
-        totalDimensions: `Total dimensions: ${toFraction(W)} x ${toFraction(H)}–${toFraction(H1)}`,
+        totalDimensions: `${toFraction(W)} x ${toFraction(H)}–${toFraction(H1)}`,
         dimensions: { W, H, H1, direction },
         shelves,
         skus: cathedralData.allSkus,
@@ -214,6 +214,19 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   }
 
   const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
+
+  // Emit height to parent iframe for dynamic resizing
+  useEffect(() => {
+    const emitHeight = () => {
+      try {
+        window.parent.postMessage({ type: 'pbs-height', height: document.documentElement.scrollHeight }, '*')
+      } catch { /* ignore */ }
+    }
+    emitHeight()
+    const observer = new ResizeObserver(emitHeight)
+    observer.observe(document.documentElement)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div className="w-full configurator-root">
