@@ -221,6 +221,9 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
 
     try {
       const checkoutUrl = await createShopifyCheckout({ price: totalPrice.toFixed(2), config: payload.config, imageDataUrl })
+      // Save checkout URL and 3D preview image for cart/checkout display
+      try { localStorage.setItem('pbs_checkout_url', checkoutUrl) } catch {}
+      try { if (imageDataUrl) localStorage.setItem('pbs_cart_image', imageDataUrl) } catch {}
       if (window.top) {
         window.top.location.href = checkoutUrl
       } else {
