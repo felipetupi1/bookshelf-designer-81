@@ -343,6 +343,11 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
       if (imageDataUrl) _pbsSet('pbs_cart_image', imageDataUrl)
       // Let parent handle redirect so it can save to localStorage first
       if (window.self !== window.top) {
+        // GA4 events via parent window
+        try {
+          window.parent.postMessage({ type: 'pbs-ga4-event', eventName: 'add_to_cart', params: { currency: 'USD', value: totalPrice } }, '*')
+          window.parent.postMessage({ type: 'pbs-ga4-event', eventName: 'begin_checkout', params: { currency: 'USD', value: totalPrice } }, '*')
+        } catch(e) {}
         // Inside iframe: ask parent to save + redirect
         window.parent.postMessage({ type: 'pbs-checkout-redirect', checkoutUrl }, '*')
       } else {
