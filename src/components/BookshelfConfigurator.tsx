@@ -718,7 +718,7 @@ export function BookshelfConfigurator() {
                       {finish.id.includes("/") && finish.color1 !== finish.color2 ? (
                         <div className="flex w-full h-full">
                           <div className="w-1/2 h-full" style={{ backgroundColor: finish.color1 }} />
-                          <div className="w-1/2 h-full" style={{ backgroundColor: finish.color2 }} />
+                          <div className="w-1/2 h-full" style={finish.texture2 ? { backgroundImage: `url(${finish.texture2})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { backgroundColor: finish.color2 }} />
                         </div>
                       ) : (
                         <div className="w-full h-full" style={{ backgroundColor: finish.color1 }} />

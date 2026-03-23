@@ -616,7 +616,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
                     {finish.comingSoon && <div className="absolute -top-1 -right-1 bg-muted-foreground text-background text-[8px] font-bold px-1.5 py-0.5 rounded-full">Sold out</div>}
                     <div className="w-10 h-10 rounded-full overflow-hidden border border-border shadow-sm">
                       {finish.id.includes("/") && finish.color1 !== finish.color2 ? (
-                        <div className="flex w-full h-full"><div className="w-1/2 h-full" style={{ backgroundColor: finish.color1 }} /><div className="w-1/2 h-full" style={{ backgroundColor: finish.color2 }} /></div>
+                        <div className="flex w-full h-full"><div className="w-1/2 h-full" style={{ backgroundColor: finish.color1 }} /><div className="w-1/2 h-full" style={finish.texture2 ? { backgroundImage: `url(${finish.texture2})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { backgroundColor: finish.color2 }} /></div>
                       ) : (<div className="w-full h-full" style={{ backgroundColor: finish.color1 }} />)}
                     </div>
                     <span className="text-[10px] font-medium text-foreground leading-tight text-center">{finish.label.replace("/", " / ")}</span>
