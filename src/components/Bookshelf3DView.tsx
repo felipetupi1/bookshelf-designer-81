@@ -598,9 +598,9 @@ export const Bookshelf3DView = forwardRef<
   Omit<Bookshelf3DViewProps, "frameFinish"> & { hideTooltip?: boolean }
 >(function Bookshelf3DView({ style, width, width2, shelves, shelves2, finish, modules, modules2, cornerVariant, isMobile, hideTooltip }, ref) {
   const parts = finish.includes("/") ? finish.split("/").map(s => s.trim()) : null
-  const isMapleBlack = finish === "Maple/Black"
-  const internalFinish = isMapleBlack ? "Maple" : parts ? parts[1] : finish // sides + boards
-  const frameFinish = isMapleBlack ? "Black" : parts ? parts[0] : finish // baguetes (Valchromat when Black)
+  const isTwoToneBlack = parts && parts[1] === "Black" // e.g. Maple/Black, Oak/Black
+  const internalFinish = isTwoToneBlack ? parts[0] : parts ? parts[1] : finish // sides + boards
+  const frameFinish = isTwoToneBlack ? "Black" : parts ? parts[0] : finish // baguetes (Valchromat when Black)
   const backFinish = parts ? parts[0] : finish // back panel = first part
   const [resetCount, setResetCount] = useState(0)
 
