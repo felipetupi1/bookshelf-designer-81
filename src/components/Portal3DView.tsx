@@ -336,9 +336,10 @@ export const Portal3DView = forwardRef<Portal3DViewRef, Portal3DViewProps>(
   function Portal3DView(props, ref) {
     const { wallWidth, wallHeight, finish, isMobile, hideTooltip } = props
     const parts = finish.includes("/") ? finish.split("/").map(s => s.trim()) : null
-    const intF = parts ? parts[1] : finish    // sides + boards = second part
-    const frameF = parts ? parts[0] : finish  // baguetes = first part
-    const backF = parts ? parts[0] : finish   // back panel = first part
+    const isMapleBlack = finish === "Maple/Black"
+    const intF = isMapleBlack ? "Maple" : parts ? parts[1] : finish // sides + boards
+    const frameF = isMapleBlack ? "Black" : parts ? parts[0] : finish // baguetes (Valchromat when Black)
+    const backF = parts ? parts[0] : finish // back panel = first part
     const [resetCount, setResetCount] = useState(0)
 
     let captureFn: (() => Promise<string>) | null = null
