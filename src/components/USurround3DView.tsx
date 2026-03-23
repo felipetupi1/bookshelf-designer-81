@@ -121,7 +121,7 @@ export const USurround3DView = forwardRef<USurround3DViewRef, USurround3DViewPro
     const camDist = Math.max(spread * 1.2, totalHeight * 1.2, maxDepth * 5)
 
     return (
-      <div className={`relative w-full overflow-hidden rounded-lg border-2 border-border bg-gradient-to-b from-secondary to-muted ${isMobile ? "aspect-square" : "min-h-[500px] aspect-[4/3]"}`}>
+      <div className={`relative w-full overflow-hidden rounded-lg border-2 border-border bg-gradient-to-b from-secondary to-muted ${isMobile ? "h-[35vh]" : "min-h-[500px] aspect-[4/3]"}`}>
         <Canvas
           camera={{ position: [0, totalHeight * 0.5, camDist], fov: 60 }}
           shadows

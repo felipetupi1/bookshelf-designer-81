@@ -43,7 +43,7 @@ export function FloatingPreview({ mainPreviewRef, children }: FloatingPreviewPro
           onClick={() => setIsExpanded(true)}
           className={`fixed z-50 cursor-pointer transition-all duration-300 animate-fade-in ${
             isMobile
-              ? "bottom-0 left-0 right-0 h-[200px] rounded-t-2xl"
+              ? "top-4 right-4 w-[180px] h-[160px] rounded-lg"
               : "bottom-4 right-4 w-[280px] h-[220px] rounded-xl"
           } bg-card border border-border shadow-2xl overflow-hidden`}
         >

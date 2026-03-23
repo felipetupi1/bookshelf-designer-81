@@ -50,7 +50,7 @@ const FINISH_OPTIONS = [
   },
   {
     id: "Maple/Black", label: "Maple/Black", price: 65.1,
-    color1: "#E8D4B8", color2: "#1a1a1a", comingSoon: false, previewImage: "/images/finishes/maple-black.jpeg",
+    color1: "#E8D4B8", color2: "#1a1a1a", comingSoon: false, previewImage: "/images/finishes/Maple___Black_Closer_2.jpg", texture2: "/images/finishes/valchromat.png",
   },
   {
     id: "Oak/Oak", label: "White Oak", price: 68.15,
@@ -62,7 +62,7 @@ const FINISH_OPTIONS = [
   },
   {
     id: "Oak/Black", label: "White Oak / Black", price: 77.99,
-    color1: "#D4A574", color2: "#1a1a1a", comingSoon: false, previewImage: "/images/finishes/oak-black.jpeg",
+    color1: "#D4A574", color2: "#1a1a1a", comingSoon: false, previewImage: "/images/finishes/Oak___Black_Closer_2.jpg", texture2: "/images/finishes/valchromat.png",
   },
 ]
 

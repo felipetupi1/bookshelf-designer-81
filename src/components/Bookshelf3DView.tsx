@@ -625,7 +625,7 @@ export const Bookshelf3DView = forwardRef<
   return (
     <div
       className={`relative w-full overflow-hidden rounded-lg border-2 border-border bg-gradient-to-b from-secondary to-muted ${
-        isMobile ? "aspect-square" : "min-h-[500px] aspect-[4/3]"
+        isMobile ? "h-[35vh]" : "min-h-[500px] aspect-[4/3]"
       }`}
     >
       <Canvas
