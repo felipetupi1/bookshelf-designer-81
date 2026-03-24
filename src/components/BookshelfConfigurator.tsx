@@ -525,23 +525,7 @@ export function BookshelfConfigurator() {
         </div>
 
         {result && (
-          <FloatingPreview mainPreviewRef={mainPreviewRef}>
-            {(isMini) => (
-              <Bookshelf3DView
-                style={bookshelfType}
-                width={width}
-                width2={mainType === "corner" ? width2 : undefined}
-                shelves={shelves}
-                shelves2={mainType === "corner" ? shelves2 : undefined}
-                finish={selectedFinish}
-                modules={mainType === "corner" ? corner3DModules.arm1 : result.shelves.map((s) => s.modules)}
-                modules2={mainType === "corner" ? corner3DModules.arm2 : undefined}
-                cornerVariant={mainType === "corner" ? cornerVariant : undefined}
-                isMobile={isMini}
-                hideTooltip
-              />
-            )}
-          </FloatingPreview>
+          <FloatingPreview mainPreviewRef={mainPreviewRef} />
         )}
 
         {/* Controls panel */}
