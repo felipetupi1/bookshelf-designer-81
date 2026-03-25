@@ -269,6 +269,10 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
     }
     emitHeight()
     const observer = new ResizeObserver(emitHeight)
+  // Re-emit height multiple times on mount to ensure iframe resizes correctly
+  setTimeout(emitHeight, 100)
+  setTimeout(emitHeight, 500)
+  setTimeout(emitHeight, 1000)
     observer.observe(document.documentElement)
     return () => observer.disconnect()
   }, [])
