@@ -617,7 +617,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
               </div>
             </ConfigSection>
 
-            <div className="sm:hidden pt-4 space-y-3">
+            <div className="pt-4 space-y-3">
               <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="text-2xl font-display font-bold text-foreground">${totalPrice.toFixed(2)}</span>
