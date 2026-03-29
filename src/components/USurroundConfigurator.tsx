@@ -149,6 +149,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
   const [w2, setW2] = useState(50)
   const [selectedFinish, setSelectedFinish] = useState("Oak/Oak")
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const view3DRef = useRef<USurround3DViewRef>(null)
   const mainPreviewRef = useRef<HTMLDivElement>(null)
@@ -243,9 +244,10 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
       }
     } catch (err) {
       console.error('Checkout error:', err)
-      alert('Failed to create checkout. Please try again.')
+      setCheckoutError('Something went wrong. Please try again or contact us.')
+    } finally {
+      setIsAddingToCart(false)
     }
-    setIsAddingToCart(false)
   }
 
   function handleReset() {
@@ -394,6 +396,12 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="text-2xl font-display font-bold text-foreground">${totalPrice.toFixed(2)}</span>
               </div>
+              {checkoutError && (
+                <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
+                  {checkoutError}{' — '}
+                  <a href="https://www.perfectbookshelf.com/pages/contact" target="_top" className="underline font-medium">Contact us</a>
+                </div>
+              )}
               <Button onClick={handleAddToCart} disabled={isAddingToCart || !usurroundResult} className="w-full h-12 rounded-xl text-base font-semibold gap-2">
                 <ShoppingCart className="h-4 w-4" />{isAddingToCart ? "Processing..." : "Add to Cart"}
               </Button>
