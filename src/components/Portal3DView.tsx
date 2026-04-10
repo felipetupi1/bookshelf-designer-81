@@ -169,7 +169,7 @@ function CameraController({ wallWidth, wallHeight, maxDepth, isMobile, resetKey 
       if (p < 1) requestAnimationFrame(anim)
     }
     anim()
-  }, [resetKey, camera, isMobile]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [resetKey, camera, isMobile, wallWidth, wallHeight, maxDepth])
   return null
 }
 

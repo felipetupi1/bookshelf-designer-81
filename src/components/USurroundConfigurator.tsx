@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState, useMemo, useRef, useEffect } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -153,6 +153,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const view3DRef = useRef<USurround3DViewRef>(null)
   const mainPreviewRef = useRef<HTMLDivElement>(null)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
 
   const defaultShelves = (): ShelfConfig[] => [
     { height: 14, depth: 13 }, { height: 14, depth: 13 },
@@ -262,6 +263,13 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
     rack: iconHorizontal, bookshelf: iconBookshelf, corner: iconCorner, portal: iconPortal, cathedral: iconCathedral, usurround: iconUModel,
   }
 
+  useEffect(() => {
+    const check = () => setIsMobileDevice(window.innerWidth < 768)
+    check()
+    window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
+  }, [])
+
   // Emit height to parent iframe for dynamic resizing
   useEffect(() => {
     const emitHeight = () => {
@@ -319,7 +327,7 @@ export function USurroundConfigurator({ onTypeChange }: USurroundConfiguratorPro
           </div>
         </div>
 
-        {usurroundResult && (
+        {isMobileDevice && usurroundResult && (
           <FloatingPreview mainPreviewRef={mainPreviewRef} />
         )}
 

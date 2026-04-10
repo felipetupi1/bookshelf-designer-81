@@ -134,6 +134,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const cathedral3DRef = useRef<Cathedral3DViewRef>(null)
   const mainPreviewRef = useRef<HTMLDivElement>(null)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
 
   const cathedralData = useMemo(() => {
     try { return calculateCathedral(W, H, H1, shelves, direction, selectedFinish) } catch { return null }
@@ -225,6 +226,13 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
 
   const finishOption = FINISH_OPTIONS.find(f => f.id === selectedFinish)
 
+  useEffect(() => {
+    const check = () => setIsMobileDevice(window.innerWidth < 768)
+    check()
+    window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
+  }, [])
+
   // Emit height to parent iframe for dynamic resizing
   useEffect(() => {
     const emitHeight = () => {
@@ -284,7 +292,9 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
           </div>
         </div>
 
-        <FloatingPreview mainPreviewRef={mainPreviewRef} />
+        {isMobileDevice && (
+          <FloatingPreview mainPreviewRef={mainPreviewRef} />
+        )}
 
         <div className="lg:w-[40%] xl:w-[35%] flex-shrink-0 configurator-config">
           <div className="p-4 md:p-6 lg:p-8 space-y-0 configurator-config-inner">

@@ -208,6 +208,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
   })
   const portal3DRef = useRef<Portal3DViewRef>(null)
   const mainPreviewRef = useRef<HTMLDivElement>(null)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
 
   const showFloorToObject = objectType === "tv" || objectType === "window" || objectType === "other"
 
@@ -247,7 +248,7 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     if (floorToObject > maxH1 && maxH1 >= 0) setFloorToObject(Math.max(0, maxH1))
     const maxW1 = wallWidth - objectWidth
     if (rightGap > maxW1) setRightGap(Math.max(0, maxW1))
-  }, [wallWidth, wallHeight, objectWidth, objectHeight, floorToObject, rightGap])
+  }, [wallWidth, wallHeight]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Calculate modules for each zone
   const leftResult = useMemo(() => {
@@ -386,6 +387,13 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
     hasCenter && topRowIndices.length > 0 ? `Above: ${topRowIndices.length} rows` : null,
   ].filter(Boolean).join(" · ")
 
+  useEffect(() => {
+    const check = () => setIsMobileDevice(window.innerWidth < 768)
+    check()
+    window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
+  }, [])
+
   // Emit height to parent iframe for dynamic resizing
   useEffect(() => {
     const emitHeight = () => {
@@ -446,7 +454,9 @@ export function PortalConfigurator({ onTypeChange }: PortalConfiguratorProps) {
           </div>
         </div>
 
-        <FloatingPreview mainPreviewRef={mainPreviewRef} />
+        {isMobileDevice && (
+          <FloatingPreview mainPreviewRef={mainPreviewRef} />
+        )}
 
         <div className="lg:w-[40%] xl:w-[35%] flex-shrink-0 configurator-config">
           <div className="p-4 md:p-6 lg:p-8 space-y-0 configurator-config-inner">

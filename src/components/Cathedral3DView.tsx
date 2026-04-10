@@ -229,8 +229,7 @@ function CameraController({ width, totalHeight, maxDepth, isMobile, resetKey }: 
     }
 
     animate()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetKey, camera, isMobile])
+  }, [resetKey, camera, isMobile, width, totalHeight, maxDepth])
 
   return null
 }

@@ -241,6 +241,7 @@ export function BookshelfConfigurator() {
   })
   const bookshelf3DRef = useRef<Bookshelf3DViewRef>(null)
   const mainPreviewRef = useRef<HTMLDivElement>(null)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
   const bookshelfType: BookshelfType = (mainType === "portal" || mainType === "cathedral" || mainType === "usurround") ? "bookshelf" : mainType
 
   useEffect(() => {
@@ -255,6 +256,13 @@ export function BookshelfConfigurator() {
     safeSetItem("bookshelf-config", JSON.stringify({ mainType, width, width2, selectedFinish, shelves, shelves2 }))
     setCheckoutError(null)
   }, [mainType, width, width2, selectedFinish, shelves, shelves2])
+
+  useEffect(() => {
+    const check = () => setIsMobileDevice(window.innerWidth < 768)
+    check()
+    window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
+  }, [])
 
   // Emit height to parent iframe for dynamic resizing
   useEffect(() => {
@@ -524,7 +532,7 @@ export function BookshelfConfigurator() {
           </div>
         </div>
 
-        {result && (
+        {isMobileDevice && result && (
           <FloatingPreview mainPreviewRef={mainPreviewRef} />
         )}
 
