@@ -104,8 +104,44 @@ serve(async (req) => {
       }
     }
 
+    // If a discount code was provided, look it up and apply it
+    let appliedDiscount: Record<string, unknown> | undefined
+    if (discountCode && typeof discountCode === 'string') {
+      try {
+        const lookupUrl = `https://${SHOPIFY_STORE}/admin/api/2025-01/discount_codes/lookup.json?code=${encodeURIComponent(discountCode.trim())}`
+        const lookupRes = await fetch(lookupUrl, {
+          headers: { 'X-Shopify-Access-Token': SHOPIFY_ACCESS_TOKEN },
+          redirect: 'follow',
+        })
+        if (lookupRes.ok) {
+          const lookupData = await lookupRes.json()
+          const dc = lookupData.discount_code
+          if (dc?.price_rule_id) {
+            const prUrl = `https://${SHOPIFY_STORE}/admin/api/2025-01/price_rules/${dc.price_rule_id}.json`
+            const prRes = await fetch(prUrl, { headers: { 'X-Shopify-Access-Token': SHOPIFY_ACCESS_TOKEN } })
+            if (prRes.ok) {
+              const rule = (await prRes.json()).price_rule
+              const rawValue = Math.abs(parseFloat(rule.value))
+              appliedDiscount = {
+                description: rule.title || discountCode,
+                value_type: rule.value_type === 'percentage' ? 'percentage' : 'fixed_amount',
+                value: rawValue.toString(),
+                amount: rule.value_type === 'percentage'
+                  ? (parseFloat(price) * rawValue / 100).toFixed(2)
+                  : rawValue.toFixed(2),
+                title: rule.title || discountCode,
+              }
+              noteLines.push(`Discount: ${discountCode} (${rule.value_type === 'percentage' ? rawValue + '%' : '$' + rawValue.toFixed(2)} off)`)
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Discount lookup failed (proceeding without discount):', e)
+      }
+    }
+
     // Create draft order via Shopify Admin API
-    const draftOrderPayload = {
+    const draftOrderPayload: Record<string, unknown> = {
       draft_order: {
         line_items: [
           {
@@ -117,6 +153,7 @@ serve(async (req) => {
         ],
         note: noteLines.join('\n'),
         tags: `pbs-configurator, ${config.bookshelfType || 'custom'}`,
+        ...(appliedDiscount ? { applied_discount: appliedDiscount } : {}),
       }
     }
 
