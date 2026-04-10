@@ -16,6 +16,7 @@ import { FinishPreviewModal } from "./FinishPreviewModal"
 import { FinishPreviewChips } from "./FinishPreviewChips"
 import { FloatingPreview } from "./FloatingPreview"
 import { createShopifyCheckout } from "@/lib/shopify-checkout"
+import { CouponField, type AppliedDiscount } from "./CouponField"
 
 import iconHorizontal from "@/assets/icons/Horizontal.png"
 import iconBookshelf from "@/assets/icons/Vertical_Bookshelf.png"
@@ -131,6 +132,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
   const [selectedFinish, setSelectedFinish] = useState("Oak/Oak")
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null)
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; finishName: string; imageSrc: string }>({ isOpen: false, finishName: "", imageSrc: "" })
   const cathedral3DRef = useRef<Cathedral3DViewRef>(null)
   const mainPreviewRef = useRef<HTMLDivElement>(null)
@@ -189,7 +191,7 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
     }
 
     try {
-      const checkoutUrl = await createShopifyCheckout({ price: totalPrice.toFixed(2), config: payload.config, imageDataUrl })
+      const checkoutUrl = await createShopifyCheckout({ price: totalPrice.toFixed(2), config: payload.config, imageDataUrl, discountCode: appliedDiscount?.code })
       // Save for cart/checkout preview — iframe-safe (works in Safari cross-origin)
       const _pbsSet = (key: string, value: string) => {
         try { localStorage.setItem(key, value) } catch {}
@@ -416,6 +418,11 @@ export function CathedralConfigurator({ onTypeChange }: CathedralConfiguratorPro
                   <a href="https://www.perfectbookshelf.com/pages/contact" target="_top" className="underline font-medium">Contact us</a>
                 </div>
               )}
+              <CouponField
+                appliedDiscount={appliedDiscount}
+                onApply={setAppliedDiscount}
+                onRemove={() => setAppliedDiscount(null)}
+              />
               <Button onClick={handleAddToCart} disabled={isAddingToCart || !cathedralData} className="w-full h-12 rounded-xl text-base font-semibold gap-2">
                 <ShoppingCart className="h-4 w-4" />{isAddingToCart ? "Processing..." : "Add to Cart"}
               </Button>

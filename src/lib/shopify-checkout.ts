@@ -4,6 +4,7 @@ interface CheckoutPayload {
   price: string
   config: Record<string, any>
   imageDataUrl?: string | null
+  discountCode?: string | null
 }
 
 export async function createShopifyCheckout(payload: CheckoutPayload): Promise<string> {
