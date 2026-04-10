@@ -19,7 +19,7 @@ serve(async (req) => {
     const SHOPIFY_ACCESS_TOKEN = Deno.env.get('SHOPIFY_ACCESS_TOKEN')
     if (!SHOPIFY_ACCESS_TOKEN) throw new Error('SHOPIFY_ACCESS_TOKEN is not configured')
 
-    const { price, config, imageDataUrl } = await req.json()
+    const { price, config, imageDataUrl, discountCode } = await req.json()
 
     if (!price || !config) {
       return new Response(JSON.stringify({ error: 'Missing price or config' }), {
