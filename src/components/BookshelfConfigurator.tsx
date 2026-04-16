@@ -106,17 +106,17 @@ function enforceDepthConstraints(shelves: ShelfConfig[], changedIndex: number): 
   const result = shelves.map(s => ({ ...s }))
   const newDepth = result[changedIndex].depth
   for (let i = changedIndex - 1; i >= 0; i--) {
-    if (result[i].depth < newDepth) result[i].depth = newDepth as 7 | 10 | 13
+    if (result[i].depth < newDepth) result[i].depth = newDepth as 7 | 10 | 14
   }
   for (let i = changedIndex + 1; i < result.length; i++) {
-    if (result[i].depth > newDepth) result[i].depth = newDepth as 7 | 10 | 13
+    if (result[i].depth > newDepth) result[i].depth = newDepth as 7 | 10 | 14
   }
   return result
 }
 
 function getAvailableDepths(shelves: ShelfConfig[], index: number): number[] {
-  const maxAllowed = index > 0 ? shelves[index - 1].depth : 13
-  return [7, 10, 13].filter(d => d <= maxAllowed)
+  const maxAllowed = index > 0 ? shelves[index - 1].depth : 14
+  return [7, 10, 14].filter(d => d <= maxAllowed)
 }
 
 function safeGetItem(key: string): string | null {
@@ -127,7 +127,7 @@ function safeSetItem(key: string, value: string): void {
   try { localStorage.setItem(key, value) } catch { /* ignore */ }
 }
 
-/* ─── Accordion step section ─── */
+/* âââ Accordion step section âââ */
 function ConfigSection({
   step,
   title,
@@ -208,14 +208,14 @@ export function BookshelfConfigurator() {
     if (saved) {
       try {
         return JSON.parse(saved).shelves || [
-          { height: 14, depth: 13 }, { height: 14, depth: 13 },
-          { height: 14, depth: 13 }, { height: 14, depth: 13 },
+          { height: 14, depth: 14 }, { height: 14, depth: 14 },
+          { height: 14, depth: 14 }, { height: 14, depth: 14 },
         ]
       } catch { /* fall through */ }
     }
     return [
-      { height: 14, depth: 13 }, { height: 14, depth: 13 },
-      { height: 14, depth: 13 }, { height: 14, depth: 13 },
+      { height: 14, depth: 14 }, { height: 14, depth: 14 },
+      { height: 14, depth: 14 }, { height: 14, depth: 14 },
     ]
   })
 
@@ -224,14 +224,14 @@ export function BookshelfConfigurator() {
     if (saved) {
       try {
         return JSON.parse(saved).shelves2 || [
-          { height: 14, depth: 13 }, { height: 14, depth: 13 },
-          { height: 14, depth: 13 }, { height: 14, depth: 13 },
+          { height: 14, depth: 14 }, { height: 14, depth: 14 },
+          { height: 14, depth: 14 }, { height: 14, depth: 14 },
         ]
       } catch { /* fall through */ }
     }
     return [
-      { height: 14, depth: 13 }, { height: 14, depth: 13 },
-      { height: 14, depth: 13 }, { height: 14, depth: 13 },
+      { height: 14, depth: 14 }, { height: 14, depth: 14 },
+      { height: 14, depth: 14 }, { height: 14, depth: 14 },
     ]
   })
 
@@ -249,7 +249,7 @@ export function BookshelfConfigurator() {
   useEffect(() => {
     const defaults: Record<MainType, number> = { rack: 2, bookshelf: 4, corner: 4, portal: 4, cathedral: 5, usurround: 4 }
     const count = defaults[mainType]
-    const newShelves = Array(count).fill(null).map(() => ({ height: 14 as const, depth: 13 as const }))
+    const newShelves = Array(count).fill(null).map(() => ({ height: 14 as const, depth: 14 as const }))
     setShelves(newShelves)
     setShelves2(newShelves.map(s => ({ ...s })))
   }, [mainType])
@@ -374,7 +374,7 @@ export function BookshelfConfigurator() {
 
   const addShelf = () => {
     if (shelves.length < 8) {
-      const topDepth = (shelves[shelves.length - 1]?.depth || 13) as 7 | 10 | 13
+      const topDepth = (shelves[shelves.length - 1]?.depth || 14) as 7 | 10 | 14
       const newShelf: ShelfConfig = { height: 14, depth: topDepth }
       setShelves([...shelves, newShelf])
       setShelves2([...shelves, newShelf].map(s => ({ ...s })))
@@ -429,7 +429,7 @@ export function BookshelfConfigurator() {
 
     try {
       const checkoutUrl = await createShopifyCheckout({ price: totalPrice.toFixed(2), config: payload.config, imageDataUrl, discountCode: appliedDiscount?.code })
-      // Save checkout URL and 3D preview image — iframe-safe postMessage for Safari cross-origin
+      // Save checkout URL and 3D preview image â iframe-safe postMessage for Safari cross-origin
       const _pbsSet = (key: string, value: string) => {
         try { localStorage.setItem(key, value) } catch {}
         if (window.self !== window.top) {
@@ -463,8 +463,8 @@ export function BookshelfConfigurator() {
     setWidth(70)
     setWidth2(50)
     const defaultShelves: ShelfConfig[] = [
-      { height: 14, depth: 13 }, { height: 14, depth: 13 },
-      { height: 14, depth: 13 }, { height: 14, depth: 13 },
+      { height: 14, depth: 14 }, { height: 14, depth: 14 },
+      { height: 14, depth: 14 }, { height: 14, depth: 14 },
     ]
     setShelves(defaultShelves)
     setShelves2(defaultShelves.map(s => ({ ...s })))
@@ -489,9 +489,9 @@ export function BookshelfConfigurator() {
   return (
     <div className="w-full configurator-root">
 
-      {/* ─── Main layout ─── */}
+      {/* âââ Main layout âââ */}
       <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row configurator-layout">
-        {/* 3D Preview — sticky on desktop */}
+        {/* 3D Preview â sticky on desktop */}
         <div ref={mainPreviewRef} className="lg:sticky lg:top-0 lg:h-screen lg:w-[60%] xl:w-[65%] flex-shrink-0 bg-secondary/30 configurator-preview">
           <div className="relative h-full min-h-[50vh] lg:min-h-0 pt-[3px] px-1 lg:p-6">
             <FinishPreviewChips
@@ -504,9 +504,9 @@ export function BookshelfConfigurator() {
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Dimensions</div>
               <div className="text-sm font-semibold text-foreground leading-tight">
                 {mainType === "corner" ? (
-                  <>{toFraction(width)} × {toFraction(width2)} × {toFraction(totalHeight)}</>
+                  <>{toFraction(width)} Ã {toFraction(width2)} Ã {toFraction(totalHeight)}</>
                 ) : (
-                  <>{toFraction(width)} × {toFraction(totalHeight)}</>
+                  <>{toFraction(width)} Ã {toFraction(totalHeight)}</>
                 )}
               </div>
             </div>
@@ -541,7 +541,7 @@ export function BookshelfConfigurator() {
         {/* Controls panel */}
         <div className="lg:w-[40%] xl:w-[35%] flex-shrink-0 configurator-config">
           <div className="p-4 md:p-6 lg:p-8 space-y-0 configurator-config-inner">
-            {/* ─── Step 1: Type ─── */}
+            {/* âââ Step 1: Type âââ */}
             <ConfigSection step={1} title="Type" subtitle="Choose your style" defaultOpen={true}>
                <div className="grid grid-cols-6 gap-2">
                 {(["rack", "bookshelf", "corner", "portal", "cathedral", "usurround"] as const).map((type) => (
@@ -606,8 +606,8 @@ export function BookshelfConfigurator() {
                )}
             </ConfigSection>
 
-            {/* ─── Step 2: Width ─── */}
-            <ConfigSection step={2} title="Width" subtitle={mainType === "corner" ? `W1: ${toFraction(width)} · W2: ${toFraction(width2)}` : `${toFraction(width)} (${toFeetAndInches(width)})`} defaultOpen={true}>
+            {/* âââ Step 2: Width âââ */}
+            <ConfigSection step={2} title="Width" subtitle={mainType === "corner" ? `W1: ${toFraction(width)} Â· W2: ${toFraction(width2)}` : `${toFraction(width)} (${toFeetAndInches(width)})`} defaultOpen={true}>
               <div className="space-y-4">
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">{mainType === "corner" ? "Width 1 (main arm)" : "Total Width"}</Label>
@@ -629,7 +629,7 @@ export function BookshelfConfigurator() {
                     </div>
                 <p className="text-[10px] text-muted-foreground">
                   {cornerVariant === "inside"
-                    ? "Inside corner — backs meet flush, no overlap deduction."
+                    ? "Inside corner â backs meet flush, no overlap deduction."
                     : "Corner depth overlap is automatically handled in pricing and materials."}
                 </p>
                   </>
@@ -637,8 +637,8 @@ export function BookshelfConfigurator() {
               </div>
             </ConfigSection>
 
-            {/* ─── Step 3: Shelves ─── */}
-            <ConfigSection step={3} title="Shelves" subtitle={`${shelves.length} shelves · ${toFraction(totalHeight)} tall`} defaultOpen={false}>
+            {/* âââ Step 3: Shelves âââ */}
+            <ConfigSection step={3} title="Shelves" subtitle={`${shelves.length} shelves Â· ${toFraction(totalHeight)} tall`} defaultOpen={false}>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Number of shelves</span>
@@ -676,7 +676,7 @@ export function BookshelfConfigurator() {
                           <span className="text-[10px] text-muted-foreground uppercase">D</span>
                         </div>
                         {index > 0 && shelf.depth < shelves[index - 1].depth && (
-                          <div className="text-[10px] text-muted-foreground italic pl-3 mt-1">↑ Transition board will be added here</div>
+                          <div className="text-[10px] text-muted-foreground italic pl-3 mt-1">â Transition board will be added here</div>
                         )}
                       </div>
                       )
@@ -685,7 +685,7 @@ export function BookshelfConfigurator() {
               </div>
             </ConfigSection>
 
-            {/* ─── Step 4: Finish ─── */}
+            {/* âââ Step 4: Finish âââ */}
             <ConfigSection step={4} title="Finish" subtitle={finishOption?.label} defaultOpen={false}>
               <div className="grid grid-cols-4 gap-2">
                 {FINISH_OPTIONS.map((finish) => (
@@ -726,7 +726,7 @@ export function BookshelfConfigurator() {
               </div>
             </ConfigSection>
 
-            {/* ─── Price + Add to Cart (always visible) ─── */}
+            {/* âââ Price + Add to Cart (always visible) âââ */}
             <div className="pt-4 space-y-3">
               <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
                 <span className="text-sm text-muted-foreground">Total</span>
@@ -734,7 +734,7 @@ export function BookshelfConfigurator() {
               </div>
               {checkoutError && (
                 <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
-                  {checkoutError}{' — '}
+                  {checkoutError}{' â '}
                   <a
                     href="https://www.perfectbookshelf.com/pages/contact"
                     target="_top"
