@@ -211,7 +211,7 @@ async function buildPdf(body: Body): Promise<Uint8Array> {
         ? `Discount (${body.discount.value}%)`
         : `Discount (${fmtCurrency(body.discount.value)})`
     const discountAmount = body.subtotal - body.total
-    row(ctx, dLabel, `−${fmtCurrency(discountAmount)}`, { size: 11 })
+    row(ctx, dLabel, `-${fmtCurrency(discountAmount)}`, { size: 11 })
     ctx.y -= 18
   }
 
